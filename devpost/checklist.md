@@ -19,7 +19,7 @@ Build mode: fast
   Learner check: Run `npm run dev`, open http://localhost:3000, sign up with a display name, allow location, and see the map centered near you. Switch to My Collection and back, then open the profile, log out, and log back in. Say whether the colors and feel look the way you pictured.
   Commit: `Add sign up, log in, and the main map screen`
 
-- [ ] **2. You can capture an animal and see it pop up as a pin and in My Collection**
+- [x] **2. You can capture an animal and see it pop up as a pin and in My Collection**
   Becomes usable: Tapping Capture opens the camera (a file picker on desktop). The person takes a photo, types a breed, chooses Collect or SOS (and a need for SOS), and saves. They return to the map with a new square photo pin, where SOS and own-Collect pins look different. The card appears at the top of the three-column My Collection grid with "breed / date". Another account sees the SOS pin but never the Collect one.
   Why now: This is the unique kernel — collecting that also puts animals in need on a shared map. It is also where the riskiest new pieces live (Storage uploads, RLS privacy rules, photo pins), so finding problems here is cheap. The breed field is typed by hand for now; the AI guess slots in later without changing this flow.
   PRD ref: `prd.md > The Core Journey` (steps 3–6), `prd.md > Capture`, `prd.md > Map (Nearby Friends)`, `prd.md > My Collection`, `prd.md > States and Boundaries` (location refused, empty collection, who can do what)

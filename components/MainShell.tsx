@@ -52,13 +52,13 @@ export default function MainShell() {
       {/* Bottom buttons */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="relative flex items-center">
-          <button
-            type="button"
+          <Link
+            href="/capture"
             aria-label="Capture an animal"
             className="pointer-events-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-brand text-white shadow-lg shadow-brand/40 transition active:scale-95"
           >
             <PawIcon />
-          </button>
+          </Link>
           <button
             type="button"
             aria-label="Find the closest vet"

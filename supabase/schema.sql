@@ -44,3 +44,55 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+-- ─────────────────────────────────────────────────────────────
+-- captures: every animal someone has captured.
+-- SOS captures are visible to everyone logged in; Collect captures
+-- only to the person who captured them.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.captures (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  photo_path text not null,
+  breed text,
+  mode text not null check (mode in ('collect', 'sos')),
+  need text check (need in ('food', 'water', 'vet', 'owner')),
+  lat double precision not null,
+  lng double precision not null,
+  address text,
+  created_at timestamptz not null default now(),
+  helped_at timestamptz,
+  helped_by uuid references public.profiles (id),
+  -- SOS captures always say what they need; Collect captures never do.
+  constraint captures_need_matches_mode check (
+    (mode = 'sos' and need is not null) or (mode = 'collect' and need is null)
+  )
+);
+
+create index if not exists captures_created_at_idx on public.captures (created_at desc);
+
+alter table public.captures enable row level security;
+
+drop policy if exists "captures: read sos or own" on public.captures;
+create policy "captures: read sos or own" on public.captures
+  for select to authenticated using (mode = 'sos' or user_id = auth.uid());
+
+-- You can only add captures as yourself, and they always start un-helped.
+drop policy if exists "captures: insert own" on public.captures;
+create policy "captures: insert own" on public.captures
+  for insert to authenticated
+  with check (user_id = auth.uid() and helped_at is null and helped_by is null);
+
+-- ─────────────────────────────────────────────────────────────
+-- photos bucket: capture, lost-pet, and sighting photos.
+-- Public read (so pins can show images by URL); uploads only into
+-- your own folder: photos/{your user id}/...
+-- ─────────────────────────────────────────────────────────────
+insert into storage.buckets (id, name, public)
+values ('photos', 'photos', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "photos: upload into own folder" on storage.objects;
+create policy "photos: upload into own folder" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
