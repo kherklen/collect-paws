@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
 import { createClient } from "@/lib/supabase/client";
-import { getLocation, type LatLng } from "@/lib/geo";
+import { getLocation, lookupAddress, type LatLng } from "@/lib/geo";
 import { NEEDS, type Mode, type Need } from "@/lib/types";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
@@ -57,9 +57,10 @@ export default function CapturePage() {
       if (!auth.user) throw new Error("Not logged in");
 
       const path = `${auth.user.id}/${crypto.randomUUID()}.jpg`;
-      const upload = await supabase.storage
-        .from("photos")
-        .upload(path, photo, { contentType: "image/jpeg" });
+      const [upload, address] = await Promise.all([
+        supabase.storage.from("photos").upload(path, photo, { contentType: "image/jpeg" }),
+        lookupAddress(spot),
+      ]);
       if (upload.error) throw upload.error;
 
       const insert = await supabase.from("captures").insert({
@@ -69,6 +70,7 @@ export default function CapturePage() {
         need: mode === "sos" ? need : null,
         lat: spot.lat,
         lng: spot.lng,
+        address,
       });
       if (insert.error) throw insert.error;
 

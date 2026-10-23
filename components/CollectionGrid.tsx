@@ -58,10 +58,14 @@ export default function CollectionGrid() {
                 src={photoUrl(c.photo_path)}
                 alt={c.breed ?? "Captured animal"}
                 className={`aspect-square w-full rounded-2xl border-[3px] object-cover shadow-sm ${
-                  c.mode === "sos" ? "border-sos" : "border-collect"
+                  c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
                 }`}
               />
-              {c.mode === "sos" && (
+              {c.helped_at ? (
+                <span className="absolute bottom-1.5 left-1.5 rounded-full bg-helped px-2 py-0.5 text-[10px] font-extrabold text-white">
+                  ✓ Helped
+                </span>
+              ) : c.mode === "sos" && (
                 <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-sos text-xs">
                   {needInfo(c.need)?.emoji ?? "🆘"}
                 </span>

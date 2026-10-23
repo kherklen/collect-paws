@@ -29,7 +29,7 @@ Build mode: fast
   Learner check: Capture one animal as Collect and one as SOS ("needs food"). See both pins on the map looking different, and both cards at the top of My Collection. Log in as a second account in a private window and confirm only the SOS pin shows.
   Commit: `Capture animals as pins and collection cards`
 
-- [ ] **3. You can tap a pin and mark an animal helped**
+- [x] **3. You can tap a pin and mark an animal helped**
   Becomes usable: Tapping any pin opens a bottom sheet with the photo, breed, street address, mode/need, and status. On an SOS pin that isn't helped yet, anyone can tick **helped**. The pin turns the helped color for everyone, drops off the map a day later, and stays in the capturer's collection with a distinct helped look.
   Why now: Completes the "it also helps them" half of the kernel, the step that turns a collection into community help. Together with slice 2, this is the whole core loop the demo is built around.
   PRD ref: `prd.md > The Core Journey` (step 7), `prd.md > Marking Helped`, `prd.md > Map (Nearby Friends)` (pin card), `prd.md > My Collection` (helped look)

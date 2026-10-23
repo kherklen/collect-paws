@@ -96,3 +96,35 @@ drop policy if exists "photos: upload into own folder" on storage.objects;
 create policy "photos: upload into own folder" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ─────────────────────────────────────────────────────────────
+-- mark_helped: anyone logged in can mark an SOS capture helped.
+-- There is no update rule on captures, so this function is the only
+-- way to change one, and it only touches helped_at / helped_by.
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.mark_helped(capture_id uuid)
+returns public.captures
+language plpgsql
+security definer set search_path = ''
+as $$
+declare
+  result public.captures;
+begin
+  if auth.uid() is null then
+    raise exception 'Not logged in';
+  end if;
+
+  update public.captures
+  set helped_at = now(), helped_by = auth.uid()
+  where id = capture_id and mode = 'sos' and helped_at is null
+  returning * into result;
+
+  if result.id is null then
+    raise exception 'Not an SOS capture that still needs help';
+  end if;
+  return result;
+end;
+$$;
+
+revoke execute on function public.mark_helped(uuid) from public, anon;
+grant execute on function public.mark_helped(uuid) to authenticated;
