@@ -1,0 +1,114 @@
+---
+doc: checklist
+status: draft
+---
+
+# Build Checklist
+
+Build mode: [learn or fast — record once chosen; carry forward on resume]
+
+## Slices
+
+- [ ] **1. You can sign up, log in, and land on a map centered on you**
+  Becomes usable: A running Next.js app where a new person signs up (email, password, display name), lands on the Nearby Friends map centered on their location (or central Ulaanbaatar if refused), switches to an empty My Collection tab, and logs out from a simple profile page. Logged-out visitors are always sent to `/login`.
+  Why now: Proves the whole foundation end to end on the first step: scaffold, Tailwind theme, Supabase connection, sessions, and the client-only Leaflet map. Every later slice lands inside this frame. The visual direction is asked before this slice because it's the first UI work.
+  PRD ref: `prd.md > The Core Journey` (steps 1–2), `prd.md > Accounts`, `prd.md > Screens and Layout`, `prd.md > States and Boundaries` (first open, location refused), `prd.md > Look and Feel`
+  Spec ref: `spec.md > Stack`, `spec.md > Where It Runs and How Someone Tries It`, `spec.md > Look and Feel`, `spec.md > Components > Auth and session`, `spec.md > Components > Main screen shell`, `spec.md > Components > Map view (Nearby Friends)`, `spec.md > Data Model > profiles`, `spec.md > File Structure`
+  Build: Ask the learner for colors, font feel, references, and the tab name, then record them in `spec.md > Look and Feel` and `prd.md > Look and Feel`. Scaffold Next.js (App Router, TypeScript, Tailwind) in the project root; verify current versions and whether the session file is `middleware.ts` or `proxy.ts`. Install `@supabase/supabase-js`, `@supabase/ssr`, `leaflet`, `react-leaflet`. Add `.env.example`, `lib/supabase/client.ts` and `server.ts`, the session/redirect file, `/login` (sign up + log in), `supabase/schema.sql` with the `profiles` table and its RLS rules, `MainShell` (tab toggle in the URL, notification icon placeholder linking to `/profile`, Capture and Vet buttons as placeholders), client-only `MapView` with OSM tiles and attribution, `lib/geo.ts` (UB default center, getLocation), a minimal `/profile` with display name and log out, and theme color tokens in `globals.css`. The learner creates the Supabase project, turns off "Confirm email", runs `schema.sql`, and fills `.env.local`.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. With the dev server running, `curl -I localhost:3000/` redirects to `/login` and `/login` returns 200. A script in `scripts/` signs up a test account through Supabase, confirms its `profiles` row exists with the display name, signs out, signs back in, and reads the same profile.
+  Learner check: Run `npm run dev`, open http://localhost:3000, sign up with a display name, allow location, and see the map centered near you. Switch to My Collection and back, then open the profile, log out, and log back in. Say whether the colors and feel look the way you pictured.
+  Commit: `Add sign up, log in, and the main map screen`
+
+- [ ] **2. You can capture an animal and see it pop up as a pin and in My Collection**
+  Becomes usable: Tapping Capture opens the camera (a file picker on desktop). The person takes a photo, types a breed, chooses Collect or SOS (and a need for SOS), and saves. They return to the map with a new square photo pin, where SOS and own-Collect pins look different. The card appears at the top of the three-column My Collection grid with "breed / date". Another account sees the SOS pin but never the Collect one.
+  Why now: This is the unique kernel — collecting that also puts animals in need on a shared map. It is also where the riskiest new pieces live (Storage uploads, RLS privacy rules, photo pins), so finding problems here is cheap. The breed field is typed by hand for now; the AI guess slots in later without changing this flow.
+  PRD ref: `prd.md > The Core Journey` (steps 3–6), `prd.md > Capture`, `prd.md > Map (Nearby Friends)`, `prd.md > My Collection`, `prd.md > States and Boundaries` (location refused, empty collection, who can do what)
+  Spec ref: `spec.md > Components > Capture flow`, `spec.md > Components > Map view (Nearby Friends)`, `spec.md > Components > My Collection grid`, `spec.md > Data Model > captures`, `spec.md > Data Model > Storage bucket photos`, `spec.md > Look and Feel`, `spec.md > Important Failure Modes` (weak data while saving, location refused)
+  Build: Add the `captures` table, its RLS rules, and the public `photos` bucket with own-folder upload rules to `schema.sql` (explain RLS and storage rules to the learner as it's written). Build `PhotoInput` and `lib/image.ts` (shrink to 1024 px JPEG), `/capture` (photo → breed text field → Collect/SOS → need → save with "Saving…" and retry-on-failure), location at save time with a re-ask and the `LocationPicker` tap-to-drop fallback, `lib/types.ts`, photo pins as Leaflet `divIcon`s in the agreed theme colors with a small need badge on SOS pins, map reload after save and when the app returns to view, and `CollectionGrid` with an empty state.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. A script with two test accounts: A uploads a photo and inserts one SOS and one Collect capture; A reads both; B reads only the SOS one; B cannot upload into A's photo folder; the photo's public URL returns 200.
+  Learner check: Capture one animal as Collect and one as SOS ("needs food"). See both pins on the map looking different, and both cards at the top of My Collection. Log in as a second account in a private window and confirm only the SOS pin shows.
+  Commit: `Capture animals as pins and collection cards`
+
+- [ ] **3. You can tap a pin and mark an animal helped**
+  Becomes usable: Tapping any pin opens a bottom sheet with the photo, breed, street address, mode/need, and status. On an SOS pin that isn't helped yet, anyone can tick **helped**. The pin turns the helped color for everyone, drops off the map a day later, and stays in the capturer's collection with a distinct helped look.
+  Why now: Completes the "it also helps them" half of the kernel, the step that turns a collection into community help. Together with slice 2, this is the whole core loop the demo is built around.
+  PRD ref: `prd.md > The Core Journey` (step 7), `prd.md > Marking Helped`, `prd.md > Map (Nearby Friends)` (pin card), `prd.md > My Collection` (helped look)
+  Spec ref: `spec.md > Components > Pin card`, `spec.md > Components > Address route (/api/address)`, `spec.md > Data Model > captures` (`mark_helped`), `spec.md > External Services and Dependencies > Nominatim (address lookup)`, `spec.md > Important Failure Modes` (Nominatim fails)
+  Build: Add `/api/address` (Nominatim reverse lookup with a proper User-Agent, short address or null) and call it once when saving a capture. Add the `mark_helped(capture_id)` function to `schema.sql`. Build `PinCard` (helped tick only on unhelped SOS pins, "Near {lat}, {lng}" fallback), apply the one-day helped filter in the map query, a helped pin style, and the helped look in `CollectionGrid`.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. `curl` to `/api/address` with UB coordinates returns a short address. A script: B calls `mark_helped` on A's SOS capture and it sets `helped_at`/`helped_by`; B cannot update any other field or mark a Collect capture; a capture with `helped_at` set to 25 hours ago is excluded by the map query while a fresh one is included.
+  Learner check: Tap your SOS pin and check the photo, breed, and address. From the second account, tick helped and watch the pin change color on both screens. Confirm the animal still shows in your collection with the helped look.
+  Commit: `Add pin card, addresses, and marking helped`
+
+- [ ] **4. You can capture a real stray on your phone, outside**
+  Becomes usable: The app runs at a public `https://…vercel.app` link. On a phone, Capture opens the real camera, location works, and a stray captured outside appears as a pin and a collection card.
+  Why now: Phones only allow the camera and location on `https://`, and the demo happens outdoors on a phone. Doing this right after the core loop catches phone-only problems (camera input, location prompts, photo size, mobile layout) while there's still time to fix them, and it's the early hands-on checkpoint.
+  PRD ref: `prd.md > The Core Journey` (Success), `prd.md > Capture`
+  Spec ref: `spec.md > Where It Runs and How Someone Tries It`, `spec.md > External Services and Dependencies > Vercel`, `spec.md > Look and Feel` (mobile-first)
+  Build: With the learner's agreement, they create a GitHub repo and push; the learner links it to Vercel and sets the environment variables. Add a short `README.md` with setup and run steps. Fix any phone-specific issues they find (layout at ~393 px, touch targets, camera/location behavior).
+  Verify (mechanical): `npm run build` passes locally. `curl -I` on the deployed URL returns a redirect to `/login`, and `/login` returns 200 over `https://`. After the learner's phone capture, a script confirms the new row exists in `captures` with a photo URL that returns 200.
+  Learner check: On your phone, open the Vercel link, log in, go outside, and capture a real stray. See its pin on the map and its card in My Collection, then tap it and check the address. Tell me what felt off on the phone.
+  Commit: `Deploy to Vercel and fix phone capture`
+
+- [ ] **5. The app guesses the breed for you**
+  Becomes usable: After taking a photo, the breed field fills in with an AI guess that the person can fix. If the guess fails, is slow, or the photo isn't a cat or dog, the field stays empty with "Couldn't guess — type it in" and capture continues.
+  Why now: This makes collecting more fun, but it can't block anything, since capture already works with a typed breed. It's after the phone check so the guess is tested on real phone photos. It depends on the learner's billed OpenAI key.
+  PRD ref: `prd.md > Capture` (breed guess), `prd.md > Product Decisions` (AI breed guess)
+  Spec ref: `spec.md > Components > Breed route (/api/breed)`, `spec.md > External Services and Dependencies > OpenAI`, `spec.md > Important Failure Modes` (OpenAI slow or errors)
+  Build: Verify the current low-cost OpenAI vision model name and price, and record it in `spec.md`. Install `openai`. Add `/api/breed` (logged-in check, JSON `{ animal, breed }` prompt, `{ breed: null }` on error or "other"), and call it from `/capture` with a ~10 second timeout that leaves the field editable.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. `/api/breed` without a session returns 401. With a session, a cat photo returns a non-null breed and a non-animal image returns `{ breed: null }`. A forced timeout or bad key returns `{ breed: null }`.
+  Learner check: Capture a cat or dog photo and see the breed fill in. Fix it if it's wrong, and save. Then try a photo of something that isn't an animal and confirm you can still type a breed and save.
+  Commit: `Add AI breed guess to capture`
+
+- [ ] **6. You can find the closest vet**
+  Becomes usable: Tapping the Vet button shows the closest Ulaanbaatar vet's name and distance, highlights its pin on the map, and offers a Directions link that opens Google Maps. If location was refused, it uses the map center and says so.
+  Why now: It's the last piece of the core demo ("displaying the closest vet") and self-contained, so it goes after the riskier parts are proven. The learner adds vets they know are missing.
+  PRD ref: `prd.md > The Core Journey` (step 8), `prd.md > Closest Vet`
+  Spec ref: `spec.md > Components > Vet finder`, `spec.md > External Services and Dependencies > Vet list (lib/vets.json)`, `spec.md > Important Failure Modes` (location refused)
+  Build: Create `lib/vets.json` from the spec's seeded list plus vets the learner adds, and confirm whether the ULSM school entry stays. Add haversine to `lib/geo.ts`, then build `VetFinder` (closest vet sheet, distance, Directions link) and the highlighted vet pin.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. A small script checks haversine against a known distance and confirms that, for a point next to each vet in `vets.json`, the closest vet returned is that one.
+  Learner check: Tap Vet and check the vet name and distance make sense for where you are. Tap Directions and confirm Google Maps opens to that vet.
+  Commit: `Add closest vet finder`
+
+- [ ] **7. An owner can report a lost pet, and people nearby see an alert**
+  Becomes usable: From a Report lost pet button on the main screen (or the profile), an owner posts a photo, a description, and an optional last-seen place. Within about 30 seconds, other people within 3 km of that place (or everyone, if no place was given) see a corner pop-up. Tapping it opens the lost pet's details. The owner can mark it found, and the alert stops showing.
+  Why now: The owner flow comes after the core loop (`prd.md > Product Decisions > Build order`). Alerts come before sightings because sightings start from the alert.
+  PRD ref: `prd.md > The Core Journey` (step 9), `prd.md > Lost-Pet Reports`, `prd.md > States and Boundaries` (lost pet found)
+  Spec ref: `spec.md > Components > Lost-pet report form`, `spec.md > Components > Alert poller and pop-up`, `spec.md > Components > Lost-pet detail and sightings` (detail and mark found), `spec.md > Data Model > lost_pets`, `spec.md > Data Model > Kept in the browser only`
+  Build: Decide the Report lost pet button placement with the learner. Add `lost_pets` and its RLS rules to `schema.sql`. Build `/lost/new` (reusing `PhotoInput`, `LocationPicker`, and `/api/address`), `lib/useAlerts.ts` (30 s poll plus on return to view, 3 km filter, excludes own and dismissed), `LostPetAlert`, and `/lost/[id]` with details and the owner's Mark found.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. A script: A creates a report with a place and one without; B reads both; B cannot update A's report; A marks one found and it's no longer returned as open. A unit check of the alert filter: a point 2 km away is kept, 5 km away is dropped, and a no-place report is always kept.
+  Learner check: As the second account, report a lost pet with a last-seen place near you. As your main account, wait up to 30 seconds for the pop-up, open it, and check the details. Then mark it found from the owner account and confirm the pop-up stops.
+  Commit: `Add lost-pet reports and nearby alerts`
+
+- [ ] **8. People can send sightings, and the owner gets notified**
+  Becomes usable: From a lost pet's page, someone sends "I see it now" (a photo, with their location) or "Report a sighting" (when, where, and a required description). The owner's top-left icon shows a count of new sightings. Tapping it lists them with photos or details and clears the count. The profile lists everything the person has posted, with sightings received on each lost-pet report.
+  Why now: It closes the owner loop that slice 7 opens, and finishes everything in `prd.md > What We're Building`.
+  PRD ref: `prd.md > The Core Journey` (steps 10–11), `prd.md > Sightings`, `prd.md > Notifications and Profile`
+  Spec ref: `spec.md > Components > Lost-pet detail and sightings`, `spec.md > Components > Notifications page`, `spec.md > Components > Profile`, `spec.md > Components > Alert poller and pop-up` (badge count), `spec.md > Data Model > sightings`
+  Build: Add `sightings` and its RLS rules to `schema.sql`. Add both sighting forms to `/lost/[id]`, the unread count to `useAlerts` and the badge on the notification icon, `/notifications` (list, then set `read_at`), and the full `/profile` (captures, lost-pet reports with sightings received, Report lost pet, Log out).
+  Verify (mechanical): `npm run build` and `npm run lint` pass. A script with three test accounts: B sends a "now" sighting and C sends a "report" sighting on A's lost pet; a "report" without a description is rejected; A reads both and sees an unread count of 2; C cannot read B's sighting; A sets `read_at` and the count drops to 0.
+  Learner check: As your main account, open the lost pet's alert and send one "I see it now" and one "Report a sighting". On the owner account, see the badge count, open notifications, check both sightings, and confirm the count clears. Open the profile and check your posts and the sightings on them.
+  Commit: `Add sightings, notification badge, and profile history`
+
+## Hands-on Checkpoints
+
+- [ ] Early usable behavior explored — after slice 4, on the phone outside: capture a real stray, see the pin and card, mark helped. Feedback shapes slices 5–8 and the look.
+- [ ] Final kick-the-tires exploration and feedback completed
+
+## Final Review
+
+- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+
+## Code Tour and App Map
+
+- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+
+Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
+Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
+Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
+Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
+Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+
+## Revisions
+
