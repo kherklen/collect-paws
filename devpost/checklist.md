@@ -50,13 +50,13 @@ Build mode: fast
   Commit: `Deploy to Vercel and fix phone capture`
 
 - [ ] **5. The app guesses the breed for you**
-  Becomes usable: After taking a photo, the breed field fills in with an AI guess that the person can fix. If the guess fails, is slow, or the photo isn't a cat or dog, the field stays empty with "Couldn't guess — type it in" and capture continues.
+  Becomes usable: After taking a photo, the breed field fills in with an AI guess that the person can fix. If the photo clearly shows no cat or dog, the app says "Hmm, no cat or dog in this picture" and asks for a retake. If the AI fails or is slow, the field stays empty with "Couldn't guess — type it in" and capture continues.
   Why now: This makes collecting more fun, but it can't block anything, since capture already works with a typed breed. It's after the phone check so the guess is tested on real phone photos. It depends on the learner's billed OpenAI key.
   PRD ref: `prd.md > Capture` (breed guess), `prd.md > Product Decisions` (AI breed guess)
   Spec ref: `spec.md > Components > Breed route (/api/breed)`, `spec.md > External Services and Dependencies > OpenAI`, `spec.md > Important Failure Modes` (OpenAI slow or errors)
-  Build: Verify the current low-cost OpenAI vision model name and price, and record it in `spec.md`. Install `openai`. Add `/api/breed` (logged-in check, JSON `{ animal, breed }` prompt, `{ breed: null }` on error or "other"), and call it from `/capture` with a ~10 second timeout that leaves the field editable.
-  Verify (mechanical): `npm run build` and `npm run lint` pass. `/api/breed` without a session returns 401. With a session, a cat photo returns a non-null breed and a non-animal image returns `{ breed: null }`. A forced timeout or bad key returns `{ breed: null }`.
-  Learner check: Capture a cat or dog photo and see the breed fill in. Fix it if it's wrong, and save. Then try a photo of something that isn't an animal and confirm you can still type a breed and save.
+  Build: Verify the current low-cost OpenAI vision model name and price, and record it in `spec.md`. Install `openai`. Add `/api/breed` (logged-in check, JSON `{ animal, breed }` prompt, `{ animal: null, breed: null }` on error or timeout), and call it from `/capture` with a ~10 second timeout that leaves the field editable. Block saving with a retake prompt only when `animal` is `"other"`.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. `/api/breed` without a session returns 401. With a session, a cat photo returns `animal: "cat"` and a breed, and a non-animal image returns `animal: "other"`. A forced timeout or bad key returns `{ animal: null, breed: null }`.
+  Learner check: Capture a cat or dog photo and see the breed fill in. Fix it if it's wrong, and save. Then try a photo of something that isn't an animal and confirm the app says there's no cat or dog and asks for another photo.
   Commit: `Add AI breed guess to capture`
 
 - [ ] **6. You can find the closest vet**
@@ -117,3 +117,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Profile rows are created by a database trigger on sign up — more reliable than a second insert from the browser, and keeps `profiles: insert own` as the only client path.
 - Added `scripts/check-*.mjs` for mechanical verification against Supabase — the first run caught a secret key in `NEXT_PUBLIC_SUPABASE_ANON_KEY` (RLS was being bypassed); swapped for the publishable key before anything was built for others.
 - The paw button is now the camera input itself, and the photo is handed to `/capture` in memory — at the first phone checkpoint the learner wanted the camera to open instantly; phones only open the camera from a direct tap, so `/capture` couldn't open it on load. `/capture` still offers "Take a photo" if opened directly.
+- Added deleting your own captures (tap a card or your pin → Delete → confirm) — requested by the learner at the first phone checkpoint; new `captures: delete own` and own-folder photo read/delete rules.
+- Non-animal photos are now turned away in slice 5 instead of always letting capture continue — the learner worried about people uploading things that aren't cats or dogs. The block applies only when the AI check ran and said "other"; if the AI is down, capture still works.

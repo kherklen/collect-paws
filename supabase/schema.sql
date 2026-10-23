@@ -83,6 +83,11 @@ create policy "captures: insert own" on public.captures
   for insert to authenticated
   with check (user_id = auth.uid() and helped_at is null and helped_by is null);
 
+-- You can delete your own captures (this also removes an SOS pin from everyone's map).
+drop policy if exists "captures: delete own" on public.captures;
+create policy "captures: delete own" on public.captures
+  for delete to authenticated using (user_id = auth.uid());
+
 -- ─────────────────────────────────────────────────────────────
 -- photos bucket: capture, lost-pet, and sighting photos.
 -- Public read (so pins can show images by URL); uploads only into
@@ -96,6 +101,17 @@ drop policy if exists "photos: upload into own folder" on storage.objects;
 create policy "photos: upload into own folder" on storage.objects
   for insert to authenticated
   with check (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- Deleting a photo needs to see it first, so both rules are limited to your own folder.
+drop policy if exists "photos: read own folder" on storage.objects;
+create policy "photos: read own folder" on storage.objects
+  for select to authenticated
+  using (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "photos: delete from own folder" on storage.objects;
+create policy "photos: delete from own folder" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'photos' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ─────────────────────────────────────────────────────────────
 -- mark_helped: anyone logged in can mark an SOS capture helped.

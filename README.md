@@ -28,6 +28,7 @@ Small scripts in [`scripts/`](scripts/) verify the database rules against your S
 node --env-file=.env.local scripts/check-accounts.mjs
 node --env-file=.env.local scripts/check-captures.mjs
 node --env-file=.env.local scripts/check-helped.mjs
+node --env-file=.env.local scripts/check-delete.mjs
 ```
 
 To remove the test accounts and their captures afterwards, run this in the SQL Editor:

@@ -105,7 +105,15 @@ export default function MapView() {
         )}
       </MapContainer>
       {selected && (
-        <PinCard capture={selected} onClose={() => setSelected(null)} onHelped={handleHelped} />
+        <PinCard
+          capture={selected}
+          onClose={() => setSelected(null)}
+          onHelped={handleHelped}
+          onDeleted={(id) => {
+            setCaptures((all) => all.filter((c) => c.id !== id));
+            setSelected(null);
+          }}
+        />
       )}
     </>
   );

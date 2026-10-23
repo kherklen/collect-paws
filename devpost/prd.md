@@ -79,6 +79,7 @@ Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("C
 - [ ] Tapping Capture opens the camera, and the person can take a photo.
 - [ ] After the photo, a breed guess appears in an editable field. The person can change it or type their own.
 - [ ] If the breed can't be guessed, the field is empty and the person can type one. Capture still works.
+- [ ] If the photo clearly shows no cat or dog, the app says so ("no cat or dog in this picture") and asks for another photo. If the check itself can't run, capture still works.
 - [ ] The person chooses **Collect** or **SOS**.
 - [ ] Choosing SOS asks for one need: needs help (food / water / vet) or might be lost / looking for owner.
 - [ ] Saving creates a pin on the map at the person's location and adds a card to My Collection.
@@ -90,6 +91,7 @@ Develops `scope.md > The POC Boundary` ("My Collection").
 - [ ] Each card shows the animal image and "breed / date".
 - [ ] A new capture appears here right after saving.
 - [ ] A helped animal stays in the grid and looks visibly different from the others.
+- [ ] Tapping a card opens it, and the person can delete their own capture after confirming. Deleting an SOS capture removes its pin from everyone's map.
 
 ### Marking Helped
 Develops `scope.md > The Core Loop` step 4.
@@ -126,7 +128,8 @@ Develops `scope.md > Later` ("Notifications"), pulled into the POC by the learne
 - **Location refused**: the map still loads on a general default area, the way Google Maps does, and the person can browse pins. When they capture, the app asks again to turn location on. If they still say no, they drop the pin on the map by hand.
 - **No animals nearby**: the map shows the person's area with no pins.
 - **Empty collection**: the My Collection tab has no cards yet. *(What it says is to be decided in the build.)*
-- **Breed guess fails or is wrong**: the person types or fixes it. Capture is never blocked.
+- **Breed guess fails or is wrong**: the person types or fixes it. Capture is not blocked.
+- **Photo has no cat or dog**: the app says so and asks for another photo. This is the only case that blocks a capture, and only when the AI check actually ran.
 - **Helped**: the pin changes color, then drops off the map after one day.
 - **No new notifications**: the icon shows no count.
 - **Lost pet found**: the owner marks the report found, and its alert stops showing for everyone.
@@ -152,6 +155,8 @@ Develops `scope.md > Later` ("Notifications"), pulled into the POC by the learne
 - **Visual direction decided during the build**, not now.
 
 - **Pin goes where the capturer is standing** at the time of capture.
+- **Non-animal photos are turned away** (added at the first phone checkpoint in `5-build`): the learner worried about people uploading things that aren't cats or dogs. It uses the same AI call as the breed guess. If the AI is down, capture still works so the app never gets stuck.
+- **People can delete their own captures** (added at the first phone checkpoint in `5-build`) by tapping the card, with an "are you sure?" step.
 - **Helped animals stay in My Collection** after their pin leaves the map, marked so they look different (e.g. a different color).
 - **"Report lost pet" has its own button on the main screen** and is also in the profile menu.
 

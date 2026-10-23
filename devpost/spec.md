@@ -149,6 +149,8 @@ PRD ref: `prd.md > Map (Nearby Friends)`.
 PRD ref: `prd.md > Marking Helped`.
 
 ### Capture flow
+The round **paw** button on the main screen *is* the camera input, so one tap opens the camera (phones only open it from a direct tap). The shrunk photo is handed to `/capture` in memory (`lib/pendingPhoto.ts`). Opening `/capture` directly still shows a "Take a photo" button.
+
 `/capture` steps:
 1. Photo, using `<input type="file" accept="image/*" capture="environment">`, which opens the phone camera directly.
 2. Shrink the photo in the browser (canvas, max 1024 px, JPEG ~0.8).
@@ -169,7 +171,8 @@ PRD ref: `prd.md > Capture`, `prd.md > States and Boundaries` (location refused)
 ### Breed route (`/api/breed`)
 - A server route. Checks that the caller is logged in (so strangers can't spend OpenAI credit).
 - Sends the image to OpenAI with a short prompt asking for JSON: `{ "animal": "cat" | "dog" | "other", "breed": string | null }`.
-- Returns `{ breed }`, or `{ breed: null }` on any error or for `other`.
+- Returns `{ animal, breed }`. On any error or timeout it returns `{ animal: null, breed: null }`, meaning "couldn't check."
+- `/capture` blocks saving only when `animal` is `"other"`, with "Hmm, no cat or dog in this picture 🐾" and a Retake button. When `animal` is null, capture continues (`prd.md > States and Boundaries`).
 
 PRD ref: `prd.md > Capture`.
 
@@ -185,7 +188,8 @@ PRD ref: `prd.md > Map (Nearby Friends)` (address on the pin card).
 - A three-column grid of the person's own captures, newest first.
 - Each card shows the image and "breed / date".
 - Helped animals stay in the grid with a distinct look (e.g. a colored ring or a "helped" tag).
-- Empty state copy is decided in the build.
+- Empty state: "No friends yet!" with a nudge to tap the paw button.
+- Tapping a card opens the same bottom sheet as a pin (`PinCard`). For your own captures it has **Delete**, with a confirm step. Deleting removes the `captures` row, then the photo file.
 
 PRD ref: `prd.md > My Collection`.
 
@@ -269,6 +273,7 @@ All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is t
 - **Read:** `mode = 'sos'` OR `user_id = auth.uid()`.
 - **Insert:** own rows only.
 - **Helped:** done only through the `mark_helped(capture_id)` database function. It sets `helped_at` and `helped_by` on an SOS capture that isn't helped yet. This lets anyone mark helped without letting them edit other fields.
+- **Delete:** own rows only (`user_id = auth.uid()`).
 
 **Leaving and coming back:** the map and collection re-query on load, so they always show what's in the table.
 
@@ -309,7 +314,7 @@ All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is t
 - **Update `read_at`:** the owner of the lost pet.
 
 ### Storage bucket `photos`
-- **Public read**, so pins and cards can show images with a plain URL. Uploads are allowed only into your own `{user_id}/` folder.
+- **Public read**, so pins and cards can show images with a plain URL. Uploads, listing, and deletes are allowed only in your own `{user_id}/` folder.
 - Holds capture, lost-pet, and sighting photos.
 
 ### Kept in the browser only

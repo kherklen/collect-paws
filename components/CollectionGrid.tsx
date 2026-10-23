@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { needInfo, type Capture } from "@/lib/types";
+import PinCard from "@/components/PinCard";
 
 const dateFormat = new Intl.DateTimeFormat("en", { month: "short", day: "numeric" });
 
 // My Collection: a three-column grid of the person's own captures, newest first.
 export default function CollectionGrid() {
   const [captures, setCaptures] = useState<Capture[] | null>(null);
+  const [selected, setSelected] = useState<Capture | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -51,33 +53,49 @@ export default function CollectionGrid() {
       </p>
       <ul className="grid grid-cols-3 gap-3">
         {captures.map((c) => (
-          <li key={c.id} className="flex flex-col gap-1">
-            <div className="relative">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={photoUrl(c.photo_path)}
-                alt={c.breed ?? "Captured animal"}
-                className={`aspect-square w-full rounded-2xl border-[3px] object-cover shadow-sm ${
-                  c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
-                }`}
-              />
-              {c.helped_at ? (
-                <span className="absolute bottom-1.5 left-1.5 rounded-full bg-helped px-2 py-0.5 text-[10px] font-extrabold text-white">
-                  ✓ Helped
-                </span>
-              ) : c.mode === "sos" && (
-                <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-sos text-xs">
-                  {needInfo(c.need)?.emoji ?? "🆘"}
-                </span>
-              )}
-            </div>
-            <p className="truncate px-0.5 text-xs">
-              <span className="font-bold">{c.breed ?? "Unknown"}</span>
-              <span className="text-muted"> / {dateFormat.format(new Date(c.created_at))}</span>
-            </p>
+          <li key={c.id}>
+            <button type="button" onClick={() => setSelected(c)} className="flex w-full flex-col gap-1 text-left">
+              <div className="relative w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={photoUrl(c.photo_path)}
+                  alt={c.breed ?? "Captured animal"}
+                  className={`aspect-square w-full rounded-2xl border-[3px] object-cover shadow-sm ${
+                    c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
+                  }`}
+                />
+                {c.helped_at ? (
+                  <span className="absolute bottom-1.5 left-1.5 rounded-full bg-helped px-2 py-0.5 text-[10px] font-extrabold text-white">
+                    ✓ Helped
+                  </span>
+                ) : c.mode === "sos" && (
+                  <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-sos text-xs">
+                    {needInfo(c.need)?.emoji ?? "🆘"}
+                  </span>
+                )}
+              </div>
+              <p className="truncate px-0.5 text-xs">
+                <span className="font-bold">{c.breed ?? "Unknown"}</span>
+                <span className="text-muted"> / {dateFormat.format(new Date(c.created_at))}</span>
+              </p>
+            </button>
           </li>
         ))}
       </ul>
+      {selected && (
+        <PinCard
+          capture={selected}
+          onClose={() => setSelected(null)}
+          onHelped={(updated) => {
+            setCaptures((all) => all?.map((c) => (c.id === updated.id ? updated : c)) ?? null);
+            setSelected(updated);
+          }}
+          onDeleted={(id) => {
+            setCaptures((all) => all?.filter((c) => c.id !== id) ?? null);
+            setSelected(null);
+          }}
+        />
+      )}
     </div>
   );
 }
