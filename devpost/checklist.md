@@ -5,11 +5,11 @@ status: approved
 
 # Build Checklist
 
-Build mode: [learn or fast — record once chosen; carry forward on resume]
+Build mode: fast
 
 ## Slices
 
-- [ ] **1. You can sign up, log in, and land on a map centered on you**
+- [x] **1. You can sign up, log in, and land on a map centered on you**
   Becomes usable: A running Next.js app where a new person signs up (email, password, display name), lands on the Nearby Friends map centered on their location (or central Ulaanbaatar if refused), switches to an empty My Collection tab, and logs out from a simple profile page. Logged-out visitors are always sent to `/login`.
   Why now: Proves the whole foundation end to end on the first step: scaffold, Tailwind theme, Supabase connection, sessions, and the client-only Leaflet map. Every later slice lands inside this frame. The visual direction is asked before this slice because it's the first UI work.
   PRD ref: `prd.md > The Core Journey` (steps 1–2), `prd.md > Accounts`, `prd.md > Screens and Layout`, `prd.md > States and Boundaries` (first open, location refused), `prd.md > Look and Feel`
@@ -112,3 +112,7 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 
 ## Revisions
 
+- Session file is `proxy.ts`, not `middleware.ts` — Next.js 16.4 renamed middleware to proxy.
+- Turned off the scaffold's `cacheComponents` / `partialPrefetching` flags — screens are per-user and load data in the browser through Supabase, so prerendering adds Suspense/caching rules without benefit for this POC.
+- Profile rows are created by a database trigger on sign up — more reliable than a second insert from the browser, and keeps `profiles: insert own` as the only client path.
+- Added `scripts/check-*.mjs` for mechanical verification against Supabase — the first run caught a secret key in `NEXT_PUBLIC_SUPABASE_ANON_KEY` (RLS was being bypassed); swapped for the publishable key before anything was built for others.

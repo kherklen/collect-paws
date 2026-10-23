@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+/* Collect Savar theme: soft pastel lavender, rounded, lots of white space.
+   Pin colors are defined once here and used by map pins and collection cards. */
+@theme {
+  --color-brand: #8b7cf6;
+  --color-brand-dark: #6f5fe0;
+  --color-brand-soft: #eeebff;
+  --color-sos: #ff7e6b;
+  --color-collect: #8b7cf6;
+  --color-helped: #5ccb9a;
+  --color-vet: #4fb3bf;
+  --color-ink: #2b2541;
+  --color-muted: #8a84a3;
+  --color-canvas: #faf8ff;
+  --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Leaflet's own controls, softened to match the theme. */
+.leaflet-container {
+  font-family: var(--font-sans);
+  background: var(--color-brand-soft);
+}
+.leaflet-control-attribution {
+  font-size: 10px;
+  border-radius: 8px 0 0 0;
+}

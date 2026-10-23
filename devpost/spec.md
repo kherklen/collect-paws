@@ -99,12 +99,12 @@ All choices below were agreed in the `4-spec` conversation. Check the version nu
 
 ## Look and Feel
 
-Carried from `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`. The visual direction is **not decided yet**. Ask the learner for colors, font feel, and references at the start of UI work in `5-build`, then record the answer here and in the PRD.
+Carried from `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`. **Decided in `5-build`:** the learner kept the soft pastel lavender direction.
 
 What's settled:
 - **Fun and playful first**, never dark, even for SOS animals.
 - **Mobile-first.** Design for a phone-width screen (the wireframe is an iPhone 16, ~393 px wide). Large touch targets and a round Capture button at the bottom center.
-- **Possible direction (not confirmed):** soft pastel lavender, rounded cards, lots of white space, photo pins on a light map.
+- **Direction (confirmed in `5-build`):** soft pastel lavender, rounded cards, lots of white space, photo pins on a light map. Font: **Nunito** (rounded, friendly; covers Cyrillic). Tokens in `app/globals.css`: brand `#8b7cf6`, SOS coral `#ff7e6b`, Collect lavender `#8b7cf6`, helped mint `#5ccb9a`, vet teal `#4fb3bf`, ink `#2b2541`, canvas `#faf8ff`.
 - **Pins must be told apart at a glance:**
   - SOS (with a small need badge)
   - your own Collect
@@ -116,7 +116,8 @@ What's settled:
 ### Auth and session
 - `/login` page with sign up (email, password, display name) and log in.
 - Supabase Auth handles sessions.
-- A Next.js middleware file (named `proxy.ts` in newer Next.js versions; check at build start) refreshes the session and sends logged-out visitors to `/login`.
+- `proxy.ts` (Next.js 16's name for middleware) refreshes the session and sends logged-out visitors to `/login`.
+- A database trigger creates the `profiles` row from the display name sent with sign up.
 - Log out is in the profile.
 
 PRD ref: `prd.md > Accounts`.
@@ -353,7 +354,8 @@ collect-savar/
 │   └── vets.json               # built-in Ulaanbaatar vet list
 ├── supabase/
 │   └── schema.sql              # tables, RLS rules, mark_helped(), photos bucket — run in SQL Editor
-├── middleware.ts               # session refresh + redirect to /login (proxy.ts in newer Next.js)
+├── proxy.ts                    # session refresh + redirect to /login (Next.js 16's name for middleware)
+├── scripts/                    # check-*.mjs: verification scripts run against Supabase
 ├── public/                     # icons, empty-state art
 ├── .env.example                # the three variable names, no values
 ├── devpost/                    # Devpost learning workspace
@@ -454,9 +456,8 @@ Seeded from an OpenStreetMap query run during planning (vets within 20 km of cen
 When asked which part of the plan they were least sure about, the learner said it was fine for now. No specific uncertainty came up. Likely first-time areas to watch during the build are Supabase RLS rules and Storage upload policies. `5-build` should explain these when it writes `schema.sql`.
 
 ### Still open
-- **Visual direction** (colors, font feel, references): at the start of UI work in `5-build` (`prd.md > Open Questions`).
 - **Tab name** "Nearby Friends" vs "Nearby Paws", and whether "Collect Savar" is the final name: can wait for the build.
 - **Placement of the Report lost pet button** on the main screen: in the build.
 - **Vet list completeness:** the learner adds known UB vets and confirms whether the ULSM school entry belongs.
 - **OpenAI model name and price:** verify at build start.
-- **Next.js middleware vs `proxy.ts` naming:** verify for the installed version.
+- ~~**Next.js middleware vs `proxy.ts` naming.**~~ *Settled in `5-build`: Next.js 16.4 uses `proxy.ts`.*

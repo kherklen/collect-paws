@@ -52,12 +52,11 @@ Reference wireframe: two iPhone frames, "iPhone 16 - 1" (map tab) and "iPhone 16
 
 ## Look and Feel
 
-The learner chose to decide the visual direction during the build. What's established so far:
+The learner chose to decide the visual direction during the build, and in `5-build` kept the pastel lavender reference below (details in `spec.md > Look and Feel`).
 - Tone: **fun and playful first**. Not dark, even for SOS animals (`scope.md > Inspiration & Identity`).
-- Reference shared: a location-sharing app with soft pastel lavender, rounded cards, lots of white space, and round photo pins on a light map. Not yet confirmed as the direction.
+- Reference shared: a location-sharing app with soft pastel lavender, rounded cards, lots of white space, and round photo pins on a light map. **Confirmed as the direction.**
 - Inspirations: Pokémon Go (map-first, the satisfaction of capturing) and a cat-collecting web app seen on Instagram.
 
-Ask the learner for colors, font feel, and references at the start of the UI work in `5-build`.
 
 ## Features and Behavior
 
@@ -196,4 +195,4 @@ Build order: 1–6 first, then 7–9.
 
 - ~~**What the vet finder shows.**~~ *Settled in `4-spec`: the closest vet's name and distance, its pin highlighted, and a Google Maps Directions link (`spec.md > Vet finder`).*
 - **Tab name.** "Nearby Friends" or "Nearby Paws"? Also, is "Collect Savar" the final app name? *Can wait for the build.*
-- **Visual direction.** Colors, font feel, and references. *At the start of UI work in `5-build`.*
+- ~~**Visual direction.**~~ *Settled in `5-build`: pastel lavender, Nunito.*
