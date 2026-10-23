@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
+import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
 import { getLocation, lookupAddress, type LatLng } from "@/lib/geo";
 import { NEEDS, type Mode, type Need } from "@/lib/types";
@@ -20,8 +21,12 @@ type LocationStep = "auto" | "ask-again" | "drop";
 
 export default function CapturePage() {
   const router = useRouter();
-  const [photo, setPhoto] = useState<Blob | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  // A photo taken from the paw button arrives here ready to go.
+  const [photo, setPhoto] = useState<Blob | null>(() => peekPendingPhoto());
+  const [preview, setPreview] = useState<string | null>(() => {
+    const pending = peekPendingPhoto();
+    return pending ? URL.createObjectURL(pending) : null;
+  });
   const [breed, setBreed] = useState("");
   const [mode, setMode] = useState<Mode>("collect");
   const [need, setNeed] = useState<Need | null>(null);
@@ -31,6 +36,7 @@ export default function CapturePage() {
   const [error, setError] = useState<string | null>(null);
 
   function choosePhoto(next: Blob | null) {
+    setPendingPhoto(null);
     if (preview) URL.revokeObjectURL(preview);
     setPhoto(next);
     setPreview(next ? URL.createObjectURL(next) : null);
@@ -74,6 +80,7 @@ export default function CapturePage() {
       });
       if (insert.error) throw insert.error;
 
+      setPendingPhoto(null);
       router.push("/");
       router.refresh();
     } catch {

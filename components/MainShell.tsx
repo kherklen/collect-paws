@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
+import { shrinkPhoto } from "@/lib/image";
+import { setPendingPhoto } from "@/lib/pendingPhoto";
 
 // Leaflet needs the browser's `window`, so the map only loads on the client.
 const MapView = dynamic(() => import("@/components/MapView"), {
@@ -17,6 +20,21 @@ export default function MainShell() {
   const router = useRouter();
   const params = useSearchParams();
   const tab: Tab = params.get("tab") === "collection" ? "collection" : "map";
+
+  const [shrinking, setShrinking] = useState(false);
+
+  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setShrinking(true);
+    try {
+      setPendingPhoto(await shrinkPhoto(file));
+    } catch {
+      setPendingPhoto(null);
+    }
+    router.push("/capture");
+  }
 
   function selectTab(next: Tab) {
     router.replace(next === "collection" ? "/?tab=collection" : "/", { scroll: false });
@@ -52,13 +70,20 @@ export default function MainShell() {
       {/* Bottom buttons */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="relative flex items-center">
-          <Link
-            href="/capture"
+          {/* The paw is the camera input itself: phones only open the camera straight from a tap. */}
+          <label
             aria-label="Capture an animal"
-            className="pointer-events-auto flex h-20 w-20 items-center justify-center rounded-full border-4 border-white bg-brand text-white shadow-lg shadow-brand/40 transition active:scale-95"
+            className="pointer-events-auto flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-brand text-white shadow-lg shadow-brand/40 transition active:scale-95"
           >
-            <PawIcon />
-          </Link>
+            {shrinking ? <span className="text-3xl">⏳</span> : <PawIcon />}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handlePhoto}
+              className="sr-only"
+            />
+          </label>
           <button
             type="button"
             aria-label="Find the closest vet"
