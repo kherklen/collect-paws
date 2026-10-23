@@ -39,7 +39,7 @@ Build mode: fast
   Learner check: Tap your SOS pin and check the photo, breed, and address. From the second account, tick helped and watch the pin change color on both screens. Confirm the animal still shows in your collection with the helped look.
   Commit: `Add pin card, addresses, and marking helped`
 
-- [ ] **4. You can capture a real stray on your phone, outside**
+- [x] **4. You can capture a real stray on your phone, outside**
   Becomes usable: The app runs at a public `https://…vercel.app` link. On a phone, Capture opens the real camera, location works, and a stray captured outside appears as a pin and a collection card.
   Why now: Phones only allow the camera and location on `https://`, and the demo happens outdoors on a phone. Doing this right after the core loop catches phone-only problems (camera input, location prompts, photo size, mobile layout) while there's still time to fix them, and it's the early hands-on checkpoint.
   PRD ref: `prd.md > The Core Journey` (Success), `prd.md > Capture`
@@ -91,7 +91,7 @@ Build mode: fast
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 4, on the phone outside: capture a real stray, see the pin and card, mark helped. Feedback shapes slices 5–8 and the look.
+- [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
 - [ ] Final kick-the-tires exploration and feedback completed
 
 ## Final Review
