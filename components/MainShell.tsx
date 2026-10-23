@@ -22,6 +22,12 @@ export default function MainShell() {
   const tab: Tab = params.get("tab") === "collection" ? "collection" : "map";
 
   const [shrinking, setShrinking] = useState(false);
+  const [showVet, setShowVet] = useState(false);
+
+  function openVetFinder() {
+    if (tab !== "map") selectTab("map");
+    setShowVet(true);
+  }
 
   async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -44,7 +50,11 @@ export default function MainShell() {
     <div className="relative h-full w-full overflow-hidden">
       {/* Content: full-screen map, or the collection grid */}
       <div className="absolute inset-0">
-        {tab === "map" ? <MapView /> : <CollectionGrid />}
+        {tab === "map" ? (
+          <MapView showVet={showVet} onCloseVet={() => setShowVet(false)} />
+        ) : (
+          <CollectionGrid />
+        )}
       </div>
 
       {/* Top bar */}
@@ -87,6 +97,7 @@ export default function MainShell() {
           <button
             type="button"
             aria-label="Find the closest vet"
+            onClick={openVetFinder}
             className="pointer-events-auto absolute left-full ml-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-vet shadow-md shadow-brand/15 transition active:scale-95"
           >
             <VetIcon />

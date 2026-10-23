@@ -59,7 +59,7 @@ Build mode: fast
   Learner check: Capture a cat or dog photo and see the breed fill in. Fix it if it's wrong, and save. Then try a photo of something that isn't an animal and confirm the app says there's no cat or dog and asks for another photo.
   Commit: `Add AI breed guess to capture`
 
-- [ ] **6. You can find the closest vet**
+- [x] **6. You can find the closest vet**
   Becomes usable: Tapping the Vet button shows the closest Ulaanbaatar vet's name and distance, highlights its pin on the map, and offers a Directions link that opens Google Maps. If location was refused, it uses the map center and says so.
   Why now: It's the last piece of the core demo ("displaying the closest vet") and self-contained, so it goes after the riskier parts are proven. The learner adds vets they know are missing.
   PRD ref: `prd.md > The Core Journey` (step 8), `prd.md > Closest Vet`

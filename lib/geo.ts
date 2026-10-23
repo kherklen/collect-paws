@@ -36,3 +36,25 @@ export function getLocation(timeoutMs = 10000): Promise<LatLng | null> {
     );
   });
 }
+
+// Straight-line distance between two spots, in meters (the haversine formula).
+export function distanceMeters(a: LatLng, b: LatLng) {
+  const R = 6371000;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(b.lat - a.lat);
+  const dLng = toRad(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+export function formatDistance(meters: number) {
+  return meters < 1000 ? `${Math.round(meters / 10) * 10} m` : `${(meters / 1000).toFixed(1)} km`;
+}
+
+// The place closest to a spot, with its straight-line distance.
+export function closestTo<T extends LatLng>(from: LatLng, places: T[]) {
+  return places
+    .map((place) => ({ place, meters: distanceMeters(from, place) }))
+    .reduce((best, next) => (next.meters < best.meters ? next : best));
+}

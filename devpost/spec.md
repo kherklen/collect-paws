@@ -352,11 +352,13 @@ collect-savar/
 │   ├── supabase/
 │   │   ├── client.ts           # browser Supabase client
 │   │   └── server.ts           # server Supabase client (cookies)
-│   ├── geo.ts                  # haversine distance, UB default center, getLocation helper
+│   ├── geo.ts                  # haversine distance, closestTo, UB default center, getLocation, address lookup
 │   ├── image.ts                # shrink photo to 1024px JPEG
 │   ├── useAlerts.ts            # 30s poll: nearby lost pets + unread sighting count
 │   ├── types.ts                # Capture, LostPet, Sighting types
-│   └── vets.json               # built-in Ulaanbaatar vet list
+│   ├── vets.json               # built-in Ulaanbaatar vet list
+│   ├── vets.ts                 # typed VETS export
+│   └── pendingPhoto.ts         # hands the paw-button photo to /capture
 ├── supabase/
 │   └── schema.sql              # tables, RLS rules, mark_helped(), photos bucket — run in SQL Editor
 ├── proxy.ts                    # session refresh + redirect to /login (Next.js 16's name for middleware)

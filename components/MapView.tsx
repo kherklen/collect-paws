@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
-import { getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { closestTo, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { needInfo, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
+import VetFinder from "@/components/VetFinder";
+import { VETS, type Vet } from "@/lib/vets";
 
 const youIcon = L.divIcon({
   className: "",
@@ -14,6 +16,18 @@ const youIcon = L.divIcon({
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
+
+function vetIcon(closest: boolean) {
+  const size = closest ? 44 : 30;
+  return L.divIcon({
+    className: "",
+    html: `<div style="width:${size}px;height:${size}px;border-radius:${closest ? 14 : 10}px;background:var(--color-vet);color:white;border:3px solid white;box-shadow:0 4px 12px rgba(43,37,65,0.25);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${closest ? 22 : 16}px">+</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
+
+type VetResult = { vet: Vet; meters: number; fromMapCenter: boolean };
 
 // Square photo pin. SOS pins get a coral border and a need badge,
 // helped pins turn mint and fade, and your own Collect pins are lavender.
@@ -57,8 +71,15 @@ async function fetchMapCaptures(): Promise<Capture[]> {
 
 // Full-screen map. Opens on central Ulaanbaatar, then moves to the person
 // once the browser shares their location.
-export default function MapView() {
+export default function MapView({
+  showVet = false,
+  onCloseVet = () => {},
+}: {
+  showVet?: boolean;
+  onCloseVet?: () => void;
+}) {
   const [me, setMe] = useState<LatLng | null>(null);
+  const [vetResult, setVetResult] = useState<VetResult | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
   const [selected, setSelected] = useState<Capture | null>(null);
 
@@ -97,13 +118,28 @@ export default function MapView() {
             eventHandlers={{ click: () => setSelected(c) }}
           />
         ))}
+          {showVet && (
+          <ClosestVet me={me} onFound={setVetResult} />
+        )}
+        {showVet &&
+          VETS.map((vet) => (
+            <Marker
+              key={vet.name}
+              position={[vet.lat, vet.lng]}
+              icon={vetIcon(vet.name === vetResult?.vet.name)}
+              zIndexOffset={vet.name === vetResult?.vet.name ? 900 : 0}
+            />
+          ))}
         {me && (
           <>
-            <Recenter to={me} />
+            {!showVet && <Recenter to={me} />}
             <Marker position={[me.lat, me.lng]} icon={youIcon} zIndexOffset={1000} />
           </>
         )}
       </MapContainer>
+      {showVet && vetResult && (
+        <VetFinder {...vetResult} onClose={onCloseVet} />
+      )}
       {selected && (
         <PinCard
           capture={selected}
@@ -117,6 +153,26 @@ export default function MapView() {
       )}
     </>
   );
+}
+
+// Finds the vet closest to the person (or the map center if location is off)
+// and fits both on screen.
+function ClosestVet({ me, onFound }: { me: LatLng | null; onFound: (r: VetResult) => void }) {
+  const map = useMap();
+  useEffect(() => {
+    const center = map.getCenter();
+    const from = me ?? { lat: center.lat, lng: center.lng };
+    const { place: vet, meters } = closestTo(from, VETS);
+    onFound({ vet, meters, fromMapCenter: !me });
+    map.fitBounds(
+      [
+        [from.lat, from.lng],
+        [vet.lat, vet.lng],
+      ],
+      { paddingTopLeft: [60, 110], paddingBottomRight: [60, 280], maxZoom: 16 },
+    );
+  }, [map, me, onFound]);
+  return null;
 }
 
 function Recenter({ to }: { to: LatLng }) {
