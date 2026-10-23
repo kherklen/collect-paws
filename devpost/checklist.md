@@ -49,7 +49,7 @@ Build mode: fast
   Learner check: On your phone, open the Vercel link, log in, go outside, and capture a real stray. See its pin on the map and its card in My Collection, then tap it and check the address. Tell me what felt off on the phone.
   Commit: `Deploy to Vercel and fix phone capture`
 
-- [ ] **5. The app guesses the breed for you**
+- [x] **5. The app guesses the breed for you**
   Becomes usable: After taking a photo, the breed field fills in with an AI guess that the person can fix. If the photo clearly shows no cat or dog, the app says "Hmm, no cat or dog in this picture" and asks for a retake. If the AI fails or is slow, the field stays empty with "Couldn't guess — type it in" and capture continues.
   Why now: This makes collecting more fun, but it can't block anything, since capture already works with a typed breed. It's after the phone check so the guess is tested on real phone photos. It depends on the learner's billed OpenAI key.
   PRD ref: `prd.md > Capture` (breed guess), `prd.md > Product Decisions` (AI breed guess)

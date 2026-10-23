@@ -384,7 +384,7 @@ collect-savar/
 - **What:** vision model for the breed guess. Docs: https://platform.openai.com/docs/guides/images-vision
 - **Key:** `OPENAI_API_KEY`, server only. Requires billing on the OpenAI account.
 - **Call:** from `/api/breed`, send one user message containing the instruction text and the image as a base64 `data:image/jpeg;base64,...` URL. Ask for JSON output `{ animal, breed }`.
-- **Model:** pick a current low-cost model that accepts images. Model names change often and weren't checked during planning, so **verify the model name and per-image cost at build start**.
+- **Model:** **`gpt-5.4-nano`** via the Responses API, with `reasoning.effort: "none"`, the image at `detail: "low"`, and a strict JSON schema output. Checked in `5-build` (Oct 2026): $0.20 per 1M input tokens and $1.25 per 1M output, so each photo costs a fraction of a cent. Answers took about 2 seconds in testing. If breed guesses are weak, `gpt-5.4-mini` ($0.75 / $4.50 per 1M) is the step up.
 - **Cost:** small per photo, since photos are already shrunk to 1024 px. Set a monthly spending limit in the OpenAI dashboard.
 
 ### OpenStreetMap tiles (map drawing)
@@ -464,5 +464,5 @@ When asked which part of the plan they were least sure about, the learner said i
 - **Tab name** "Nearby Friends" vs "Nearby Paws", and whether "Collect Savar" is the final name: can wait for the build.
 - **Placement of the Report lost pet button** on the main screen: in the build.
 - **Vet list completeness:** the learner adds known UB vets and confirms whether the ULSM school entry belongs.
-- **OpenAI model name and price:** verify at build start.
+- ~~**OpenAI model name and price.**~~ *Settled in `5-build`: `gpt-5.4-nano` (see External Services).*
 - ~~**Next.js middleware vs `proxy.ts` naming.**~~ *Settled in `5-build`: Next.js 16.4 uses `proxy.ts`.*

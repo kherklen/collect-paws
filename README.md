@@ -29,6 +29,8 @@ node --env-file=.env.local scripts/check-accounts.mjs
 node --env-file=.env.local scripts/check-captures.mjs
 node --env-file=.env.local scripts/check-helped.mjs
 node --env-file=.env.local scripts/check-delete.mjs
+# with `npm run dev` running; the folder needs cat.jpg, dog.jpg, banana.jpg
+node --env-file=.env.local scripts/check-breed.mjs path/to/test-photos
 ```
 
 To remove the test accounts and their captures afterwards, run this in the SQL Editor:
