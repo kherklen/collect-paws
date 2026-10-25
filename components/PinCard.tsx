@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
+import { URGENCY_COLOR, urgencyNow, waitingParts } from "@/lib/urgency";
+import { useNow } from "@/lib/useNow";
+import { useTemperature } from "@/lib/weather";
 
 // Bottom sheet for a tapped pin or collection card. Unhelped SOS pins get a
 // "helped" tick; your own captures can be deleted. An animal captured more than
@@ -25,6 +28,9 @@ export default function PinCard({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const now = useNow();
+  // Only SOS animals waiting for help need the weather.
+  const celsius = useTemperature(capture.mode === "sos" && !capture.helped_at ? capture : null);
   const [profile, setProfile] = useState<{ timesSeen: number; firstSeen: string; photos: string[] } | null>(null);
 
   useEffect(() => {
@@ -92,11 +98,21 @@ export default function PinCard({
 
   const need = needInfo(capture.need);
   const helped = !!capture.helped_at;
+  const waitingForHelp = capture.mode === "sos" && !helped;
+  const urgency = urgencyNow(capture, now, celsius);
   const status = helped
     ? { text: t.pin.helped, className: "bg-helped/15 text-helped" }
-    : capture.mode === "sos"
-      ? { text: need ? t.needsStatus[need.value] : t.pin.needsHelp, className: "bg-sos/15 text-sos" }
-      : { text: t.pin.doingFine, className: "bg-collect/15 text-brand-dark" };
+    : { text: t.urgency[urgency.level], className: URGENCY_COLOR[urgency.level].chip };
+  const waiting = waitingParts(urgency.waitingMs);
+  // A tip only when the weather matters: freezing for any need, or hot for water.
+  const weatherTip =
+    celsius === null || !need
+      ? null
+      : celsius <= 0
+        ? t.urgency.coldTip[need.value]
+        : celsius >= 28 && need.value === "water"
+          ? t.urgency.hotWater
+          : null;
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-end bg-ink/20" onClick={onClose}>
@@ -114,8 +130,8 @@ export default function PinCard({
           />
           <div className="flex min-w-0 flex-col gap-1.5">
             <span className={`self-start rounded-full px-3 py-1 text-xs font-extrabold ${status.className}`}>
-              {need && !helped ? `${need.emoji} ` : ""}
               {status.text}
+              {need && !helped ? ` · ${need.emoji} ${t.needs[need.value]}` : ""}
             </span>
             <h2 className="truncate text-xl font-display font-bold italic">{capture.breed ?? t.pin.unknownBreed}</h2>
             <p className="text-sm text-muted">📍 {capture.address ?? formatSpot(t, capture)}</p>
@@ -124,6 +140,22 @@ export default function PinCard({
             </p>
           </div>
         </div>
+
+        {waitingForHelp && (
+          <div className="mt-4 flex flex-col gap-1 rounded-3xl bg-canvas p-3 text-sm">
+            <p className="font-bold">
+              {t.urgency.waiting(waiting.n, waiting.unit)}
+              {urgency.escalated && <span className="font-normal text-sos"> · {t.urgency.escalated}</span>}
+            </p>
+            {celsius !== null && (
+              <p>
+                {celsius <= 0 ? "🥶" : celsius >= 28 ? "🥵" : "🌡️"} {Math.round(celsius)}°C
+                {weatherTip && <span className="text-muted"> · {weatherTip}</span>}
+              </p>
+            )}
+            {urgency.mayBeGone && <p className="text-muted">{t.urgency.mayBeGone}</p>}
+          </div>
+        )}
 
         {profile && (
           <div className="mt-4 rounded-3xl bg-brand-soft/60 p-3">

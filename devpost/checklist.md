@@ -141,11 +141,31 @@ Build mode: fast
   Learner check: Tap the vet button near one of your vets and check that it shows up as the closest.
   Commit: `Add the learner's vets`
 
+- [ ] **14. People can comment on SOS pins and lost-pet reports, and the poster gets a pop-up**
+  Becomes usable: SOS pin cards and lost-pet report pages have a comment section: name, time, text (up to 500 characters), and a box to write one. You can delete your own comments. When someone else comments on your post, you get a pop-up like the lost-pet alert ("💬 New comment on your post", with the text), and your bell count goes up. The notifications page lists the comments, and opening the post marks them read. Collect captures are private, so they have no comments.
+  Why now: The learner chose comments over private chat (about a third of the work, and it replaces the Facebook comment threads people use today). It comes after slice 12 because it reuses the pin link (`/?pin=<id>`) and the alert pop-up.
+  PRD ref: `prd.md > Features and Behavior > Marking Helped`, `prd.md > Features and Behavior > Notifications and Profile`
+  Spec ref: `spec.md > Components > Pin card`, `spec.md > Components > Lost-pet detail and sightings`, `spec.md > Components > Alert poller and pop-up`, `spec.md > Components > Notifications page`
+  Build: `comments` table (one of `capture_id` / `lost_pet_id`, row rules: read and write on SOS captures and lost-pet reports, delete your own, the post's owner can only set `read_at`). A shared `Comments` component in `PinCard` and `/lost/[id]`. Unread comments in `useAlerts` (pop-up + bell count) and on `/notifications`.
+  Verify (mechanical): Build and lint pass. A script: B comments on A's SOS pin and lost-pet report; A sees 2 unread; C can read both; nobody can comment on A's private Collect capture; a 501-character comment is rejected; B can delete their comment and A can't; A marks read and the count drops. A headless browser shows the comment on the pin card and A's pop-up.
+  Learner check: As the demo account, post an SOS animal. On your main account, comment on it. Back on the demo account, check the pop-up, the bell count, and the comment on the pin card.
+  Commit: `Add comments on SOS pins and lost-pet reports`
+
+- [ ] **15. Phone notifications for comments and sightings on your posts**
+  Becomes usable: In the profile, "Turn on phone notifications" asks the browser for permission. After that, a new comment on your post, or a sighting of your lost pet, arrives as a phone notification even when the app is closed, and tapping it opens the post. On iPhone it only works after Share → Add to Home Screen, and the button says so. Android and computers work from the browser.
+  Why now: It builds on slice 14's comments. It's a separate slice so comments ship even if push gives trouble.
+  PRD ref: `prd.md > Features and Behavior > Notifications and Profile`
+  Spec ref: `spec.md > Components > Notifications page`, `spec.md > Components > Profile`, `spec.md > External Services and Dependencies > Vercel`
+  Build: `push_subscriptions` table with a `save_push_subscription` function. `public/sw.js` (service worker), `app/manifest.ts` and an app icon so the app can be added to the home screen. `web-push` package and VAPID keys (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`). `/api/notify` checks the new comment or sighting really is the caller's and just made, then pushes to the post owner's devices (removing dead ones). The comment and sighting forms call it after saving.
+  Verify (mechanical): Build and lint pass. A script: `/api/notify` refuses logged-out callers, someone else's comment, and old comments; for a fresh comment it sends to the owner's saved subscription (a test subscription receives the encrypted message) and never to the commenter. A headless browser registers the service worker and saves a subscription.
+  Learner check: On your phone (iPhone: add to home screen first), turn on notifications in the profile, close the app, and have your other account comment on your SOS pin. The notification arrives and opens the pin.
+  Commit: `Send phone notifications for comments and sightings`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
 - [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13. Feedback so far: list every vet nearest first and show a tapped vet's details (done, see slice 13). They also sent their vets with Google Maps links (slice 13, done). On the phone the vet list was too big: the sheet now opens compact, "All vets" expands it, the handle shrinks it, × closes it (done). Waiting on their try of slices 9–10.
-- [ ] Additions: final kick-the-tires after slice 13.
+- [ ] Additions: final kick-the-tires after slice 15.
 - [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 
 ## Final Review
@@ -156,7 +176,7 @@ Build mode: fast
 - [ ] Mongolian + English — location picks the first language, flags switch it (login screen and profile); Mongolian text drafted by the agent for the learner to review.
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. The learner plans a design refresh later and will raise it separately; nothing else requested now.
 
-- [ ] Additions (slices 9–13) final review complete — feedback resolved and learner confirms ready.
+- [ ] Additions (slices 9–15) final review complete — feedback resolved and learner confirms ready.
 
 ## Code Tour and App Map
 
@@ -188,3 +208,4 @@ Activity mode: Prior practice connected (brief recap).
 - Slice 9's photo check sends the image at high detail, because at low detail about 1 in 4 photos of a screen got through. Slice 10's matching asks the AI twice in parallel and sends photos as data rather than links, because single answers missed about 1 real match in 8 and link fetching failed at random. Both were found by repeated check runs.
 - All SQL for slices 9–12 went into one paste at the start of slice 9, so the learner only runs `schema.sql` once. A trigger fills in `urgency` for SOS captures saved by the older live app.
 - Design refresh at the slice 10 checkpoint: the learner shared a playful pet-app reference (cream, forest green, coral, lime, italic serif titles). Only theme tokens, fonts, and title styles changed, so every screen follows it. SOS moved to a true red and helped to sky blue so neither clashes with the coral buttons or the coming green/amber/red urgency colors.
+- Slices 14–15 added at the slice 10 checkpoint, at the learner's request. They chose comments on posts over private chat. Phone notifications only cover your own posts (comments, sightings); "red animal near you" pushes were left out because the server would have to track where people are.

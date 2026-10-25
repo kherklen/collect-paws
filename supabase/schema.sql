@@ -77,11 +77,15 @@ drop policy if exists "captures: read sos or own" on public.captures;
 create policy "captures: read sos or own" on public.captures
   for select to authenticated using (mode = 'sos' or user_id = auth.uid());
 
--- You can only add captures as yourself, and they always start un-helped.
+-- You can only add captures as yourself, they always start un-helped, and they're
+-- stamped with the real time (a backdated pin would look like it's waited longer).
 drop policy if exists "captures: insert own" on public.captures;
 create policy "captures: insert own" on public.captures
   for insert to authenticated
-  with check (user_id = auth.uid() and helped_at is null and helped_by is null);
+  with check (
+    user_id = auth.uid() and helped_at is null and helped_by is null
+    and created_at between now() - interval '1 minute' and now() + interval '1 minute'
+  );
 
 -- You can delete your own captures (this also removes an SOS pin from everyone's map).
 drop policy if exists "captures: delete own" on public.captures;
@@ -318,3 +322,114 @@ alter table public.captures drop constraint if exists captures_urgency_matches_m
 alter table public.captures add constraint captures_urgency_matches_mode check (
   (mode = 'collect' and urgency = 'green') or (mode = 'sos' and urgency in ('amber', 'red'))
 );
+
+-- ─────────────────────────────────────────────────────────────
+-- comments: on SOS captures and lost-pet reports (Collect captures are private).
+-- Anyone logged in can read and write them; authors delete their own; the
+-- post's owner can only mark them read (that's what clears their pop-up and badge).
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.comments (
+  id uuid primary key default gen_random_uuid(),
+  author_id uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  capture_id uuid references public.captures (id) on delete cascade,
+  lost_pet_id uuid references public.lost_pets (id) on delete cascade,
+  body text not null check (length(trim(body)) between 1 and 500),
+  created_at timestamptz not null default now(),
+  read_at timestamptz,
+  -- Every comment belongs to exactly one post.
+  constraint comments_on_one_post check ((capture_id is null) <> (lost_pet_id is null))
+);
+
+create index if not exists comments_capture_idx on public.comments (capture_id, created_at);
+create index if not exists comments_lost_pet_idx on public.comments (lost_pet_id, created_at);
+
+alter table public.comments enable row level security;
+
+-- Is this a post people can comment on? (SOS captures and lost-pet reports.)
+create or replace function public.is_commentable(capture uuid, pet uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select case
+    when capture is not null then exists (select 1 from public.captures where id = capture and mode = 'sos')
+    else exists (select 1 from public.lost_pets where id = pet)
+  end;
+$$;
+
+-- Is this post mine?
+create or replace function public.owns_post(capture uuid, pet uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select case
+    when capture is not null then exists (select 1 from public.captures where id = capture and user_id = auth.uid())
+    else exists (select 1 from public.lost_pets where id = pet and owner_id = auth.uid())
+  end;
+$$;
+
+drop policy if exists "comments: read on open posts" on public.comments;
+create policy "comments: read on open posts" on public.comments
+  for select to authenticated using (public.is_commentable(capture_id, lost_pet_id));
+
+drop policy if exists "comments: insert own" on public.comments;
+create policy "comments: insert own" on public.comments
+  for insert to authenticated
+  with check (author_id = auth.uid() and read_at is null and public.is_commentable(capture_id, lost_pet_id));
+
+drop policy if exists "comments: delete own" on public.comments;
+create policy "comments: delete own" on public.comments
+  for delete to authenticated using (author_id = auth.uid());
+
+drop policy if exists "comments: owner marks read" on public.comments;
+create policy "comments: owner marks read" on public.comments
+  for update to authenticated
+  using (public.owns_post(capture_id, lost_pet_id)) with check (public.owns_post(capture_id, lost_pet_id));
+
+revoke update on public.comments from authenticated, anon;
+grant update (read_at) on public.comments to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- push_subscriptions: where to send phone notifications for each device.
+-- Saved through save_push_subscription (a phone that changes accounts moves
+-- to the new one); the server reads them with the secret key to send.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.push_subscriptions (
+  endpoint text primary key,
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+
+alter table public.push_subscriptions enable row level security;
+
+drop policy if exists "push_subscriptions: read own" on public.push_subscriptions;
+create policy "push_subscriptions: read own" on public.push_subscriptions
+  for select to authenticated using (user_id = auth.uid());
+
+drop policy if exists "push_subscriptions: delete own" on public.push_subscriptions;
+create policy "push_subscriptions: delete own" on public.push_subscriptions
+  for delete to authenticated using (user_id = auth.uid());
+
+create or replace function public.save_push_subscription(p_endpoint text, p_p256dh text, p_auth text)
+returns void
+language plpgsql
+security definer set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not logged in';
+  end if;
+  insert into public.push_subscriptions (endpoint, user_id, p256dh, auth)
+  values (p_endpoint, auth.uid(), p_p256dh, p_auth)
+  on conflict (endpoint) do update
+    set user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth, created_at = now();
+end;
+$$;
+
+revoke execute on function public.save_push_subscription(text, text, text) from public, anon;
+grant execute on function public.save_push_subscription(text, text, text) to authenticated;

@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatDay, useI18n } from "@/lib/i18n";
 import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
+import { URGENCY_COLOR, urgencyNow } from "@/lib/urgency";
+import { useNow } from "@/lib/useNow";
+import { useTemperature } from "@/lib/weather";
+import { UB_CENTER } from "@/lib/geo";
 import PinCard from "@/components/PinCard";
 
 // My Collection: a three-column grid of the animals the person has captured, newest first.
@@ -12,6 +16,8 @@ export default function CollectionGrid() {
   const { t } = useI18n();
   const [captures, setCaptures] = useState<Capture[] | null>(null);
   const [selected, setSelected] = useState<Capture | null>(null);
+  const now = useNow();
+  const celsius = useTemperature(UB_CENTER);
 
   useEffect(() => {
     const supabase = createClient();
@@ -65,7 +71,7 @@ export default function CollectionGrid() {
                   src={photoUrl(c.photo_path)}
                   alt={c.breed ?? t.pin.capturedAnimal}
                   className={`aspect-square w-full rounded-2xl border-[3px] object-cover shadow-sm ${
-                    c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
+                    c.helped_at ? "border-helped opacity-75" : URGENCY_COLOR[urgencyNow(c, now, celsius).level].border
                   }`}
                 />
                 {timesCaptured(c.animal_id) > 1 && (
@@ -78,7 +84,11 @@ export default function CollectionGrid() {
                     {t.pin.helpedBadge}
                   </span>
                 ) : c.mode === "sos" && (
-                  <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-sos text-xs">
+                  <span
+                    className={`absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-xs ${
+                      urgencyNow(c, now, celsius).level === "red" ? "bg-sos" : "bg-amber"
+                    }`}
+                  >
                     {needInfo(c.need)?.emoji ?? "🆘"}
                   </span>
                 )}

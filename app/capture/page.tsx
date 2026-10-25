@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n/dictionaries";
-import { NEEDS, type AnimalMatch, type Mode, type Need } from "@/lib/types";
+import { NEEDS, type AnimalMatch, type Need, type Urgency } from "@/lib/types";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
@@ -71,7 +71,9 @@ export default function CapturePage() {
   const [breed, setBreed] = useState("");
   // The AI's answer, tied to the photo it was about, so a retake starts fresh.
   const [guess, setGuess] = useState<(Guess & { photo: Blob }) | null>(null);
-  const [mode, setMode] = useState<Mode>("collect");
+  // Green is a private Collect capture; amber and red are SOS pins everyone sees.
+  const [urgency, setUrgency] = useState<Urgency>("green");
+  const mode = urgency === "green" ? "collect" : "sos";
   const [need, setNeed] = useState<Need | null>(null);
   const [locationStep, setLocationStep] = useState<LocationStep>("auto");
   const [dropped, setDropped] = useState<LatLng | null>(null);
@@ -185,6 +187,7 @@ export default function CapturePage() {
         photo_path: path,
         breed: breed.trim() || null,
         mode,
+        urgency,
         need: mode === "sos" ? need : null,
         animal: guess?.animal === "cat" || guess?.animal === "dog" ? guess.animal : null,
         ...(animalId ? { animal_id: animalId } : {}),
@@ -270,17 +273,10 @@ export default function CapturePage() {
 
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-bold text-muted">{t.capture.howIsIt}</span>
-                <div className="grid grid-cols-2 gap-3">
-                  <ModeButton active={mode === "collect"} onClick={() => setMode("collect")} color="collect">
-                    <span className="text-2xl">😺</span>
-                    <span className="font-extrabold">{t.capture.collect}</span>
-                    <span className="text-xs text-muted">{t.capture.collectHint}</span>
-                  </ModeButton>
-                  <ModeButton active={mode === "sos"} onClick={() => setMode("sos")} color="sos">
-                    <span className="text-2xl">🆘</span>
-                    <span className="font-extrabold">{t.capture.sos}</span>
-                    <span className="text-xs text-muted">{t.capture.sosHint}</span>
-                  </ModeButton>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["green", "amber", "red"] as const).map((level) => (
+                    <UrgencyButton key={level} level={level} active={urgency === level} onClick={() => setUrgency(level)} />
+                  ))}
                 </div>
               </div>
 
@@ -294,7 +290,11 @@ export default function CapturePage() {
                         type="button"
                         onClick={() => setNeed(n.value)}
                         className={`rounded-full border-2 px-4 py-2 text-sm font-bold transition ${
-                          need === n.value ? "border-sos bg-sos text-white" : "border-sos/30 bg-white text-ink"
+                          need === n.value
+                            ? urgency === "red"
+                              ? "border-sos bg-sos text-white"
+                              : "border-amber bg-amber text-white"
+                            : "border-brand-soft bg-white text-ink"
                         }`}
                       >
                         {n.emoji} {t.needs[n.value]}
@@ -381,27 +381,25 @@ function MatchPrompt({
   );
 }
 
-function ModeButton({
-  active,
-  onClick,
-  color,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  color: "collect" | "sos";
-  children: React.ReactNode;
-}) {
-  const activeClass = color === "sos" ? "border-sos bg-sos/10" : "border-collect bg-collect/10";
+const URGENCY_STYLE = {
+  green: { emoji: "😺", active: "border-collect bg-collect/15" },
+  amber: { emoji: "🧡", active: "border-amber bg-amber/15" },
+  red: { emoji: "🚨", active: "border-sos bg-sos/10" },
+} as const;
+
+function UrgencyButton({ level, active, onClick }: { level: Urgency; active: boolean; onClick: () => void }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center gap-1 rounded-3xl border-2 bg-white p-4 transition ${
-        active ? activeClass : "border-brand-soft"
+      className={`flex flex-col items-center gap-1 rounded-3xl border-2 bg-white px-2 py-3 text-center transition ${
+        active ? URGENCY_STYLE[level].active : "border-brand-soft"
       }`}
     >
-      {children}
+      <span className="text-2xl">{URGENCY_STYLE[level].emoji}</span>
+      <span className="text-sm font-extrabold leading-tight">{t.urgency[level]}</span>
+      <span className="text-[11px] leading-tight text-muted">{t.urgency[`${level}Hint`]}</span>
     </button>
   );
 }

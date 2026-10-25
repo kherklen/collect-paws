@@ -92,6 +92,7 @@ Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("C
 - [ ] If the photo clearly shows no cat or dog, the app says so ("no cat or dog in this picture") and asks for another photo. If the check itself can't run, capture still works.
 - [ ] (Added after the final review) A photo of a screen, a printed picture, a screenshot, or a drawing is turned away ("This looks like a photo of a picture"), and so is a photo older than 10 minutes. Both are best effort: if the AI check can't run, capture still works.
 - [ ] The person chooses **Collect** or **SOS**.
+- [ ] (Changed after the final review) The choice is now three colors: 🟢 **Doing fine** (fed or fine; private, like Collect), 🟠 **Needs a hand** (hungry or limping), 🔴 **Urgent** (injured or trapped). Amber and red are SOS and still pick a need. An amber animal nobody helps turns red after 24 hours, or 12 hours at −10°C or colder; SOS cards show how long it has waited and the temperature with a tip; after 3 days the pin fades with "might not be there anymore".
 - [ ] Choosing SOS asks for one need: needs help (food / water / vet) or might be lost / looking for owner.
 - [ ] Saving creates a pin on the map at the person's location and adds a card to My Collection.
 - [ ] If location is still refused after asking again, the person drops the pin on the map by hand.

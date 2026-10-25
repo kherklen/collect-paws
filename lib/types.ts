@@ -1,5 +1,7 @@
 export type Mode = "collect" | "sos";
 export type Need = "food" | "water" | "vet" | "owner";
+// green = fed or fine (a Collect capture); amber = hungry or limping; red = injured or trapped.
+export type Urgency = "green" | "amber" | "red";
 
 export type Capture = {
   id: string;
@@ -11,6 +13,7 @@ export type Capture = {
   animal_id: string;
   mode: Mode;
   need: Need | null;
+  urgency: Urgency;
   lat: number;
   lng: number;
   address: string | null;

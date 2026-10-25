@@ -145,6 +145,7 @@ PRD ref: `prd.md > Screens and Layout`.
   The access rules already hide other people's Collect captures.
 - Draws square photo pins. They may overlap.
 - (Added after the final review) Keeps only the newest capture per `animal_id` (`lib/types.ts > newestPerAnimal`).
+- (Added after the final review) Pin borders show the urgency *right now* (`lib/urgency.ts > urgencyNow`): green, amber, or red, with amber turning red after 24 h unhelped (12 h at −10°C or colder) and pins fading after 3 days unhelped. One Open-Meteo temperature for the area on screen (`lib/weather.ts`, cached 30 min).
 - Reloads after a capture is saved and when the app comes back into view.
 
 PRD ref: `prd.md > Map (Nearby Friends)`.
@@ -154,6 +155,8 @@ PRD ref: `prd.md > Map (Nearby Friends)`.
 - For SOS pins that aren't helped yet, a **helped** tick calls `mark_helped(capture_id)` and then refreshes the map.
 - Collect pins show no helped tick (see Decisions).
 - (Added after the final review) When the animal has 2+ captures, shows "Seen N times · first seen …" from `animal_summary(animal_id)` (counts private captures too, numbers only) and a strip of the other captures' photos that the row rules let this person read.
+
+- (Added after the final review) Unhelped SOS cards show the urgency chip with the need, "⏳ Waiting 30 h", the temperature at the pin with a tip for its need when it's freezing (or hot, for water), and "might not be there anymore" after 3 days.
 
 PRD ref: `prd.md > Marking Helped`.
 
@@ -282,6 +285,7 @@ All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is t
 | `helped_by` | uuid, nullable | who ticked it |
 | `animal` | text, nullable | `'cat' \| 'dog'` from the AI check (added after the final review) |
 | `animal_id` | uuid | captures of the same animal share it; a new capture gets a fresh one unless the person confirms a match (added after the final review) |
+| `urgency` | text | `'green'` (Collect) or `'amber' \| 'red'` (SOS), checked against `mode`; a trigger fills it for older app versions (added after the final review) |
 
 **Rules:**
 - **Read:** `mode = 'sos'` OR `user_id = auth.uid()`.

@@ -7,8 +7,10 @@
   --color-brand-dark: #1f4b40; /* forest green: links and accent text */
   --color-brand-soft: #ebe4d4; /* sand: borders, chips, quiet backgrounds */
   --color-lime: #d4e88f; /* playful tiles and badges */
-  --color-sos: #e5484d;
-  --color-collect: #7fb539;
+  --color-sos: #e5484d; /* red: injured or trapped */
+  --color-amber: #f5a524; /* hungry or limping */
+  --color-amber-dark: #a8650b; /* amber text on light backgrounds */
+  --color-collect: #7fb539; /* green: fed or fine */
   --color-helped: #4ea8de;
   --color-vet: #1f4b40;
   --color-ink: #1d3a33;

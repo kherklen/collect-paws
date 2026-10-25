@@ -9,6 +9,9 @@ import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
 import VetFinder from "@/components/VetFinder";
 import { VETS, type Vet } from "@/lib/vets";
+import { URGENCY_COLOR, urgencyNow } from "@/lib/urgency";
+import { useNow } from "@/lib/useNow";
+import { useTemperature } from "@/lib/weather";
 
 const youIcon = L.divIcon({
   className: "",
@@ -30,15 +33,14 @@ function vetIcon(closest: boolean) {
 // Every vet, nearest first, measured from the person (or the map center if location is off).
 export type VetList = { vets: { vet: Vet; meters: number }[]; fromMapCenter: boolean };
 
-// Square photo pin. SOS pins get a coral border and a need badge,
-// helped pins turn mint and fade, and your own Collect pins are lavender.
-function pinIcon(capture: Capture) {
+// Square photo pin, bordered in its urgency color right now (green, amber, red).
+// SOS pins get a need badge; helped pins turn blue and fade, and so do pins
+// that waited days with no help (the animal may have moved on).
+function pinIcon(capture: Capture, now: number, celsius: number | null) {
   const helped = !!capture.helped_at;
-  const color = helped
-    ? "var(--color-helped)"
-    : capture.mode === "sos"
-      ? "var(--color-sos)"
-      : "var(--color-collect)";
+  const urgency = urgencyNow(capture, now, celsius);
+  const color = helped ? "var(--color-helped)" : URGENCY_COLOR[urgency.level].cssVar;
+  const faded = helped || urgency.mayBeGone;
   const badgeText = helped ? "✓" : capture.mode === "sos" ? (needInfo(capture.need)?.emoji ?? "🆘") : null;
   const badge = badgeText
     ? `<div style="position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:9999px;background:${color};color:white;font-weight:800;border:2px solid white;display:flex;align-items:center;justify-content:center;font-size:12px">${badgeText}</div>`
@@ -46,7 +48,7 @@ function pinIcon(capture: Capture) {
   return L.divIcon({
     className: "",
     html: `<div style="position:relative;width:52px;height:52px">
-      <img src="${photoUrl(capture.photo_path)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:3px solid ${color};box-shadow:0 4px 12px rgba(29,58,51,0.25);background:white;opacity:${helped ? 0.7 : 1}" />
+      <img src="${photoUrl(capture.photo_path)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:3px solid ${color};box-shadow:0 4px 12px rgba(29,58,51,0.25);background:white;opacity:${faded ? 0.6 : 1}" />
       ${badge}
     </div>`,
     iconSize: [52, 52],
@@ -85,6 +87,9 @@ export default function MapView({
   const [chosenVet, setChosenVet] = useState<Vet | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
   const [selected, setSelected] = useState<Capture | null>(null);
+  const now = useNow();
+  // One temperature for the area on screen; colder weather makes waiting pins turn red sooner.
+  const celsius = useTemperature(me ?? UB_CENTER);
 
   useEffect(() => {
     getLocation().then(setMe);
@@ -119,7 +124,7 @@ export default function MapView({
           <Marker
             key={`${c.id}-${c.helped_at ?? ""}`}
             position={[c.lat, c.lng]}
-            icon={pinIcon(c)}
+            icon={pinIcon(c, now, celsius)}
             eventHandlers={{ click: () => setSelected(c) }}
           />
         ))}
