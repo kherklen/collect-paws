@@ -245,6 +245,11 @@ PRD ref: `prd.md > Lost-Pet Reports`, `prd.md > Notifications and Profile`.
 
 PRD ref: `prd.md > Sightings`, `prd.md > Lost-Pet Reports`.
 
+### Comments (added after the final review)
+- `comments` table: exactly one of `capture_id` / `lost_pet_id`; `body` 1–500 characters; `read_at`. Row rules: read and insert on SOS captures and lost-pet reports (`is_commentable`), insert as yourself only, delete your own, and only the post's owner (`owns_post`) can update, and only `read_at` (column grant).
+- `components/Comments.tsx` on `PinCard` (SOS only) and `/lost/[id]`: labels authors "Poster" / "Neighbor N" instead of names, marks others' comments read when the owner opens it, and calls `/api/notify` after sending (slice 15).
+- `lib/comments.ts > commentsOnMyPosts` feeds `useAlerts` (bell count = unread sightings + unread comments; newest undismissed comment is a pop-up, `components/CommentAlert.tsx`) and `/notifications`.
+
 ### Notifications page
 - `/notifications` lists sightings on the person's reports, newest first, each with its photo or details.
 - Opening the page sets `read_at = now` on the unread ones, which clears the badge.

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import Comments from "@/components/Comments";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
@@ -149,6 +150,8 @@ export default function LostPetPage() {
               {isOwner ? t.lost.foundOwner : t.lost.foundOther}
             </p>
           )}
+
+          <Comments post={{ lost_pet_id: pet.id }} ownerId={pet.owner_id} />
         </div>
       )}
     </main>

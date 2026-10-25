@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { commentsOnMyPosts, type CommentOnMine } from "@/lib/comments";
 import { createClient } from "@/lib/supabase/client";
 import { alertsFor, getLocation, redAlertsFor, UB_CENTER } from "@/lib/geo";
 import type { Capture, LostPet } from "@/lib/types";
@@ -72,32 +73,44 @@ async function fetchRedAlert(): Promise<Capture | null> {
   return redAlertsFor(red, { id: auth.user.id, spot, dismissed: readDismissed() })[0] ?? null;
 }
 
-// How many sightings on my lost-pet reports I haven't opened yet (the bell's badge).
-async function fetchUnreadCount(): Promise<number> {
+// What the bell counts: sightings on my lost-pet reports and comments on my posts
+// that I haven't opened yet. The newest unread comment (not dismissed) is also a pop-up.
+async function fetchUnread(): Promise<{ count: number; comment: CommentOnMine | null }> {
   const supabase = createClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) return 0;
-  const { count } = await supabase
-    .from("sightings")
-    .select("id, lost_pets!inner(owner_id)", { count: "exact", head: true })
-    .eq("lost_pets.owner_id", auth.user.id)
-    .is("read_at", null);
-  return count ?? 0;
+  if (!auth.user) return { count: 0, comment: null };
+  const [{ count }, comments] = await Promise.all([
+    supabase
+      .from("sightings")
+      .select("id, lost_pets!inner(owner_id)", { count: "exact", head: true })
+      .eq("lost_pets.owner_id", auth.user.id)
+      .is("read_at", null),
+    commentsOnMyPosts(supabase, auth.user.id, true),
+  ]);
+  const dismissed = readDismissed();
+  return {
+    count: (count ?? 0) + comments.length,
+    comment: comments.find((c) => !dismissed.includes(c.id)) ?? null,
+  };
 }
 
 // Checks every 30 seconds, and whenever the app comes back into view, for open
 // lost-pet reports near this person and red animals near them (the newest of each
-// is a corner pop-up), and for new sightings on their own reports.
+// is a corner pop-up), and for new sightings and comments on their own posts.
 export function useAlerts() {
   const [alert, setAlert] = useState<LostPet | null>(null);
   const [redAlert, setRedAlert] = useState<Capture | null>(null);
+  const [commentAlert, setCommentAlert] = useState<CommentOnMine | null>(null);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     const load = () => {
       fetchAlert().then(setAlert);
       fetchRedAlert().then(setRedAlert);
-      fetchUnreadCount().then(setUnread);
+      fetchUnread().then(({ count, comment }) => {
+        setUnread(count);
+        setCommentAlert(comment);
+      });
     };
     load();
     const timer = setInterval(load, POLL_MS);
@@ -109,14 +122,16 @@ export function useAlerts() {
     };
   }, []);
 
-  // Lost-pet and capture IDs are both UUIDs, so one dismissed list serves both.
+  // Lost-pet, capture, and comment IDs are all UUIDs, so one dismissed list serves them all.
   const dismiss = useCallback((id: string) => {
     saveDismissed([...readDismissed(), id]);
     setAlert(null);
     setRedAlert(null);
+    setCommentAlert(null);
     fetchAlert().then(setAlert);
     fetchRedAlert().then(setRedAlert);
+    fetchUnread().then(({ comment }) => setCommentAlert(comment));
   }, []);
 
-  return { alert, redAlert, dismiss, unread };
+  return { alert, redAlert, commentAlert, dismiss, unread };
 }

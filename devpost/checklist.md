@@ -141,8 +141,8 @@ Build mode: fast
   Learner check: Tap the vet button near one of your vets and check that it shows up as the closest.
   Commit: `Add the learner's vets`
 
-- [ ] **14. People can comment on SOS pins and lost-pet reports, and the poster gets a pop-up**
-  Becomes usable: SOS pin cards and lost-pet report pages have a comment section: name, time, text (up to 500 characters), and a box to write one. You can delete your own comments. When someone else comments on your post, you get a pop-up like the lost-pet alert ("💬 New comment on your post", with the text), and your bell count goes up. The notifications page lists the comments, and opening the post marks them read. Collect captures are private, so they have no comments.
+- [x] **14. People can comment on SOS pins and lost-pet reports, and the poster gets a pop-up**
+  Becomes usable: SOS pin cards and lost-pet report pages have a comment section: author label ("Poster" / "Neighbor N", no names, per the learner's privacy decision), time, text (up to 500 characters), and a box to write one. You can delete your own comments. When someone else comments on your post, you get a pop-up like the lost-pet alert ("💬 New comment on your post", with the text), and your bell count goes up. The notifications page lists the comments, and opening the post marks them read. Collect captures are private, so they have no comments.
   Why now: The learner chose comments over private chat (about a third of the work, and it replaces the Facebook comment threads people use today). It comes after slice 12 because it reuses the pin link (`/?pin=<id>`) and the alert pop-up.
   PRD ref: `prd.md > Features and Behavior > Marking Helped`, `prd.md > Features and Behavior > Notifications and Profile`
   Spec ref: `spec.md > Components > Pin card`, `spec.md > Components > Lost-pet detail and sightings`, `spec.md > Components > Alert poller and pop-up`, `spec.md > Components > Notifications page`

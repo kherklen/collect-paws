@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
+import CommentAlert from "@/components/CommentAlert";
 import LostPetAlert from "@/components/LostPetAlert";
 import RedAlert from "@/components/RedAlert";
 import { shrinkPhoto } from "@/lib/image";
@@ -28,7 +29,7 @@ export default function MainShell() {
 
   const [shrinking, setShrinking] = useState(false);
   const [showVet, setShowVet] = useState(false);
-  const { alert, redAlert, dismiss, unread } = useAlerts();
+  const { alert, redAlert, commentAlert, dismiss, unread } = useAlerts();
   // `/?pin=<id>` (from a red alert) opens that pin on the map.
   const pinId = tab === "map" ? params.get("pin") : null;
   const clearPinParam = useCallback(() => router.replace("/", { scroll: false }), [router]);
@@ -75,7 +76,7 @@ export default function MainShell() {
       <header className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 px-3 pt-4">
         <Link
           href="/notifications"
-          aria-label={unread ? t.shell.newSightings(unread) : t.shell.notifications}
+          aria-label={unread ? t.shell.newNotifications(unread) : t.shell.notifications}
           className="pointer-events-auto relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
         >
           <BellIcon />
@@ -104,10 +105,11 @@ export default function MainShell() {
         </Link>
       </header>
 
-      {/* Corner pop-ups: a red animal near you first, then a lost pet. */}
+      {/* Corner pop-ups: a red animal near you first, then a lost pet, then a comment on your post. */}
       <div className="pointer-events-none absolute right-4 top-20 z-[1100] flex flex-col gap-2">
         {redAlert && <RedAlert capture={redAlert} onDismiss={() => dismiss(redAlert.id)} />}
         {alert && <LostPetAlert pet={alert} onDismiss={() => dismiss(alert.id)} />}
+        {commentAlert && <CommentAlert comment={commentAlert} onDismiss={() => dismiss(commentAlert.id)} />}
       </div>
 
       {/* Bottom buttons */}

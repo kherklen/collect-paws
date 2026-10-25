@@ -132,6 +132,11 @@ Develops `scope.md > Later` ("Lost-pet matching"), pulled into the POC by the le
 ### Red Alerts (added after the final review)
 - [ ] When an animal within 3 km is red (tagged red, or amber that waited too long), people nearby get a red-bordered pop-up like the lost-pet one: "🚨 Needs help now", the address, and how long it has waited. Tapping it opens the pin; × hides it on this phone. Never for your own captures or helped ones; if both apply, the red pop-up sits above the lost-pet one.
 
+### Comments (added after the final review)
+- [ ] SOS pin cards and lost-pet report pages have a comment section (up to 500 characters each). Collect captures are private, so they have none.
+- [ ] Nobody is shown by name: the post's owner is "Poster", everyone else "Neighbor 1, 2…" in the order they first commented on that post. You can delete your own comments.
+- [ ] When someone comments on your post, you get a pop-up ("💬 New comment on your post") and your bell count goes up. The notifications page lists comments on your posts; opening the post or that page marks them read.
+
 ### Sightings
 - [ ] From the alert, someone can send **"I see it now"** with a photo.
 - [ ] Or they can send **"Report a sighting"** with when they saw it, where, and what it looked like. The description helps the owner rule out false alarms.

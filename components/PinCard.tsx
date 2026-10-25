@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Comments from "@/components/Comments";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatAgo, formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
@@ -110,7 +111,7 @@ export default function PinCard({
   return (
     <div className="fixed inset-0 z-[1100] flex items-end bg-ink/20" onClick={onClose}>
       <div
-        className="w-full rounded-t-[2rem] bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl"
+        className="max-h-[88vh] w-full overflow-y-auto rounded-t-[2rem] bg-white px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-brand-soft" />
@@ -177,6 +178,13 @@ export default function PinCard({
           </button>
         )}
         {error && <p className="mt-2 text-center text-sm font-bold text-sos">{error}</p>}
+
+        {/* Collect captures are private, so only SOS pins have comments. */}
+        {capture.mode === "sos" && (
+          <div className="mt-5">
+            <Comments post={{ capture_id: capture.id }} ownerId={capture.user_id} />
+          </div>
+        )}
 
         {isMine &&
           (confirmDelete ? (
