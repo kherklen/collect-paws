@@ -71,6 +71,7 @@ The learner chose to decide the visual direction during the build, and in `5-bui
 Develops `scope.md > The POC Boundary` ("My Collection").
 - [ ] A new person can sign up, and a returning person can log in.
 - [ ] After logging out and back in, the same person sees the same collection.
+- [ ] (Added after the final review) One **demo account** skips the real-photo checks, can upload photos from the gallery, and drops each pin wherever it likes on the map. Only the database can mark an account as demo.
 
 ### Map (Nearby Friends)
 Develops `scope.md > The Core Loop` step 1.
@@ -87,6 +88,7 @@ Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("C
 - [ ] After the photo, a breed guess appears in an editable field. The person can change it or type their own.
 - [ ] If the breed can't be guessed, the field is empty and the person can type one. Capture still works.
 - [ ] If the photo clearly shows no cat or dog, the app says so ("no cat or dog in this picture") and asks for another photo. If the check itself can't run, capture still works.
+- [ ] (Added after the final review) A photo of a screen, a printed picture, a screenshot, or a drawing is turned away ("This looks like a photo of a picture"), and so is a photo older than 10 minutes. Both are best effort: if the AI check can't run, capture still works.
 - [ ] The person chooses **Collect** or **SOS**.
 - [ ] Choosing SOS asks for one need: needs help (food / water / vet) or might be lost / looking for owner.
 - [ ] Saving creates a pin on the map at the person's location and adds a card to My Collection.

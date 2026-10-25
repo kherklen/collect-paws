@@ -89,9 +89,63 @@ Build mode: fast
   Learner check: As your main account, open the lost pet's alert and send one "I see it now" and one "Report a sighting". On the owner account, see the badge count, open notifications, check both sightings, and confirm the count clears. Open the profile and check your posts and the sightings on them.
   Commit: `Add sightings, notification badge, and profile history`
 
+### Additions after the final review
+
+- [x] **9. Capture only accepts real, fresh photos, and a demo account can upload**
+  Becomes usable: The AI check that already turns away non-animal photos also turns away photos of a screen, a printed picture, a screenshot, or a drawing ("This looks like a photo of a picture — snap the animal itself"). A photo older than 10 minutes (picked from the gallery or a computer's files) is also turned away. Both checks are best effort: if the AI is down, capture still works. One demo account (marked in the database, so nobody can switch it on for themselves) skips both checks, gets "Upload from gallery" on the capture screen, and can drop each capture's pin anywhere on the map.
+  Why now: The demo account is how the learner tests every later slice without finding real strays, so it comes first; the photo checks and the demo bypass are two sides of one rule.
+  PRD ref: `prd.md > Features and Behavior > Capture`, `prd.md > Accounts`
+  Spec ref: `spec.md > Components > Capture flow`, `spec.md > Components > Breed route (/api/breed)`, `spec.md > Data Model > profiles`
+  Build: Paste-once SQL for all of slices 9–12 in `schema.sql` (`profiles.is_demo`, profile updates limited to `display_name`, capture columns for slices 10–11). `/api/breed` returns a `real` verdict alongside `animal`/`breed`. `/capture` checks the file's age and the verdict, and reads `is_demo` to show the upload button and the map drop. `scripts/make-demo.mjs` creates the demo account.
+  Verify (mechanical): `npm run build` and `npm run lint` pass. `scripts/check-breed.mjs` with a real cat photo, a photo of a cat on a screen, and a non-animal photo: real → accepted, screen → `real: false`, banana → `other`. A script confirms a normal account can't set its own `is_demo`, and the demo account reads `is_demo = true`.
+  Learner check: On your phone, try photographing a cat picture on your laptop screen: it's turned away. Log in as the demo account on your computer, upload a few animal photos from your files, and drop each one somewhere on the map.
+  Commit: `Turn away photos of pictures and add a demo account`
+
+- [ ] **10. The same animal gets one profile instead of duplicates**
+  Becomes usable: When you save a capture, the AI compares it with animals captured within about 500 m (coat pattern, face, ear-tip marks). If it finds a likely match, it asks "This might be an animal already captured nearby": it shows the match's photo when you're allowed to see it (yours, or an SOS pin), and otherwise just says someone already collected a similar animal. You choose **Same animal** (joins its profile), **Different animal** (new profile), or **Don't save**. The pin card shows "Seen N times · first seen …" with the photos you're allowed to see, and the map shows one pin per animal (its newest capture). The AI only ever suggests a match; it never merges on its own.
+  Why now: It's the riskiest addition (lookalike animals, AI accuracy), so it's built while there's still room to adjust, and slice 9's demo uploads let the learner test it with several photos of the same animal.
+  PRD ref: `prd.md > Features and Behavior > Capture`, `prd.md > Features and Behavior > Map (Nearby Friends)`
+  Spec ref: `spec.md > Components > Capture flow`, `spec.md > Components > Pin card`, `spec.md > Components > Map view (Nearby Friends)`, `spec.md > Data Model > captures`, `spec.md > External Services and Dependencies > OpenAI`
+  Build: `captures.animal_id` (each new capture starts its own animal) and `captures.animal`. New `/api/match` route that uses a server-only Supabase secret key to see nearby captures, including private ones, and returns only what the person may see. Duplicate prompt in `/capture`, the profile strip in `PinCard`, and one pin per animal in `MapView`.
+  Verify (mechanical): Build and lint pass. A script with two accounts: A captures cat photo 1; B sends a second photo of the same cat nearby → match returned with no photo or name (A's capture is private); B sends a different cat → no match; a match beyond 500 m is never returned; joining sets B's `animal_id` to A's, and the count reads 2.
+  Learner check: As the demo account, upload two photos of the same cat near each other: the second one asks if it's the same animal. Choose Same animal, then open the pin and check "Seen 2 times". Upload a clearly different cat and check that it isn't matched.
+  Commit: `Recognize the same animal across captures`
+
+- [ ] **11. Captures carry an urgency color that rises with time and cold**
+  Becomes usable: Instead of Collect / SOS, capture offers 🟢 **Doing fine** (fed or fine, private like Collect), 🟠 **Needs a hand** (hungry or limping), and 🔴 **Urgent** (injured or trapped). Amber and red still pick a need. Pins, cards, and the collection use the color. Every SOS card shows how long the animal has been waiting ("waiting 2 days") and the current temperature there with a tip for its need ("🥶 −18°C — bring warm water, bowls freeze"). Amber turns red after 24 hours with no help, or after 12 hours at −10°C or colder. After 3 days with no help, the pin fades and says it might not be there anymore. Red captures still appear in your own collection as your record.
+  Why now: Red alerts (slice 12) depend on knowing when a pin is red, including pins that turned red over time.
+  PRD ref: `prd.md > Features and Behavior > Capture`, `prd.md > Features and Behavior > Map (Nearby Friends)`, `prd.md > Features and Behavior > My Collection`
+  Spec ref: `spec.md > Components > Capture flow`, `spec.md > Components > Pin card`, `spec.md > Components > Map view (Nearby Friends)`, `spec.md > Components > My Collection grid`, `spec.md > Data Model > captures`
+  Build: `captures.urgency` (existing SOS rows become amber). `lib/urgency.ts` works out the color now from urgency, waiting time, and temperature. `lib/weather.ts` fetches the current temperature from Open-Meteo (free, no key) once per screen. Update `/capture`, `PinCard`, `MapView`, `CollectionGrid`, and both languages.
+  Verify (mechanical): Build and lint pass. A script checks the urgency rules (amber at 23 h stays amber, 25 h turns red, 13 h at −12°C turns red, and 3 days unhelped counts as "may be gone") and that the database rejects a red Collect capture. A live Open-Meteo call for Ulaanbaatar returns a temperature.
+  Learner check: As the demo account, capture one of each color and check the pins and cards. Open an SOS card and check the waiting time, temperature, and tip.
+  Commit: `Add urgency colors that rise with time and cold`
+
+- [ ] **12. Red animals alert people nearby**
+  Becomes usable: When an animal near you (within 3 km) is red, whether tagged red or turned red after waiting, you get a red-bordered pop-up like the lost-pet one: "🚨 Needs help now", the address, and how long it's been waiting. Tapping it opens that pin on the map; × hides it on this phone. Never for your own captures or helped ones. If a lost pet and a red animal both apply, both pop-ups show, red on top.
+  Why now: It needs slice 11's urgency, and it reuses the lost-pet alert poller, so it's small.
+  PRD ref: `prd.md > Features and Behavior > Lost-Pet Reports` (alert behavior it mirrors)
+  Spec ref: `spec.md > Components > Alert poller and pop-up`, `spec.md > Components > Map view (Nearby Friends)`
+  Build: Extend `useAlerts` with nearby red captures, add a red-bordered variant of the alert pop-up, and open a pin from `/?pin=<id>`.
+  Verify (mechanical): Build and lint pass. A script: A captures a red animal; B within 3 km sees it as an alert candidate, C 5 km away doesn't, and A doesn't see their own; after B marks it helped, it no longer alerts. A headless browser opens `/?pin=<id>` and the pin card shows.
+  Learner check: As the demo account, capture a red animal near you. On your main account, check the red pop-up appears, tap it, and the pin card opens.
+  Commit: `Alert people nearby about red animals`
+
+- [ ] **13. Your vets are on the map**
+  Becomes usable: The vets the learner lists are added to the built-in vet list, so they appear on the map and can be the "closest vet."
+  Why now: It's only data and doesn't depend on anything else, so it can go in whenever the learner sends the vets.
+  PRD ref: `prd.md > Features and Behavior > Closest Vet`
+  Spec ref: `spec.md > External Services and Dependencies > Vet list (lib/vets.json)`
+  Build: Add each vet (name, latitude, longitude) to `lib/vets.json`.
+  Verify (mechanical): Build passes; `scripts/check-vets.mjs` passes, and each new vet is inside Ulaanbaatar and closest to its own spot.
+  Learner check: Tap the vet button near one of your vets and check that it shows up as the closest.
+  Commit: `Add the learner's vets`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
+- [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13.
+- [ ] Additions: final kick-the-tires after slice 13.
 - [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 
 ## Final Review
@@ -101,6 +155,8 @@ Build mode: fast
 - [x] Learner couldn't see their report in the profile or their sighting in notifications — reproduced in a browser and both work; the sighting had gone to the script's leftover "Test" report, and reports only show for the account that filed them. Learner retried with their own accounts: working.
 - [ ] Mongolian + English — location picks the first language, flags switch it (login screen and profile); Mongolian text drafted by the agent for the learner to review.
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. The learner plans a design refresh later and will raise it separately; nothing else requested now.
+
+- [ ] Additions (slices 9–13) final review complete — feedback resolved and learner confirms ready.
 
 ## Code Tour and App Map
 
@@ -128,3 +184,4 @@ Activity mode: Prior practice connected (brief recap).
 - Sightings can only change their `read_at` column (column-level grant), and can't be sent once a pet is found — tighter than the spec's "owner can update read_at", so a sighting's content can't be rewritten by anyone.
 - The `scripts/check-*.mjs` runs now delete their test captures and photos and mark their test reports found when they finish — at the final review the learner opened a test report from a script (broken photo), and six test SOS pins were on the shared map in central Ulaanbaatar.
 - Added Mongolian and English after the final review — the learner noticed the app targets Mongolian people. First language follows Vercel's visitor-country header (no GPS prompt), flags switch it; Mongolian tab labels shortened to "Ойролцоо" / "Цуглуулга" so the top bar fits on phones.
+- Added slices 9–13 after the final review, at the learner's request: real-photo check plus demo account, re-identification, urgency colors with waiting time and weather, red alerts, and the learner's vets. Red ("injured or trapped") partly reverses `scope.md > Explicitly Cut` (emergency rescue). The learner chose to include it, and red reuses the lost-pet alert rather than adding a rescue flow.

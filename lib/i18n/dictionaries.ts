@@ -84,6 +84,7 @@ const en = {
   },
   photo: {
     take: "Take a photo",
+    upload: "Upload from gallery",
     getting: "Getting photo…",
     readError: "Couldn't read that photo. Try another one.",
   },
@@ -92,8 +93,21 @@ const en = {
     intro: "Spotted a stray cat or dog? Snap a photo to add it to your collection.",
     yourCapture: "Your capture",
     retake: "Retake",
-    notAnimalTitle: "Hmm, no cat or dog in this picture 🐾",
-    notAnimalText: "Try another photo with the animal in clear view.",
+    demoIntro: "Demo account: upload animal photos and drop them anywhere on the map.",
+    turnedAway: {
+      notAnimal: {
+        title: "Hmm, no cat or dog in this picture 🐾",
+        text: "Try another photo with the animal in clear view.",
+      },
+      old: {
+        title: "That photo isn't from just now 🕰️",
+        text: "Captures have to be taken on the spot. Snap the animal in front of you.",
+      },
+      notReal: {
+        title: "This looks like a photo of a picture 🖼️",
+        text: "Screens, prints, and screenshots don't count. Snap the animal itself.",
+      },
+    },
     takeAnother: "Take another photo",
     breed: "Breed",
     guessing: "Guessing the breed… ✨",
@@ -107,6 +121,7 @@ const en = {
     whatNeed: "What does it need?",
     needLocation: "📍 We need your location to place the pin. Please allow location for this site, then tap Save again.",
     dropPin: "Still no location — tap the map where you saw it",
+    demoDropPin: "Demo: tap the map where this animal should go",
     checking: "Checking the photo…",
     save: "Save to my collection",
   },
@@ -279,6 +294,7 @@ const mn: Dict = {
   },
   photo: {
     take: "Зураг авах",
+    upload: "Галерейгаас оруулах",
     getting: "Зургийг уншиж байна…",
     readError: "Энэ зургийг уншиж чадсангүй. Өөр зураг оролдоно уу.",
   },
@@ -287,8 +303,21 @@ const mn: Dict = {
     intro: "Гудамжны муур, нохой харсан уу? Зураг дарж цуглуулгадаа нэмээрэй.",
     yourCapture: "Таны зураг",
     retake: "Дахин авах",
-    notAnimalTitle: "Хм, энэ зураг дээр муур ч, нохой ч алга 🐾",
-    notAnimalText: "Амьтан тод харагдах өөр зураг авч үзээрэй.",
+    demoIntro: "Демо бүртгэл: амьтны зураг оруулаад газрын зургийн дурын цэгт байрлуулаарай.",
+    turnedAway: {
+      notAnimal: {
+        title: "Хм, энэ зураг дээр муур ч, нохой ч алга 🐾",
+        text: "Амьтан тод харагдах өөр зураг авч үзээрэй.",
+      },
+      old: {
+        title: "Энэ зураг яг одоо авсан зураг биш байна 🕰️",
+        text: "Амьтныг харсан газраа шууд зураг авах ёстой. Өмнө тань байгаа амьтны зургийг дараарай.",
+      },
+      notReal: {
+        title: "Энэ зургийн зураг шиг харагдаж байна 🖼️",
+        text: "Дэлгэц, хэвлэсэн зураг, дэлгэцийн агшин тооцогдохгүй. Амьтны өөрийнх нь зургийг дараарай.",
+      },
+    },
     takeAnother: "Өөр зураг авах",
     breed: "Үүлдэр",
     guessing: "Үүлдрийг таамаглаж байна… ✨",
@@ -302,6 +331,7 @@ const mn: Dict = {
     whatNeed: "Юу хэрэгтэй байна?",
     needLocation: "📍 Тэмдэг тавихын тулд таны байршил хэрэгтэй. Энэ сайтад байршил ашиглахыг зөвшөөрөөд дахин Хадгалах дарна уу.",
     dropPin: "Байршил олдсонгүй — амьтныг харсан газраа газрын зураг дээр дарна уу",
+    demoDropPin: "Демо: энэ амьтныг байрлуулах газраа газрын зураг дээр дарна уу",
     checking: "Зургийг шалгаж байна…",
     save: "Цуглуулгадаа хадгалах",
   },

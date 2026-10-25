@@ -250,3 +250,71 @@ create policy "sightings: owner marks read" on public.sightings
 
 revoke update on public.sightings from authenticated, anon;
 grant update (read_at) on public.sightings to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- Additions after the final review.
+-- ─────────────────────────────────────────────────────────────
+
+-- Demo account: skips the real-photo checks, can upload from the gallery,
+-- and can drop its pins anywhere. People may only set or change their own
+-- display name, so nobody can make themselves a demo account.
+alter table public.profiles add column if not exists is_demo boolean not null default false;
+
+revoke insert, update on public.profiles from authenticated, anon;
+grant insert (id, display_name) on public.profiles to authenticated;
+grant update (display_name) on public.profiles to authenticated;
+
+-- The demo account itself (created by scripts/make-demo.mjs).
+update public.profiles set is_demo = true
+where id in (select id from auth.users where email = 'collectsavar.check+demo@gmail.com');
+
+-- Re-identification: captures of the same animal share an animal_id.
+-- A new capture starts its own animal unless the person confirms a match.
+alter table public.captures add column if not exists animal text check (animal in ('cat', 'dog'));
+alter table public.captures add column if not exists animal_id uuid not null default gen_random_uuid();
+create index if not exists captures_animal_id_idx on public.captures (animal_id);
+
+-- How many captures an animal has and when it was first seen, counting
+-- private ones too (only the numbers, never whose or where).
+create or replace function public.animal_summary(target uuid)
+returns table (times_seen integer, first_seen timestamptz)
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select count(*)::integer, min(created_at) from public.captures where animal_id = target;
+$$;
+
+revoke execute on function public.animal_summary(uuid) from public, anon;
+grant execute on function public.animal_summary(uuid) to authenticated;
+
+-- Urgency: green (fed or fine) is a Collect capture; SOS is amber (hungry or
+-- limping) or red (injured or trapped). Existing SOS captures become amber.
+alter table public.captures add column if not exists urgency text;
+update public.captures set urgency = case when mode = 'sos' then 'amber' else 'green' end
+where urgency is null;
+
+-- Fill in urgency when a capture is saved without one, from its mode.
+create or replace function public.default_urgency()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if new.urgency is null then
+    new.urgency := case when new.mode = 'sos' then 'amber' else 'green' end;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists captures_default_urgency on public.captures;
+create trigger captures_default_urgency
+  before insert on public.captures
+  for each row execute function public.default_urgency();
+
+alter table public.captures alter column urgency set not null;
+alter table public.captures drop constraint if exists captures_urgency_matches_mode;
+alter table public.captures add constraint captures_urgency_matches_mode check (
+  (mode = 'collect' and urgency = 'green') or (mode = 'sos' and urgency in ('amber', 'red'))
+);

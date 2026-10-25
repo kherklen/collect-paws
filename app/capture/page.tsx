@@ -5,9 +5,10 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
+import { isFreshPhoto } from "@/lib/image";
 import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
-import { getLocation, lookupAddress, type LatLng } from "@/lib/geo";
+import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n/dictionaries";
 import { NEEDS, type Mode, type Need } from "@/lib/types";
@@ -17,7 +18,8 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   loading: () => <div className="h-64 w-full rounded-3xl bg-brand-soft" />,
 });
 
-type Guess = { animal: "cat" | "dog" | "other" | null; breed: string | null };
+// `real` is false for a photo of a screen, a print, a screenshot, or a drawing.
+type Guess = { animal: "cat" | "dog" | "other" | null; breed: string | null; real: boolean | null };
 
 // Ask our /api/breed route what's in the photo. Null fields mean "couldn't check".
 async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
@@ -28,10 +30,10 @@ async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
       body: photo,
       signal: AbortSignal.timeout(10000),
     });
-    const { animal = null, breed = null } = await res.json();
-    return { animal, breed };
+    const { animal = null, breed = null, real = null } = await res.json();
+    return { animal, breed, real };
   } catch {
-    return { animal: null, breed: null };
+    return { animal: null, breed: null, real: null };
   }
 }
 
@@ -57,6 +59,22 @@ export default function CapturePage() {
   const [dropped, setDropped] = useState<LatLng | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // The demo account skips the real-photo checks, can upload, and drops every pin by hand.
+  // Null while we're still finding out.
+  const [isDemo, setIsDemo] = useState<boolean | null>(null);
+  const [demoCenter, setDemoCenter] = useState<LatLng | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase.from("profiles").select("is_demo").eq("id", auth.user.id).single();
+      const demo = !!data?.is_demo;
+      setIsDemo(demo);
+      if (demo) setDemoCenter((await getLocation()) ?? UB_CENTER);
+    })();
+  }, []);
 
   useEffect(() => {
     if (!photo) return;
@@ -76,6 +94,11 @@ export default function CapturePage() {
 
   const guessing = !!photo && guess?.photo !== photo;
   const notAnimal = !guessing && guess?.animal === "other";
+  // Real-photo checks, skipped for the demo account. An old photo is turned away
+  // straight away; a photo of a picture once the AI has looked.
+  const oldPhoto = isDemo === false && !!photo && !isFreshPhoto(photo);
+  const notReal = isDemo === false && !guessing && !notAnimal && guess?.real === false;
+  const turnedAway = notAnimal ? "notAnimal" : oldPhoto ? "old" : notReal ? "notReal" : null;
   const couldntGuess = !guessing && !notAnimal && !guess?.breed;
 
   function choosePhoto(next: Blob | null) {
@@ -86,19 +109,21 @@ export default function CapturePage() {
     setPreview(next ? URL.createObjectURL(next) : null);
   }
 
+  const dropByHand = isDemo === true || locationStep === "drop";
   const canSave =
     !!photo &&
+    isDemo !== null &&
     !guessing &&
-    !notAnimal &&
+    !turnedAway &&
     (mode === "collect" || need !== null) &&
-    (locationStep !== "drop" || !!dropped);
+    (!dropByHand || !!dropped);
 
   async function save() {
     if (!photo || !canSave) return;
     setError(null);
     setSaving(true);
 
-    const spot: LatLng | null = locationStep === "drop" ? dropped : await getLocation();
+    const spot: LatLng | null = dropByHand ? dropped : await getLocation();
     if (!spot) {
       setSaving(false);
       setLocationStep(locationStep === "auto" ? "ask-again" : "drop");
@@ -149,8 +174,9 @@ export default function CapturePage() {
 
       {!photo ? (
         <div className="mt-16 flex flex-col items-center gap-6 text-center">
+          {isDemo && <PhotoInput onPhoto={choosePhoto} fromGallery />}
           <PhotoInput onPhoto={choosePhoto} />
-          <p className="max-w-xs text-muted">{t.capture.intro}</p>
+          <p className="max-w-xs text-muted">{isDemo ? t.capture.demoIntro : t.capture.intro}</p>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
@@ -168,11 +194,11 @@ export default function CapturePage() {
             </button>
           </div>
 
-          {notAnimal ? (
+          {turnedAway ? (
             <div className="flex flex-col items-center gap-5 text-center">
               <div>
-                <p className="text-xl font-extrabold">{t.capture.notAnimalTitle}</p>
-                <p className="mt-1 text-muted">{t.capture.notAnimalText}</p>
+                <p className="text-xl font-extrabold">{t.capture.turnedAway[turnedAway].title}</p>
+                <p className="mt-1 text-muted">{t.capture.turnedAway[turnedAway].text}</p>
               </div>
               <PhotoInput onPhoto={choosePhoto} label={t.capture.takeAnother} />
             </div>
@@ -232,12 +258,19 @@ export default function CapturePage() {
                   {t.capture.needLocation}
                 </p>
               )}
-              {locationStep === "drop" && (
-                <div className="flex flex-col gap-2">
-                  <span className="text-sm font-bold text-muted">{t.capture.dropPin}</span>
-                  <LocationPicker value={dropped} onChange={setDropped} />
-                </div>
-              )}
+              {isDemo
+                ? demoCenter && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-bold text-muted">{t.capture.demoDropPin}</span>
+                      <LocationPicker value={dropped} onChange={setDropped} center={demoCenter} />
+                    </div>
+                  )
+                : locationStep === "drop" && (
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm font-bold text-muted">{t.capture.dropPin}</span>
+                      <LocationPicker value={dropped} onChange={setDropped} />
+                    </div>
+                  )}
 
               {error && <p className="text-center text-sm font-bold text-sos">{error}</p>}
 

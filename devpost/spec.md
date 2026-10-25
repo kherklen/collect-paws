@@ -179,6 +179,7 @@ PRD ref: `prd.md > Capture`, `prd.md > States and Boundaries` (location refused)
 - Sends the image to OpenAI with a short prompt asking for JSON: `{ "animal": "cat" | "dog" | "other", "breed": string | null }`.
 - Returns `{ animal, breed }`. On any error or timeout it returns `{ animal: null, breed: null }`, meaning "couldn't check."
 - `/capture` blocks saving only when `animal` is `"other"`, with "Hmm, no cat or dog in this picture 🐾" and a Retake button. When `animal` is null, capture continues (`prd.md > States and Boundaries`).
+- (Added after the final review) The JSON also has `source`: `live | screen | print | screenshot | drawing`, and the route returns `real: source === "live"`. The prompt tells the model to answer `live` unless it can see the evidence, because blocking a real photo is worse than missing a fake. `/capture` also turns away a photo whose file is older than 10 minutes (`lib/image.ts > isFreshPhoto`, from the file's `lastModified`). The demo account (`profiles.is_demo`) skips both checks, gets an "Upload from gallery" button, and always drops its pin on a map.
 
 PRD ref: `prd.md > Capture`.
 
@@ -256,8 +257,9 @@ All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is t
 | `id` | uuid, PK | = `auth.users.id` |
 | `display_name` | text | set at sign up |
 | `created_at` | timestamptz | default `now()` |
+| `is_demo` | boolean | default false; set only by `schema.sql` for the demo account (added after the final review) |
 
-**Rules:** any logged-in person can read profiles (to show who sent a sighting). People can only insert and update their own.
+**Rules:** any logged-in person can read profiles (to show who sent a sighting). People can only insert and update their own, and only the `display_name` column (column grants), so nobody can turn on `is_demo`.
 
 ### `captures`
 

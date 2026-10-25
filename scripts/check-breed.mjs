@@ -1,6 +1,8 @@
-// Slice 5 check: /api/breed needs a login, recognizes cats and dogs, and turns away other photos.
+// Slices 5 and 9: /api/breed needs a login, recognizes cats and dogs, turns away other photos,
+// and flags photos of pictures (real: false).
 // Run with the app running: node --env-file=.env.local scripts/check-breed.mjs <photo-folder> [base-url]
-// The folder needs cat.jpg, dog.jpg, and a non-animal banana.jpg.
+// The folder needs cat.jpg, dog.jpg, a non-animal banana.jpg, a cat on a screen (screen.jpg),
+// and a screenshot of a cat post (screenshot.jpg).
 // Pass EXPECT_UNAVAILABLE=1 when the server runs with a broken OpenAI key.
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -36,13 +38,21 @@ async function ask(file, withLogin = true) {
 const anon = await ask("cat.jpg", false);
 check("logged-out request is refused", anon.status === 401, `status ${anon.status}`);
 
-for (const [file, animal] of [["cat.jpg", "cat"], ["dog.jpg", "dog"], ["banana.jpg", "other"]]) {
+const cases = [
+  ["cat.jpg", "cat", true],
+  ["dog.jpg", "dog", true],
+  ["banana.jpg", "other", null],
+  ["screen.jpg", "cat", false],
+  ["screenshot.jpg", "cat", false],
+];
+for (const [file, animal, real] of cases) {
   const r = await ask(file);
   if (expectUnavailable) {
-    check(`${file}: AI unavailable → "couldn't check"`, r.body.animal === null && r.body.breed === null, JSON.stringify(r.body));
+    check(`${file}: AI unavailable → "couldn't check"`, r.body.animal === null && r.body.breed === null && r.body.real === null, JSON.stringify(r.body));
   } else {
     const breedOk = animal === "other" ? r.body.breed === null : !!r.body.breed;
-    check(`${file} → ${animal}`, r.body.animal === animal && breedOk, `${JSON.stringify(r.body)} in ${r.ms} ms`);
+    const realOk = real === null || r.body.real === real;
+    check(`${file} → ${animal}${real === null ? "" : real ? ", real" : ", not real"}`, r.body.animal === animal && breedOk && realOk, `${JSON.stringify(r.body)} in ${r.ms} ms`);
   }
 }
 
