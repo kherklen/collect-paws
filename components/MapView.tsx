@@ -5,7 +5,7 @@ import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
 import { closestTo, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
 import { createClient, photoUrl } from "@/lib/supabase/client";
-import { needInfo, type Capture } from "@/lib/types";
+import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
 import VetFinder from "@/components/VetFinder";
 import { VETS, type Vet } from "@/lib/vets";
@@ -53,8 +53,8 @@ function pinIcon(capture: Capture) {
   });
 }
 
-// Everyone's SOS plus my own Collect, minus anything helped over a day ago.
-// RLS already hides other people's Collect captures.
+// Everyone's SOS plus my own Collect, minus anything helped over a day ago,
+// with one pin per animal (its newest capture). RLS already hides other people's Collect captures.
 async function fetchMapCaptures(): Promise<Capture[]> {
   const supabase = createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -66,7 +66,7 @@ async function fetchMapCaptures(): Promise<Capture[]> {
     .or(`mode.eq.sos,user_id.eq.${auth.user.id}`)
     .or(`helped_at.is.null,helped_at.gt.${dayAgo}`)
     .order("created_at", { ascending: true });
-  return (data as Capture[]) ?? [];
+  return newestPerAnimal((data as Capture[]) ?? []);
 }
 
 // Full-screen map. Opens on central Ulaanbaatar, then moves to the person

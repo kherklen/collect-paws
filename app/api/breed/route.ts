@@ -60,7 +60,7 @@ export async function POST(request: Request) {
             {
               type: "input_image",
               image_url: `data:image/jpeg;base64,${photo.toString("base64")}`,
-              detail: "low",
+              detail: "high",
             },
           ],
         },

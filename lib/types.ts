@@ -6,6 +6,9 @@ export type Capture = {
   user_id: string;
   photo_path: string;
   breed: string | null;
+  animal: "cat" | "dog" | null;
+  // Captures of the same animal share this (re-identification).
+  animal_id: string;
   mode: Mode;
   need: Need | null;
   lat: number;
@@ -55,3 +58,21 @@ export type Sighting = {
   created_at: string;
   read_at: string | null;
 };
+
+// What /api/match found: an animal captured nearby that looks like the new photo.
+// The photo is only there when the person may see that capture (theirs, or SOS).
+export type AnimalMatch = {
+  animal_id: string;
+  photo_url: string | null;
+  mine: boolean;
+};
+
+// One entry per animal (its newest capture), in the order the captures came in.
+export function newestPerAnimal<T extends Pick<Capture, "animal_id" | "created_at">>(captures: T[]): T[] {
+  const newest = new Map<string, T>();
+  for (const c of captures) {
+    const kept = newest.get(c.animal_id);
+    if (!kept || c.created_at > kept.created_at) newest.set(c.animal_id, c);
+  }
+  return captures.filter((c) => newest.get(c.animal_id) === c);
+}

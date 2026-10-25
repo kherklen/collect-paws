@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatDay, useI18n } from "@/lib/i18n";
-import { needInfo, type Capture } from "@/lib/types";
+import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
 
-// My Collection: a three-column grid of the person's own captures, newest first.
+// My Collection: a three-column grid of the animals the person has captured, newest first.
+// Capturing the same animal again doesn't add a card; its card counts the captures (×2).
 export default function CollectionGrid() {
   const { t } = useI18n();
   const [captures, setCaptures] = useState<Capture[] | null>(null);
@@ -46,13 +47,16 @@ export default function CollectionGrid() {
     );
   }
 
+  const animals = newestPerAnimal(captures);
+  const timesCaptured = (animalId: string) => captures.filter((c) => c.animal_id === animalId).length;
+
   return (
     <div className="h-full overflow-y-auto bg-canvas px-3 pb-36 pt-20">
       <p className="mb-3 px-1 text-sm font-bold text-muted">
-        {t.grid.collected(captures.length)}
+        {t.grid.collected(animals.length)}
       </p>
       <ul className="grid grid-cols-3 gap-3">
-        {captures.map((c) => (
+        {animals.map((c) => (
           <li key={c.id}>
             <button type="button" onClick={() => setSelected(c)} className="flex w-full flex-col gap-1 text-left">
               <div className="relative w-full">
@@ -64,6 +68,11 @@ export default function CollectionGrid() {
                     c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
                   }`}
                 />
+                {timesCaptured(c.animal_id) > 1 && (
+                  <span className="absolute bottom-1.5 right-1.5 rounded-full bg-white/90 px-1.5 py-0.5 text-[10px] font-extrabold text-brand-dark">
+                    ×{timesCaptured(c.animal_id)}
+                  </span>
+                )}
                 {c.helped_at ? (
                   <span className="absolute bottom-1.5 left-1.5 rounded-full bg-helped px-2 py-0.5 text-[10px] font-extrabold text-white">
                     {t.pin.helpedBadge}

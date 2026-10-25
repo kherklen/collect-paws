@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n/dictionaries";
-import { NEEDS, type Mode, type Need } from "@/lib/types";
+import { NEEDS, type AnimalMatch, type Mode, type Need } from "@/lib/types";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
@@ -37,6 +37,24 @@ async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
   }
 }
 
+// Ask our /api/match route whether an animal captured nearby looks like this one.
+// Null means no match, or the check couldn't run (then it's saved as a new animal).
+async function findMatch(photo: Blob, spot: LatLng, animal: Guess["animal"]): Promise<AnimalMatch | null> {
+  try {
+    const kind = animal === "cat" || animal === "dog" ? animal : "";
+    const res = await fetch(`/api/match?lat=${spot.lat}&lng=${spot.lng}&animal=${kind}`, {
+      method: "POST",
+      headers: { "Content-Type": "image/jpeg" },
+      body: photo,
+      signal: AbortSignal.timeout(20000),
+    });
+    const { match = null } = await res.json();
+    return match;
+  } catch {
+    return null;
+  }
+}
+
 // Location state at save time: first try, a re-ask after a refusal,
 // then the tap-to-drop map if it's still refused.
 type LocationStep = "auto" | "ask-again" | "drop";
@@ -58,6 +76,9 @@ export default function CapturePage() {
   const [locationStep, setLocationStep] = useState<LocationStep>("auto");
   const [dropped, setDropped] = useState<LatLng | null>(null);
   const [saving, setSaving] = useState(false);
+  const [matching, setMatching] = useState(false);
+  // A look-alike found nearby, waiting for the person to say if it's the same animal.
+  const [possibleMatch, setPossibleMatch] = useState<{ spot: LatLng; match: AnimalMatch } | null>(null);
   const [error, setError] = useState<string | null>(null);
   // The demo account skips the real-photo checks, can upload, and drops every pin by hand.
   // Null while we're still finding out.
@@ -103,6 +124,7 @@ export default function CapturePage() {
 
   function choosePhoto(next: Blob | null) {
     setPendingPhoto(null);
+    setPossibleMatch(null);
     setBreed("");
     if (preview) URL.revokeObjectURL(preview);
     setPhoto(next);
@@ -130,6 +152,23 @@ export default function CapturePage() {
       return;
     }
 
+    setMatching(true);
+    const match = await findMatch(photo, spot, guess?.animal ?? null);
+    setMatching(false);
+    if (match) {
+      setSaving(false);
+      setPossibleMatch({ spot, match });
+      return;
+    }
+    await store(spot, null);
+  }
+
+  // Upload and insert. `animalId` joins an existing animal's profile; null starts a new one.
+  async function store(spot: LatLng, animalId: string | null) {
+    if (!photo) return;
+    setPossibleMatch(null);
+    setError(null);
+    setSaving(true);
     try {
       const supabase = createClient();
       const { data: auth } = await supabase.auth.getUser();
@@ -147,6 +186,8 @@ export default function CapturePage() {
         breed: breed.trim() || null,
         mode,
         need: mode === "sos" ? need : null,
+        animal: guess?.animal === "cat" || guess?.animal === "dog" ? guess.animal : null,
+        ...(animalId ? { animal_id: animalId } : {}),
         lat: spot.lat,
         lng: spot.lng,
         address,
@@ -194,7 +235,17 @@ export default function CapturePage() {
             </button>
           </div>
 
-          {turnedAway ? (
+          {possibleMatch ? (
+            <MatchPrompt
+              match={possibleMatch.match}
+              onSame={() => store(possibleMatch.spot, possibleMatch.match.animal_id)}
+              onDifferent={() => store(possibleMatch.spot, null)}
+              onDiscard={() => {
+                setPendingPhoto(null);
+                router.push("/");
+              }}
+            />
+          ) : turnedAway ? (
             <div className="flex flex-col items-center gap-5 text-center">
               <div>
                 <p className="text-xl font-extrabold">{t.capture.turnedAway[turnedAway].title}</p>
@@ -280,13 +331,53 @@ export default function CapturePage() {
                 disabled={!canSave || saving}
                 className="rounded-full bg-brand py-4 text-lg font-extrabold text-white shadow-lg shadow-brand/30 transition active:scale-[0.98] disabled:opacity-50"
               >
-                {saving ? t.common.saving : guessing ? t.capture.checking : t.capture.save}
+                {matching ? t.match.looking : saving ? t.common.saving : guessing ? t.capture.checking : t.capture.save}
               </button>
             </>
           )}
         </div>
       )}
     </main>
+  );
+}
+
+// "Seen this one before?" — shows the look-alike's photo only when the person may see it.
+function MatchPrompt({
+  match,
+  onSame,
+  onDifferent,
+  onDiscard,
+}: {
+  match: AnimalMatch;
+  onSame: () => void;
+  onDifferent: () => void;
+  onDiscard: () => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <div className="flex flex-col items-center gap-4 rounded-3xl bg-white p-5 text-center shadow-sm shadow-brand/10">
+      <div>
+        <p className="text-xl font-extrabold">{t.match.title}</p>
+        <p className="mt-1 text-sm text-muted">
+          {match.mine ? t.match.yours : match.photo_url ? t.match.someones : t.match.private}
+        </p>
+      </div>
+      {match.photo_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={match.photo_url} alt={t.match.alreadyCaptured} className="h-32 w-32 rounded-3xl object-cover" />
+      )}
+      <div className="flex w-full flex-col gap-2">
+        <button type="button" onClick={onSame} className="rounded-full bg-brand py-3.5 font-extrabold text-white shadow-md shadow-brand/30">
+          {t.match.same}
+        </button>
+        <button type="button" onClick={onDifferent} className="rounded-full border-2 border-brand-soft bg-white py-3 font-bold text-ink">
+          {t.match.different}
+        </button>
+        <button type="button" onClick={onDiscard} className="py-2 text-sm font-bold text-sos">
+          {t.match.dontSave}
+        </button>
+      </div>
+    </div>
   );
 }
 

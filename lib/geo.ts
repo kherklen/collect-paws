@@ -56,6 +56,9 @@ export function closestTo<T extends LatLng>(from: LatLng, places: T[]) {
     .reduce((best, next) => (next.meters < best.meters ? next : best));
 }
 
+// Re-identification compares a new capture with animals captured this close to it.
+export const MATCH_RADIUS_METERS = 500;
+
 // Lost-pet alerts reach people within this distance of the last-seen place.
 export const ALERT_RADIUS_METERS = 3000;
 

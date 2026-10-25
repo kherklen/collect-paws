@@ -1,5 +1,6 @@
 // Shared helpers for the check-*.mjs scripts. Run scripts with:
 //   node --env-file=.env.local scripts/check-<name>.mjs
+import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
 export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -54,3 +55,17 @@ export const TINY_JPEG = Buffer.from(
   "/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=",
   "base64",
 );
+
+// The cookie header a browser would send for this account, for calling the app's /api routes.
+export async function cookieFor(client) {
+  const { data } = await client.auth.getSession();
+  const jar = new Map();
+  const ssr = createServerClient(SUPABASE_URL, KEY, {
+    cookies: {
+      getAll: () => [...jar].map(([name, value]) => ({ name, value })),
+      setAll: (cookies) => cookies.forEach(({ name, value }) => jar.set(name, value)),
+    },
+  });
+  await ssr.auth.setSession(data.session);
+  return [...jar].map(([n, v]) => `${n}=${v}`).join("; ");
+}

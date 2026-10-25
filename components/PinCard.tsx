@@ -6,7 +6,8 @@ import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
 
 // Bottom sheet for a tapped pin or collection card. Unhelped SOS pins get a
-// "helped" tick; your own captures can be deleted.
+// "helped" tick; your own captures can be deleted. An animal captured more than
+// once shows how often it's been seen, with the other photos you're allowed to see.
 export default function PinCard({
   capture,
   onClose,
@@ -24,6 +25,29 @@ export default function PinCard({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile] = useState<{ timesSeen: number; firstSeen: string; photos: string[] } | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    Promise.all([
+      supabase.rpc("animal_summary", { target: capture.animal_id }).single<{ times_seen: number; first_seen: string }>(),
+      // The row rules only return other captures of this animal that I may see.
+      supabase
+        .from("captures")
+        .select("photo_path")
+        .eq("animal_id", capture.animal_id)
+        .neq("id", capture.id)
+        .order("created_at", { ascending: false })
+        .limit(8),
+    ]).then(([summary, others]) => {
+      if (!summary.data || summary.data.times_seen < 2) return;
+      setProfile({
+        timesSeen: summary.data.times_seen,
+        firstSeen: summary.data.first_seen,
+        photos: (others.data ?? []).map((o) => o.photo_path),
+      });
+    });
+  }, [capture.id, capture.animal_id]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -100,6 +124,22 @@ export default function PinCard({
             </p>
           </div>
         </div>
+
+        {profile && (
+          <div className="mt-4 rounded-3xl bg-brand-soft/60 p-3">
+            <p className="text-sm font-bold text-brand-dark">
+              🐾 {t.match.seenTimes(profile.timesSeen)} · {t.match.firstSeen(formatDay(t, profile.firstSeen))}
+            </p>
+            {profile.photos.length > 0 && (
+              <div className="mt-2 flex gap-2 overflow-x-auto">
+                {profile.photos.map((path) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img key={path} src={photoUrl(path)} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {capture.mode === "sos" && !helped && (
           <button

@@ -143,6 +143,7 @@ PRD ref: `prd.md > Screens and Layout`.
 
   The access rules already hide other people's Collect captures.
 - Draws square photo pins. They may overlap.
+- (Added after the final review) Keeps only the newest capture per `animal_id` (`lib/types.ts > newestPerAnimal`).
 - Reloads after a capture is saved and when the app comes back into view.
 
 PRD ref: `prd.md > Map (Nearby Friends)`.
@@ -151,6 +152,7 @@ PRD ref: `prd.md > Map (Nearby Friends)`.
 - A bottom sheet with the photo, breed, address, mode/need, and status.
 - For SOS pins that aren't helped yet, a **helped** tick calls `mark_helped(capture_id)` and then refreshes the map.
 - Collect pins show no helped tick (see Decisions).
+- (Added after the final review) When the animal has 2+ captures, shows "Seen N times · first seen …" from `animal_summary(animal_id)` (counts private captures too, numbers only) and a strip of the other captures' photos that the row rules let this person read.
 
 PRD ref: `prd.md > Marking Helped`.
 
@@ -276,6 +278,8 @@ All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is t
 | `created_at` | timestamptz | default `now()` |
 | `helped_at` | timestamptz, nullable | set by `mark_helped` |
 | `helped_by` | uuid, nullable | who ticked it |
+| `animal` | text, nullable | `'cat' \| 'dog'` from the AI check (added after the final review) |
+| `animal_id` | uuid | captures of the same animal share it; a new capture gets a fresh one unless the person confirms a match (added after the final review) |
 
 **Rules:**
 - **Read:** `mode = 'sos'` OR `user_id = auth.uid()`.
@@ -396,6 +400,8 @@ collect-savar/
 - **Call:** from `/api/breed`, send one user message containing the instruction text and the image as a base64 `data:image/jpeg;base64,...` URL. Ask for JSON output `{ animal, breed }`.
 - **Model:** **`gpt-5.4-nano`** via the Responses API, with `reasoning.effort: "none"`, the image at `detail: "low"`, and a strict JSON schema output. Checked in `5-build` (Oct 2026): $0.20 per 1M input tokens and $1.25 per 1M output, so each photo costs a fraction of a cent. Answers took about 2 seconds in testing. If breed guesses are weak, `gpt-5.4-mini` ($0.75 / $4.50 per 1M) is the step up.
 - **Cost:** small per photo, since photos are already shrunk to 1024 px. Set a monthly spending limit in the OpenAI dashboard.
+- **(Added after the final review) Real-photo check:** `/api/breed` now sends the image at `detail: "high"`. At `"low"` about 1 in 4 photos of a screen got through; at `"high"`, 11 of 12 were caught and 16 of 16 real photos passed.
+- **(Added after the final review) Re-identification, `/api/match`:** `gpt-5.4-mini`, `reasoning.effort: "low"`, all images at `detail: "high"`, sent as base64 (the server downloads the candidate photos itself; letting OpenAI fetch the URLs caused random failures). Up to 6 animals within 500 m, found with `SUPABASE_SECRET_KEY` (`lib/supabase/admin.ts`, server only) so private captures count. The response only carries a photo URL when the person may see that capture. Testing showed no false matches between different cats, but about 1 real match in 8 was missed at random, so the route asks twice in parallel and takes a match from either answer. About 3–5 seconds per save.
 
 ### OpenStreetMap tiles (map drawing)
 - **Tile URL:** `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, with the required attribution "© OpenStreetMap contributors".

@@ -81,6 +81,7 @@ Develops `scope.md > The Core Loop` step 1.
 - [ ] Another account's Collect animals never appear.
 - [ ] SOS pins and own collected pins look different from each other.
 - [ ] Tapping a pin opens the pin card with photo, breed, address, and status.
+- [ ] (Added after the final review) An animal captured more than once shows as one pin (its newest capture). Its card says "Seen N times · first seen …" with the other photos the person may see.
 
 ### Capture
 Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("Capture: photo + need tag").
@@ -93,10 +94,12 @@ Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("C
 - [ ] Choosing SOS asks for one need: needs help (food / water / vet) or might be lost / looking for owner.
 - [ ] Saving creates a pin on the map at the person's location and adds a card to My Collection.
 - [ ] If location is still refused after asking again, the person drops the pin on the map by hand.
+- [ ] (Added after the final review) On save, if the AI thinks an animal captured within 500 m is the same one, the app asks "Seen this one before?". It shows that capture's photo only if it's the person's own or an SOS pin; for someone else's private capture it just says a similar animal was already collected. The person chooses **Same animal** (joins its profile), **Different animal**, or **Don't save**. The AI never merges on its own, and if the check can't run the capture is saved as a new animal.
 
 ### My Collection
 Develops `scope.md > The POC Boundary` ("My Collection").
 - [ ] It shows only the logged-in person's own captures, as a three-column grid.
+- [ ] (Added after the final review) One card per animal: capturing the same animal again adds "×2" to its card instead of a new card.
 - [ ] Each card shows the animal image and "breed / date".
 - [ ] A new capture appears here right after saving.
 - [ ] A helped animal stays in the grid and looks visibly different from the others.
