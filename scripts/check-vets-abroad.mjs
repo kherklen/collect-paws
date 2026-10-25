@@ -27,7 +27,7 @@ for (const [city, spot] of [["Seoul", seoul], ["Berlin", { lat: 52.52, lng: 13.4
 }
 
 const ocean = await ask({ lat: 0, lng: -140 });
-check("the middle of the Pacific: no vets, empty list", ocean.status === 200 && ocean.vets.length === 0, `${ocean.ms} ms`);
+check("the middle of the Pacific: no vets, empty list", ocean.status === 200 && !ocean.failed && ocean.vets.length === 0, `${ocean.ms} ms`);
 
 const { inMongolia } = await import("../lib/vets.ts").catch(() => ({}));
 if (inMongolia) {
