@@ -209,7 +209,7 @@ export default function CapturePage() {
         <Link href="/" className="text-sm font-bold text-brand-dark">
           ← {t.common.cancel}
         </Link>
-        <h1 className="text-lg font-extrabold">{t.capture.title}</h1>
+        <h1 className="text-lg font-display font-bold italic">{t.capture.title}</h1>
         <span className="w-12" />
       </div>
 
@@ -248,7 +248,7 @@ export default function CapturePage() {
           ) : turnedAway ? (
             <div className="flex flex-col items-center gap-5 text-center">
               <div>
-                <p className="text-xl font-extrabold">{t.capture.turnedAway[turnedAway].title}</p>
+                <p className="font-display text-2xl font-bold italic">{t.capture.turnedAway[turnedAway].title}</p>
                 <p className="mt-1 text-muted">{t.capture.turnedAway[turnedAway].text}</p>
               </div>
               <PhotoInput onPhoto={choosePhoto} label={t.capture.takeAnother} />
@@ -357,7 +357,7 @@ function MatchPrompt({
   return (
     <div className="flex flex-col items-center gap-4 rounded-3xl bg-white p-5 text-center shadow-sm shadow-brand/10">
       <div>
-        <p className="text-xl font-extrabold">{t.match.title}</p>
+        <p className="font-display text-2xl font-bold italic">{t.match.title}</p>
         <p className="mt-1 text-sm text-muted">
           {match.mine ? t.match.yours : match.photo_url ? t.match.someones : t.match.private}
         </p>

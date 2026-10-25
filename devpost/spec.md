@@ -104,7 +104,8 @@ Carried from `prd.md > Look and Feel` and `scope.md > Inspiration & Identity`. *
 What's settled:
 - **Fun and playful first**, never dark, even for SOS animals.
 - **Mobile-first.** Design for a phone-width screen (the wireframe is an iPhone 16, ~393 px wide). Large touch targets and a round Capture button at the bottom center.
-- **Direction (confirmed in `5-build`):** soft pastel lavender, rounded cards, lots of white space, photo pins on a light map. Font: **Nunito** (rounded, friendly; covers Cyrillic). Tokens in `app/globals.css`: brand `#8b7cf6`, SOS coral `#ff7e6b`, Collect lavender `#8b7cf6`, helped mint `#5ccb9a`, vet teal `#4fb3bf`, ink `#2b2541`, canvas `#faf8ff`.
+- **Direction (changed after the final review):** the learner shared a playful pet-app reference (cream background, forest green, coral, lime tiles, italic serif titles). Tokens in `app/globals.css`: brand coral `#f47c57` (buttons, paw, active tab), brand-dark forest `#1f4b40` (links, accent text), brand-soft sand `#ebe4d4`, lime `#d4e88f` (playful tiles), SOS red `#e5484d` (a true red so it doesn't blend with the coral buttons), Collect leafy green `#7fb539`, helped sky blue `#4ea8de` (kept apart from "doing fine" green), vet forest `#1f4b40`, ink `#1d3a33`, canvas cream `#f6f1e7`. Fonts: **Manrope** for text and **Playfair Display italic** (`font-display`) for page titles; both cover Cyrillic.
+- **Earlier direction (replaced):** soft pastel lavender, rounded cards, lots of white space, photo pins on a light map. Font: **Nunito** (rounded, friendly; covers Cyrillic). Tokens in `app/globals.css`: brand `#8b7cf6`, SOS coral `#ff7e6b`, Collect lavender `#8b7cf6`, helped mint `#5ccb9a`, vet teal `#4fb3bf`, ink `#2b2541`, canvas `#faf8ff`.
 - **Pins must be told apart at a glance:**
   - SOS (with a small need badge)
   - your own Collect

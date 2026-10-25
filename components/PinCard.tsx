@@ -117,7 +117,7 @@ export default function PinCard({
               {need && !helped ? `${need.emoji} ` : ""}
               {status.text}
             </span>
-            <h2 className="truncate text-xl font-extrabold">{capture.breed ?? t.pin.unknownBreed}</h2>
+            <h2 className="truncate text-xl font-display font-bold italic">{capture.breed ?? t.pin.unknownBreed}</h2>
             <p className="text-sm text-muted">📍 {capture.address ?? formatSpot(t, capture)}</p>
             <p className="text-xs text-muted">
               {t.pin.spotted(spotter, formatDay(t, capture.created_at))}

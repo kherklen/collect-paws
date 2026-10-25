@@ -1,19 +1,21 @@
 @import "tailwindcss";
 
-/* Collect Savar theme: soft pastel lavender, rounded, lots of white space.
+/* Collect Savar theme: warm cream, forest green, coral, and lime; rounded and playful.
    Pin colors are defined once here and used by map pins and collection cards. */
 @theme {
-  --color-brand: #8b7cf6;
-  --color-brand-dark: #6f5fe0;
-  --color-brand-soft: #eeebff;
-  --color-sos: #ff7e6b;
-  --color-collect: #8b7cf6;
-  --color-helped: #5ccb9a;
-  --color-vet: #4fb3bf;
-  --color-ink: #2b2541;
-  --color-muted: #8a84a3;
-  --color-canvas: #faf8ff;
-  --font-sans: var(--font-nunito), ui-rounded, system-ui, sans-serif;
+  --color-brand: #f47c57; /* coral: main buttons, the paw, active tab */
+  --color-brand-dark: #1f4b40; /* forest green: links and accent text */
+  --color-brand-soft: #ebe4d4; /* sand: borders, chips, quiet backgrounds */
+  --color-lime: #d4e88f; /* playful tiles and badges */
+  --color-sos: #e5484d;
+  --color-collect: #7fb539;
+  --color-helped: #4ea8de;
+  --color-vet: #1f4b40;
+  --color-ink: #1d3a33;
+  --color-muted: #6f7f76;
+  --color-canvas: #f6f1e7;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
+  --font-display: var(--font-playfair), Georgia, serif; /* italic page titles */
 }
 
 html,

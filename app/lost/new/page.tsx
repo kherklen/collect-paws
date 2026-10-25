@@ -92,7 +92,7 @@ export default function NewLostPetPage() {
         <Link href="/" className="text-sm font-bold text-brand-dark">
           ← {t.common.cancel}
         </Link>
-        <h1 className="text-lg font-extrabold">{t.lostNew.title}</h1>
+        <h1 className="text-lg font-display font-bold italic">{t.lostNew.title}</h1>
         <span className="w-12" />
       </div>
 

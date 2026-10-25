@@ -63,7 +63,7 @@ export default function ProfilePage() {
         </div>
         <div>
           <p className="text-sm text-muted">{t.profile.hiThere}</p>
-          <h1 className="text-2xl font-extrabold">{name ?? "…"}</h1>
+          <h1 className="text-2xl font-display font-bold italic">{name ?? "…"}</h1>
         </div>
       </section>
 
@@ -85,7 +85,7 @@ export default function ProfilePage() {
 
       <section className="mt-8">
         <div className="flex items-baseline justify-between px-1">
-          <h2 className="font-extrabold">{t.profile.myCaptures} {captures && `(${captures.length})`}</h2>
+          <h2 className="font-display font-bold italic">{t.profile.myCaptures} {captures && `(${captures.length})`}</h2>
           <Link href="/?tab=collection" className="text-sm font-bold text-brand-dark">
             {t.profile.seeAll}
           </Link>
@@ -115,7 +115,7 @@ export default function ProfilePage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="px-1 font-extrabold">{t.profile.myReports} {reports && `(${reports.length})`}</h2>
+        <h2 className="px-1 font-display font-bold italic">{t.profile.myReports} {reports && `(${reports.length})`}</h2>
         {reports?.length === 0 ? (
           <p className="mt-2 px-1 text-sm text-muted">{t.profile.noReports}</p>
         ) : (

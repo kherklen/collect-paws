@@ -35,10 +35,10 @@ export default function CollectionGrid() {
     return (
       <div className="h-full overflow-y-auto bg-canvas px-4 pb-32 pt-24">
         <div className="mx-auto mt-16 max-w-xs text-center">
-          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-5xl">
+          <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-[2rem] bg-lime text-5xl">
             🐱
           </div>
-          <h2 className="text-xl font-extrabold">{t.grid.emptyTitle}</h2>
+          <h2 className="text-xl font-display font-bold italic">{t.grid.emptyTitle}</h2>
           <p className="mt-2 text-muted">
             {t.grid.emptyText}
           </p>

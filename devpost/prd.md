@@ -63,6 +63,7 @@ The learner chose to decide the visual direction during the build, and in `5-bui
 - Tone: **fun and playful first**. Not dark, even for SOS animals (`scope.md > Inspiration & Identity`).
 - Reference shared: a location-sharing app with soft pastel lavender, rounded cards, lots of white space, and round photo pins on a light map. **Confirmed as the direction.**
 - Inspirations: Pokémon Go (map-first, the satisfaction of capturing) and a cat-collecting web app seen on Instagram.
+- (Changed after the final review) The learner swapped the lavender look for a more playful pet-app reference: warm cream background, forest green, coral, and lime, with italic serif titles. The layout stays the same.
 
 
 ## Features and Behavior

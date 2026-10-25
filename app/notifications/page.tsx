@@ -49,14 +49,14 @@ export default function NotificationsPage() {
         </Link>
       </div>
 
-      <h1 className="mt-6 text-2xl font-extrabold">{t.notifications.title}</h1>
+      <h1 className="mt-6 text-2xl font-display font-bold italic">{t.notifications.title}</h1>
 
       {items === null ? (
         <div className="mt-4 h-28 animate-pulse rounded-3xl bg-brand-soft" />
       ) : items.length === 0 ? (
         <div className="mx-auto mt-16 max-w-xs text-center">
           <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-5xl">🔔</div>
-          <h2 className="text-xl font-extrabold">{t.notifications.emptyTitle}</h2>
+          <h2 className="text-xl font-display font-bold italic">{t.notifications.emptyTitle}</h2>
           <p className="mt-2 text-muted">{t.notifications.emptyText}</p>
         </div>
       ) : (

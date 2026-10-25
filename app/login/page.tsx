@@ -55,10 +55,10 @@ export default function LoginPage() {
         <LanguageSwitcher compact />
       </div>
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-4xl">
+        <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-lime text-4xl">
           🐾
         </div>
-        <h1 className="text-3xl font-extrabold text-ink">Collect Savar</h1>
+        <h1 className="text-3xl font-display font-bold italic text-ink">Collect Savar</h1>
         <p className="mt-2 text-muted">{t.login.tagline}</p>
       </div>
 

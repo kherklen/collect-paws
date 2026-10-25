@@ -12,7 +12,7 @@ import { VETS, type Vet } from "@/lib/vets";
 
 const youIcon = L.divIcon({
   className: "",
-  html: '<div style="width:18px;height:18px;border-radius:9999px;background:var(--color-brand);border:3px solid white;box-shadow:0 0 0 6px rgba(139,124,246,0.25)"></div>',
+  html: '<div style="width:18px;height:18px;border-radius:9999px;background:var(--color-brand);border:3px solid white;box-shadow:0 0 0 6px rgba(244,124,87,0.25)"></div>',
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 });
@@ -21,7 +21,7 @@ function vetIcon(closest: boolean) {
   const size = closest ? 44 : 30;
   return L.divIcon({
     className: "",
-    html: `<div style="width:${size}px;height:${size}px;border-radius:${closest ? 14 : 10}px;background:var(--color-vet);color:white;border:3px solid white;box-shadow:0 4px 12px rgba(43,37,65,0.25);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${closest ? 22 : 16}px">+</div>`,
+    html: `<div style="width:${size}px;height:${size}px;border-radius:${closest ? 14 : 10}px;background:var(--color-vet);color:white;border:3px solid white;box-shadow:0 4px 12px rgba(29,58,51,0.25);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:${closest ? 22 : 16}px">+</div>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
@@ -46,7 +46,7 @@ function pinIcon(capture: Capture) {
   return L.divIcon({
     className: "",
     html: `<div style="position:relative;width:52px;height:52px">
-      <img src="${photoUrl(capture.photo_path)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:3px solid ${color};box-shadow:0 4px 12px rgba(43,37,65,0.25);background:white;opacity:${helped ? 0.7 : 1}" />
+      <img src="${photoUrl(capture.photo_path)}" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:14px;border:3px solid ${color};box-shadow:0 4px 12px rgba(29,58,51,0.25);background:white;opacity:${helped ? 0.7 : 1}" />
       ${badge}
     </div>`,
     iconSize: [52, 52],

@@ -138,7 +138,7 @@ export default function LostPetPage() {
 
           {isOwner && (
             <section className="flex flex-col gap-3">
-              <h2 className="px-1 font-extrabold">{t.lost.sightingsReceived} ({sightings.length})</h2>
+              <h2 className="px-1 font-display font-bold italic">{t.lost.sightingsReceived} ({sightings.length})</h2>
               {sightings.length === 0 ? (
                 <p className="px-1 text-sm text-muted">{t.lost.noSightings}</p>
               ) : (
@@ -272,7 +272,7 @@ function SightingForms({
   if (mode === "choose") {
     return (
       <section className="flex flex-col gap-3">
-        <h2 className="px-1 font-extrabold">{t.lost.seenQuestion}</h2>
+        <h2 className="px-1 font-display font-bold italic">{t.lost.seenQuestion}</h2>
         <div className="grid grid-cols-2 gap-3">
           {/* A label around the camera input: phones only open the camera from a direct tap. */}
           <label className="flex cursor-pointer flex-col items-center gap-1 rounded-3xl border-2 border-sos bg-sos/10 p-4 text-center transition active:scale-[0.98]">
@@ -301,7 +301,7 @@ function SightingForms({
   return (
     <section className="flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm shadow-brand/10">
       <div className="flex items-center justify-between">
-        <h2 className="font-extrabold">{mode === "now" ? t.lost.seeNowTitle : t.lost.reportTitle}</h2>
+        <h2 className="font-display font-bold italic">{mode === "now" ? t.lost.seeNowTitle : t.lost.reportTitle}</h2>
         <button type="button" onClick={reset} className="text-sm font-bold text-muted">
           {t.common.cancel}
         </button>

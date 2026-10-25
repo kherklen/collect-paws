@@ -29,7 +29,7 @@ export default function VetFinder({
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-vet/15 text-3xl">🩺</div>
         <div className="min-w-0">
           {isClosest && <p className="text-xs font-extrabold uppercase tracking-wide text-vet">{t.vet.closest}</p>}
-          <h2 className="text-lg font-extrabold leading-tight">{chosen.name}</h2>
+          <h2 className="text-lg font-display font-bold italic leading-tight">{chosen.name}</h2>
           <p className="text-sm text-muted">{t.vet.away(formatDistance(meters, lang), list.fromMapCenter)}</p>
           {chosen.address && <p className="mt-1 text-sm">📍 {chosen.address[lang]}</p>}
           {chosen.hours && <p className="text-sm">🕒 {chosen.hours[lang]}</p>}

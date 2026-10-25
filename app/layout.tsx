@@ -1,13 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Manrope, Playfair_Display } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/i18n";
 import { getLang } from "@/lib/i18n/server";
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin", "cyrillic"],
+});
+
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "cyrillic"],
+  style: ["italic"],
 });
 
 export const metadata: Metadata = {
@@ -19,13 +25,13 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#faf8ff",
+  themeColor: "#f6f1e7",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const lang = await getLang();
   return (
-    <html lang={lang} className={`${nunito.variable} h-full antialiased`}>
+    <html lang={lang} className={`${manrope.variable} ${playfair.variable} h-full antialiased`}>
       <body className="h-full">
         <LanguageProvider initial={lang}>{children}</LanguageProvider>
       </body>
