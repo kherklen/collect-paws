@@ -45,7 +45,9 @@ const en = {
     away: (distance: string, fromMapCenter: boolean) =>
       `${distance} away${fromMapCenter ? " from the map center (location is off)" : ""}`,
     directions: "Directions ↗",
-    all: (n: number) => `All vets (${n}), nearest first`,
+    all: (n: number) => `All vets (${n})`,
+    shrink: "Shrink",
+    expand: "Show vet details",
   },
   needs: {
     food: "Food",
@@ -269,7 +271,9 @@ const mn: Dict = {
         ? `Газрын зургийн төвөөс ${distance} зайтай (байршил унтраалттай)`
         : `${distance} зайтай`,
     directions: "Зам харах ↗",
-    all: (n: number) => `Бүх эмнэлэг (${n}), ойроос нь`,
+    all: (n: number) => `Бүх эмнэлэг (${n})`,
+    shrink: "Жижигрүүлэх",
+    expand: "Эмнэлгийн мэдээлэл харах",
   },
   needs: {
     food: "Хоол",

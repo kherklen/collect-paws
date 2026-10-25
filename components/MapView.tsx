@@ -198,7 +198,7 @@ function fitVet(map: L.Map, from: LatLng, vet: Vet) {
       [from.lat, from.lng],
       [vet.lat, vet.lng],
     ],
-    { paddingTopLeft: [60, 110], paddingBottomRight: [60, 440], maxZoom: 16 },
+    { paddingTopLeft: [60, 110], paddingBottomRight: [60, 300], maxZoom: 16 },
   );
 }
 

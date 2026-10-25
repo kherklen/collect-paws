@@ -208,7 +208,7 @@ PRD ref: `prd.md > My Collection`.
 - Uses the person's location (or the map center if location was refused).
 - Computes the straight-line distance (the haversine formula) to every entry in `vets.json`.
 - Shows the closest vet's name and distance, highlights its pin on the map, and offers a **Directions** link: `https://www.google.com/maps/dir/?api=1&destination={lat},{lng}`.
-- (Added after the final review) Lists every vet nearest first (`lib/geo.ts > byDistance`). Tapping a row or a vet pin makes it the shown vet, fits it and the person on the map, and shows its address and hours in the current language. Directions opens the vet's own Google Maps page when it has one (`lib/vets.ts > directionsUrl`), or directions to its coordinates.
+- (Added after the final review) The sheet opens compact (chosen vet + Directions); "All vets (N)" expands the list, the handle shrinks it to one row, × closes it. Lists every vet nearest first (`lib/geo.ts > byDistance`). Tapping a row or a vet pin makes it the shown vet, fits it and the person on the map, and shows its address and hours in the current language. Directions opens the vet's own Google Maps page when it has one (`lib/vets.ts > directionsUrl`), or directions to its coordinates.
 
 PRD ref: `prd.md > Closest Vet`.
 

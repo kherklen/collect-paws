@@ -144,7 +144,7 @@ Build mode: fast
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
-- [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13. Feedback so far: list every vet nearest first and show a tapped vet's details (done, see slice 13). They also sent their vets with Google Maps links (slice 13, done). Waiting on their try of slices 9–10.
+- [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13. Feedback so far: list every vet nearest first and show a tapped vet's details (done, see slice 13). They also sent their vets with Google Maps links (slice 13, done). On the phone the vet list was too big: the sheet now opens compact, "All vets" expands it, the handle shrinks it, × closes it (done). Waiting on their try of slices 9–10.
 - [ ] Additions: final kick-the-tires after slice 13.
 - [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 
