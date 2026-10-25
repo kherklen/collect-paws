@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 const MODEL = "gpt-5.4-nano";
 
 const PROMPT = `Look at this photo. Is the main subject a cat, a dog, or something else?
-If it is a cat or dog, give its most likely breed in a few words (e.g. "Tabby cat", "Husky mix", "Mixed-breed dog").
+If it is a cat or dog, give up to 3 likely breeds, most likely first, each in a few words
+(e.g. "Tabby cat", "Husky mix", "Mixed-breed dog"). Give fewer if you're sure; no duplicates.
 Also say where the photo came from. Pick something other than "live" only when you can clearly see the evidence;
 when unsure, answer "live" (blocking a real photo is worse than missing a fake one):
 "screen" = a photo of a phone, monitor, or TV screen (visible bezel or screen edge, pixel grid, moiré, glare on glass),
@@ -18,21 +19,23 @@ Answer only with the JSON format requested.`;
 
 // The breed is shown to the person, so it comes back in their language.
 const BREED_LANGUAGE = {
-  en: "Write the breed in English.",
-  mn: 'Write the breed in Mongolian (Cyrillic), e.g. "Судалтай муур", "Хаски эрлийз". Keep "animal" in English.',
+  en: "Write the breeds in English.",
+  mn: 'Write the breeds in Mongolian (Cyrillic), e.g. "Судалтай муур", "Хаски эрлийз". Keep "animal" in English.',
 };
 
 type BreedResult = {
   animal: "cat" | "dog" | "other" | null;
+  // Up to 3 suggestions, most likely first ([] when there's no cat or dog, or no guess).
+  breeds: string[];
   breed: string | null;
   // False when the photo is of a screen, a print, a screenshot, or a drawing.
   real: boolean | null;
 };
 
 // "Couldn't check" — the capture page lets the person carry on and type a breed.
-const UNKNOWN: BreedResult = { animal: null, breed: null, real: null };
+const UNKNOWN: BreedResult = { animal: null, breeds: [], breed: null, real: null };
 
-// Photo (JPEG body) → { animal, breed, real }, with ?lang=mn|en for the breed's language.
+// Photo (JPEG body) → { animal, breeds, breed (the first), real }, with ?lang=mn|en for the breeds' language.
 // Logged-in only, so strangers can't spend OpenAI credit.
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -74,20 +77,25 @@ export async function POST(request: Request) {
             type: "object",
             properties: {
               animal: { type: "string", enum: ["cat", "dog", "other"] },
-              breed: { type: ["string", "null"] },
+              breeds: { type: "array", items: { type: "string" } },
               source: { type: "string", enum: ["live", "screen", "print", "screenshot", "drawing"] },
             },
-            required: ["animal", "breed", "source"],
+            required: ["animal", "breeds", "source"],
             additionalProperties: false,
           },
         },
       },
     });
 
-    const guess = JSON.parse(response.output_text) as Omit<BreedResult, "real"> & { source: string };
+    const guess = JSON.parse(response.output_text) as { animal: BreedResult["animal"]; breeds: string[]; source: string };
+    const breeds =
+      guess.animal === "other"
+        ? []
+        : [...new Set(guess.breeds.map((b) => b.trim()).filter(Boolean))].slice(0, 3);
     return NextResponse.json({
       animal: guess.animal,
-      breed: guess.animal === "other" ? null : guess.breed?.trim() || null,
+      breeds,
+      breed: breeds[0] ?? null,
       real: guess.source === "live",
     } satisfies BreedResult);
   } catch {

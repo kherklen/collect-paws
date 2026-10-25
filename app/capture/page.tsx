@@ -18,8 +18,9 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   loading: () => <div className="h-64 w-full rounded-3xl bg-brand-soft" />,
 });
 
-// `real` is false for a photo of a screen, a print, a screenshot, or a drawing.
-type Guess = { animal: "cat" | "dog" | "other" | null; breed: string | null; real: boolean | null };
+// `breeds` are up to 3 suggestions to tap; `real` is false for a photo of a screen,
+// a print, a screenshot, or a drawing.
+type Guess = { animal: "cat" | "dog" | "other" | null; breeds: string[]; real: boolean | null };
 
 // Ask our /api/breed route what's in the photo. Null fields mean "couldn't check".
 async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
@@ -30,10 +31,10 @@ async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
       body: photo,
       signal: AbortSignal.timeout(10000),
     });
-    const { animal = null, breed = null, real = null } = await res.json();
-    return { animal, breed, real };
+    const { animal = null, breeds = [], real = null } = await res.json();
+    return { animal, breeds, real };
   } catch {
-    return { animal: null, breed: null, real: null };
+    return { animal: null, breeds: [], real: null };
   }
 }
 
@@ -104,9 +105,8 @@ export default function CapturePage() {
     let cancelled = false;
     guessBreed(photo, lang).then((result) => {
       if (cancelled) return;
+      // The suggestions show as chips; the field stays as the person left it.
       setGuess({ ...result, photo });
-      // Fill in the breed unless the person already typed one.
-      if (result.breed) setBreed((typed) => (typed.trim() ? typed : result.breed!));
     });
     return () => {
       cancelled = true;
@@ -122,7 +122,8 @@ export default function CapturePage() {
   const oldPhoto = isDemo === false && !!photo && !isFreshPhoto(photo);
   const notReal = isDemo === false && !guessing && !notAnimal && guess?.real === false;
   const turnedAway = notAnimal ? "notAnimal" : oldPhoto ? "old" : notReal ? "notReal" : null;
-  const couldntGuess = !guessing && !notAnimal && !guess?.breed;
+  const suggestions = guessing ? [] : (guess?.breeds ?? []);
+  const couldntGuess = !guessing && !notAnimal && suggestions.length === 0;
 
   function choosePhoto(next: Blob | null) {
     setPendingPhoto(null);
@@ -258,18 +259,37 @@ export default function CapturePage() {
             </div>
           ) : (
             <>
-              <label className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-muted">{t.capture.breed}</span>
-                <input
-                  value={breed}
-                  onChange={(e) => setBreed(e.target.value)}
-                  placeholder={guessing ? t.capture.guessing : t.capture.breedPlaceholder}
-                  className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
-                />
-                {couldntGuess && !breed && (
-                  <span className="px-1 text-xs text-muted">{t.capture.couldntGuess}</span>
+              <div className="flex flex-col gap-2">
+                <label className="flex flex-col gap-2">
+                  <span className="text-sm font-bold text-muted">{t.capture.breed}</span>
+                  <input
+                    value={breed}
+                    onChange={(e) => setBreed(e.target.value)}
+                    placeholder={guessing ? t.capture.guessing : t.capture.breedPlaceholder}
+                    className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
+                  />
+                  {couldntGuess && !breed && (
+                    <span className="px-1 text-xs text-muted">{t.capture.couldntGuess}</span>
+                  )}
+                </label>
+                {suggestions.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-1 text-xs font-bold text-muted">{t.capture.suggestions}</span>
+                    {suggestions.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setBreed(s)}
+                        className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold transition ${
+                          breed === s ? "border-brand-dark bg-brand-dark text-white" : "border-brand-soft bg-white text-ink"
+                        }`}
+                      >
+                        ✨ {s}
+                      </button>
+                    ))}
+                  </div>
                 )}
-              </label>
+              </div>
 
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-bold text-muted">{t.capture.howIsIt}</span>

@@ -50,7 +50,7 @@ for (const [file, animal, real] of cases) {
   if (expectUnavailable) {
     check(`${file}: AI unavailable → "couldn't check"`, r.body.animal === null && r.body.breed === null && r.body.real === null, JSON.stringify(r.body));
   } else {
-    const breedOk = animal === "other" ? r.body.breed === null : !!r.body.breed;
+    const breedOk = animal === "other" ? r.body.breeds.length === 0 : r.body.breeds.length >= 1 && r.body.breeds.length <= 3;
     const realOk = real === null || r.body.real === real;
     check(`${file} → ${animal}${real === null ? "" : real ? ", real" : ", not real"}`, r.body.animal === animal && breedOk && realOk, `${JSON.stringify(r.body)} in ${r.ms} ms`);
   }

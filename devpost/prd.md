@@ -88,6 +88,7 @@ Develops `scope.md > The Core Loop` step 1.
 Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("Capture: photo + need tag").
 - [ ] Tapping Capture opens the camera, and the person can take a photo.
 - [ ] After the photo, a breed guess appears in an editable field. The person can change it or type their own.
+- [ ] (Changed after the final review) Instead of filling the field, the AI offers up to 3 breed suggestions as chips under it; tapping one fills the field, or the person types their own.
 - [ ] If the breed can't be guessed, the field is empty and the person can type one. Capture still works.
 - [ ] If the photo clearly shows no cat or dog, the app says so ("no cat or dog in this picture") and asks for another photo. If the check itself can't run, capture still works.
 - [ ] (Added after the final review) A photo of a screen, a printed picture, a screenshot, or a drawing is turned away ("This looks like a photo of a picture"), and so is a photo older than 10 minutes. Both are best effort: if the AI check can't run, capture still works.
