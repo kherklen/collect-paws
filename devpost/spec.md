@@ -439,6 +439,9 @@ Seeded from an OpenStreetMap query run during planning (vets within 20 km of cen
 
 (Added after the final review) The learner sent 11 vets with addresses, hours, and Google Maps links. Coordinates were read from each link's place page (headless browser, the `!3d…!4d…` part of the settled URL), so the list is now 11 learner vets plus the ULSM school from the OSM seed. Three OSM spots were noticeably off (Энэрэх about 2 km, SOS about 1 km, Сонор about 500 m). Each vet's `maps` link is what Directions opens. Mongolian address and hours text was drafted by the agent for the learner to review.
 
+### Overpass (vets outside Mongolia, added after the final review)
+- `/api/vets?lat&lng` (logged-in) asks `overpass-api.de` and `overpass.kumi.systems` at once for `amenity=veterinary` within 10 km, then 30 km; the spot is rounded to ~1 km first and answers are cached a day per spot. `lib/vets.ts > inMongolia` (a bounding box) decides built-in list vs. this route. Nominatim was tried as a steadier source but barely indexes vets (1 result for all of Berlin). During the build all public Overpass servers were down or timing out, so finding vets abroad still needs a live check (`scripts/check-vets-abroad.mjs`).
+
 ### Vercel
 - **What:** hosting, auto-deploys on push to GitHub. Docs: https://vercel.com/docs
 - **Cost:** the free Hobby tier.

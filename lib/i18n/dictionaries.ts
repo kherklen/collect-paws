@@ -49,6 +49,10 @@ const en = {
     directions: "Directions ↗",
     all: (n: number) => `All vets (${n})`,
     shrink: "Shrink",
+    finding: "Finding vets near you…",
+    noneFound: "No vets found within 30 km.",
+    unreachable: "Couldn't reach the vet map right now. Try again in a minute.",
+    unnamed: "Vet clinic",
     expand: "Show vet details",
   },
   needs: {
@@ -286,6 +290,10 @@ const mn: Dict = {
     directions: "Зам харах ↗",
     all: (n: number) => `Бүх эмнэлэг (${n})`,
     shrink: "Жижигрүүлэх",
+    finding: "Ойролцоох эмнэлгүүдийг хайж байна…",
+    noneFound: "30 км дотор амьтны эмнэлэг олдсонгүй.",
+    unreachable: "Эмнэлгийн газрын зурагтай холбогдож чадсангүй. Хэсэг хугацааны дараа дахин оролдоно уу.",
+    unnamed: "Амьтны эмнэлэг",
     expand: "Эмнэлгийн мэдээлэл харах",
   },
   needs: {

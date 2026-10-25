@@ -117,6 +117,7 @@ Develops `scope.md > The Core Loop` step 4.
 ### Closest Vet
 Develops `scope.md > The Core Loop` step 5.
 - [ ] Tapping the Vet button (next to Capture) shows the closest vet to the person's location, with its name and how far away it is.
+- [ ] (Added after the final review) In Mongolia the vet list is the learner's built-in list; elsewhere it's the vets near the person from OpenStreetMap (10 km, widening to 30 km), with "Couldn't reach the vet map" when that service is down.
 - [ ] (Added after the final review) The vet sheet starts compact and can be shrunk to one row or closed. "All vets" opens every vet listed nearest first with its distance. Tapping one (in the list or on the map) shows its name, distance, address, opening hours, and Directions. Directions opens the vet's Google Maps page.
 
 ### Lost-Pet Reports

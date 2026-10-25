@@ -8,7 +8,7 @@ import { createClient, photoUrl } from "@/lib/supabase/client";
 import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
 import VetFinder from "@/components/VetFinder";
-import { VETS, type Vet } from "@/lib/vets";
+import { vetKey, vetsNear, type Vet } from "@/lib/vets";
 import { URGENCY_COLOR, urgencyNow } from "@/lib/urgency";
 import { useNow } from "@/lib/useNow";
 import { useTemperature } from "@/lib/weather";
@@ -31,7 +31,7 @@ function vetIcon(closest: boolean) {
 }
 
 // Every vet, nearest first, measured from the person (or the map center if location is off).
-export type VetList = { vets: { vet: Vet; meters: number }[]; fromMapCenter: boolean };
+export type VetList = { vets: { vet: Vet; meters: number }[]; fromMapCenter: boolean; failed?: boolean };
 
 // Square photo pin, bordered in its urgency color right now (green, amber, red).
 // SOS pins get a need badge; helped pins turn blue and fade, and so do pins
@@ -157,15 +157,18 @@ export default function MapView({
         {showVet && <SortVets me={me} onSorted={setVetList} />}
         {showVet && chosenVet && <ShowVet me={me} vet={chosenVet} />}
         {showVet &&
-          VETS.map((vet) => (
-            <Marker
-              key={vet.name}
-              position={[vet.lat, vet.lng]}
-              icon={vetIcon(vet.name === shownVet?.name)}
-              zIndexOffset={vet.name === shownVet?.name ? 900 : 0}
-              eventHandlers={{ click: () => setChosenVet(vet) }}
-            />
-          ))}
+          vetList?.vets.map(({ vet }) => {
+            const shown = !!shownVet && vetKey(vet) === vetKey(shownVet);
+            return (
+              <Marker
+                key={vetKey(vet)}
+                position={[vet.lat, vet.lng]}
+                icon={vetIcon(shown)}
+                zIndexOffset={shown ? 900 : 0}
+                eventHandlers={{ click: () => setChosenVet(vet) }}
+              />
+            );
+          })}
         {focus && !showVet && <Recenter to={focus} />}
         {me && (
           <>
@@ -174,13 +177,14 @@ export default function MapView({
           </>
         )}
       </MapContainer>
-      {showVet && vetList && shownVet && (
+      {showVet && (
         <VetFinder
           list={vetList}
           chosen={shownVet}
           onChoose={setChosenVet}
           onClose={() => {
             setChosenVet(null);
+            setVetList(null);
             onCloseVet();
           }}
         />
@@ -200,16 +204,24 @@ export default function MapView({
   );
 }
 
-// Sorts every vet by distance from the person (or the map center if location is off)
-// and fits the closest one and the person on screen.
+// Finds the vets near the person (or the map center if location is off): the built-in
+// list in Mongolia, OpenStreetMap elsewhere. Sorts them by distance and fits the
+// closest one and the person on screen.
 function SortVets({ me, onSorted }: { me: LatLng | null; onSorted: (list: VetList) => void }) {
   const map = useMap();
   useEffect(() => {
     const center = map.getCenter();
     const from = me ?? { lat: center.lat, lng: center.lng };
-    const vets = byDistance(from, VETS).map(({ place, meters }) => ({ vet: place, meters }));
-    onSorted({ vets, fromMapCenter: !me });
-    fitVet(map, from, vets[0].vet);
+    let cancelled = false;
+    vetsNear(from).then((found) => {
+      if (cancelled) return;
+      const vets = byDistance(from, found ?? []).map(({ place, meters }) => ({ vet: place, meters }));
+      onSorted({ vets, fromMapCenter: !me, failed: found === null });
+      if (vets[0]) fitVet(map, from, vets[0].vet);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [map, me, onSorted]);
   return null;
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatDistance } from "@/lib/geo";
 import { useI18n } from "@/lib/i18n";
-import { directionsUrl, type Vet } from "@/lib/vets";
+import { directionsUrl, vetKey, type Vet } from "@/lib/vets";
 import type { VetList } from "@/components/MapView";
 
 // Bottom sheet for the chosen vet (the closest until another is tapped): its address,
@@ -15,16 +15,35 @@ export default function VetFinder({
   onChoose,
   onClose,
 }: {
-  list: VetList;
-  chosen: Vet;
+  // Null while the vets are still being found.
+  list: VetList | null;
+  chosen: Vet | null;
   onChoose: (vet: Vet) => void;
   onClose: () => void;
 }) {
   const { lang, t } = useI18n();
   const [shrunk, setShrunk] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const meters = list.vets.find((v) => v.vet.name === chosen.name)?.meters ?? 0;
-  const isClosest = list.vets[0]?.vet.name === chosen.name;
+  if (!list || !chosen) {
+    return (
+      <div className="fixed inset-x-0 bottom-0 z-[1100] flex items-center gap-3 rounded-t-[2rem] bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 shadow-2xl">
+        <span className="text-2xl">🩺</span>
+        <p className="flex-1 text-sm font-bold text-muted">{!list ? t.vet.finding : list.failed ? t.vet.unreachable : t.vet.noneFound}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t.common.close}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-xl text-muted"
+        >
+          ×
+        </button>
+      </div>
+    );
+  }
+
+  const name = (vet: Vet) => vet.name || t.vet.unnamed;
+  const meters = list.vets.find((v) => vetKey(v.vet) === vetKey(chosen))?.meters ?? 0;
+  const isClosest = !!list.vets[0] && vetKey(list.vets[0].vet) === vetKey(chosen);
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[1100] rounded-t-[2rem] bg-white px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-1 shadow-2xl">
@@ -51,7 +70,7 @@ export default function VetFinder({
       {shrunk ? (
         <button type="button" onClick={() => setShrunk(false)} className="flex w-full items-center gap-3 pb-1 text-left">
           <span className="text-xl">🩺</span>
-          <span className="min-w-0 flex-1 truncate font-bold">{chosen.name}</span>
+          <span className="min-w-0 flex-1 truncate font-bold">{name(chosen)}</span>
           <span className="shrink-0 text-sm text-muted">{formatDistance(meters, lang)} ▴</span>
         </button>
       ) : (
@@ -60,7 +79,7 @@ export default function VetFinder({
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-vet/15 text-2xl">🩺</div>
             <div className="min-w-0">
               {isClosest && <p className="text-[11px] font-extrabold uppercase tracking-wide text-vet">{t.vet.closest}</p>}
-              <h2 className="font-display text-lg font-bold italic leading-tight">{chosen.name}</h2>
+              <h2 className="font-display text-lg font-bold italic leading-tight">{name(chosen)}</h2>
               <p className="text-sm text-muted">{t.vet.away(formatDistance(meters, lang), list.fromMapCenter)}</p>
               {chosen.address && <p className="mt-1 text-sm">📍 {chosen.address[lang]}</p>}
               {chosen.hours && <p className="text-sm">🕒 {chosen.hours[lang]}</p>}
@@ -85,15 +104,15 @@ export default function VetFinder({
           {showAll && (
             <ul className="max-h-36 overflow-y-auto">
               {list.vets.map(({ vet, meters }) => (
-                <li key={vet.name}>
+                <li key={vetKey(vet)}>
                   <button
                     type="button"
                     onClick={() => onChoose(vet)}
                     className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm ${
-                      vet.name === chosen.name ? "bg-vet/10 font-bold text-vet" : "text-ink"
+                      vetKey(vet) === vetKey(chosen) ? "bg-vet/10 font-bold text-vet" : "text-ink"
                     }`}
                   >
-                    <span className="truncate">{vet.name}</span>
+                    <span className="truncate">{name(vet)}</span>
                     <span className="shrink-0 text-muted">{formatDistance(meters, lang)}</span>
                   </button>
                 </li>
