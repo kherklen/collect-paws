@@ -111,7 +111,7 @@ Build mode: fast
   Learner check: As the demo account, upload two photos of the same cat near each other: the second one asks if it's the same animal. Choose Same animal, then open the pin and check "Seen 2 times". Upload a clearly different cat and check that it isn't matched.
   Commit: `Recognize the same animal across captures`
 
-- [ ] **11. Captures carry an urgency color that rises with time and cold**
+- [x] **11. Captures carry an urgency color that rises with time and cold**
   Becomes usable: Instead of Collect / SOS, capture offers 🟢 **Doing fine** (fed or fine, private like Collect), 🟠 **Needs a hand** (hungry or limping), and 🔴 **Urgent** (injured or trapped). Amber and red still pick a need. Pins, cards, and the collection use the color. Every SOS card shows how long the animal has been waiting ("waiting 2 days") and the current temperature there with a tip for its need ("🥶 −18°C — bring warm water, bowls freeze"). Amber turns red after 24 hours with no help, or after 12 hours at −10°C or colder. After 3 days with no help, the pin fades and says it might not be there anymore. Red captures still appear in your own collection as your record.
   Why now: Red alerts (slice 12) depend on knowing when a pin is red, including pins that turned red over time.
   PRD ref: `prd.md > Features and Behavior > Capture`, `prd.md > Features and Behavior > Map (Nearby Friends)`, `prd.md > Features and Behavior > My Collection`
