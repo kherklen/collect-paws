@@ -53,4 +53,4 @@ const preHelped = await A.client
   .insert({ ...base, mode: "sos", need: "vet", helped_at: new Date().toISOString() });
 check("a capture cannot start out already helped", !!preHelped.error);
 
-finish();
+await finish();

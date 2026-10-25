@@ -19,4 +19,4 @@ for (const vet of vets) {
   check(`next to "${vet.name}" → picks it`, place.name === vet.name && meters < 100, `${Math.round(meters)} m`);
 }
 
-finish();
+await finish();

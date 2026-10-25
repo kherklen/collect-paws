@@ -29,4 +29,4 @@ check("the deleted SOS pin is gone for everyone", gone?.length === 0);
 const removed = await A.client.storage.from("photos").remove([path]);
 check("A deletes their own photo", !removed.error && removed.data?.length === 1, removed.error?.message);
 
-finish();
+await finish();

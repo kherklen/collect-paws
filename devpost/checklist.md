@@ -96,6 +96,7 @@ Build mode: fast
 
 ## Final Review
 
+- [ ] Check scripts left test lost-pet reports (broken photos) and test SOS pins visible to everyone — scripts now clean up after themselves; leftovers removed. Learner to confirm the test alert is gone.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
@@ -122,3 +123,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Report lost pet is an icon button at the bottom left (mirroring Vet) plus a profile menu item, and the alert pop-up sits top-right — the learner's placement choice in slice 7. When location is refused, alerts judge "nearby" from central Ulaanbaatar, matching the map's default.
 - The bell now opens `/notifications`, which links to the profile (it used to open the profile directly) — tapping the icon has to list sightings, and the profile stays one tap away.
 - Sightings can only change their `read_at` column (column-level grant), and can't be sent once a pet is found — tighter than the spec's "owner can update read_at", so a sighting's content can't be rewritten by anyone.
+- The `scripts/check-*.mjs` runs now delete their test captures and photos and mark their test reports found when they finish — at the final review the learner opened a test report from a script (broken photo), and six test SOS pins were on the shared map in central Ulaanbaatar.

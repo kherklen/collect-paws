@@ -46,4 +46,4 @@ for (const [file, animal] of [["cat.jpg", "cat"], ["dog.jpg", "dog"], ["banana.j
   }
 }
 
-finish();
+await finish();

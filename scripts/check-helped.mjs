@@ -45,4 +45,4 @@ check("a pin helped just now still shows on the map", now.data?.length === 1);
 const later = await mapQuery(B.client, B.id, new Date(Date.now() + 3600e3));
 check("a pin helped over a day ago is gone from the map", later.data?.length === 0);
 
-finish();
+await finish();

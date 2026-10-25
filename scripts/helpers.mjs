@@ -13,7 +13,20 @@ export function check(label, ok, detail = "") {
   if (!ok) failures++;
 }
 
-export function finish() {
+// Test accounts made by this run, so finish() can tidy up what they left behind.
+const accounts = [];
+
+// Removes everything a test account can see on the shared map or in alerts:
+// its captures and photos are deleted, and its lost-pet reports are marked found.
+export async function cleanUp({ client, id }) {
+  await client.from("captures").delete().eq("user_id", id);
+  await client.from("lost_pets").update({ status: "found", found_at: new Date().toISOString() }).eq("owner_id", id).eq("status", "open");
+  const { data: files } = await client.storage.from("photos").list(id);
+  if (files?.length) await client.storage.from("photos").remove(files.map((f) => `${id}/${f.name}`));
+}
+
+export async function finish() {
+  for (const account of accounts) await cleanUp(account);
   console.log(failures ? `\n${failures} check(s) failed` : "\nAll checks passed");
   process.exit(failures ? 1 : 0);
 }
@@ -28,7 +41,9 @@ export async function newAccount(name) {
     options: { data: { display_name: `${name} ${stamp}` } },
   });
   if (error || !data.session) throw new Error(`Couldn't create test account: ${error?.message}`);
-  return { client, id: data.user.id };
+  const account = { client, id: data.user.id };
+  accounts.push(account);
+  return account;
 }
 
 // The smallest valid JPEG (1×1 white pixel), for upload checks.

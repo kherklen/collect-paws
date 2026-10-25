@@ -96,4 +96,4 @@ await A.client.from("lost_pets").update({ status: "found", found_at: new Date().
 const late = await B.client.from("sightings").insert({ lost_pet_id: pet.id, kind: "report", description: "Saw it" });
 check("no new sightings once the pet is found", !!late.error);
 
-finish();
+await finish();

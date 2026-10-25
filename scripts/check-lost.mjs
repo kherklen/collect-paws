@@ -68,4 +68,4 @@ const openIds = open.data?.map((r) => r.id) ?? [];
 check("the found report is no longer returned as open", !openIds.includes(withPlace.data.id));
 check("the other report is still open", openIds.includes(noPlace.data.id));
 
-finish();
+await finish();
