@@ -206,6 +206,7 @@ const en = {
   },
   alert: {
     lostNearby: "Lost pet nearby!",
+    redNearby: "🚨 Needs help now",
     hide: "Hide this alert",
   },
   sighting: {
@@ -440,6 +441,7 @@ const mn: Dict = {
   },
   alert: {
     lostNearby: "Ойролцоо төөрсөн амьтан!",
+    redNearby: "🚨 Яг одоо тусламж хэрэгтэй",
     hide: "Энэ мэдэгдлийг нуух",
   },
   sighting: {

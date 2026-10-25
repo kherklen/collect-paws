@@ -3,9 +3,10 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
 import LostPetAlert from "@/components/LostPetAlert";
+import RedAlert from "@/components/RedAlert";
 import { shrinkPhoto } from "@/lib/image";
 import { useI18n } from "@/lib/i18n";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
@@ -27,7 +28,10 @@ export default function MainShell() {
 
   const [shrinking, setShrinking] = useState(false);
   const [showVet, setShowVet] = useState(false);
-  const { alert, dismiss, unread } = useAlerts();
+  const { alert, redAlert, dismiss, unread } = useAlerts();
+  // `/?pin=<id>` (from a red alert) opens that pin on the map.
+  const pinId = tab === "map" ? params.get("pin") : null;
+  const clearPinParam = useCallback(() => router.replace("/", { scroll: false }), [router]);
 
   function openVetFinder() {
     if (tab !== "map") selectTab("map");
@@ -56,7 +60,12 @@ export default function MainShell() {
       {/* Content: full-screen map, or the collection grid */}
       <div className="absolute inset-0">
         {tab === "map" ? (
-          <MapView showVet={showVet} onCloseVet={() => setShowVet(false)} />
+          <MapView
+            showVet={showVet}
+            onCloseVet={() => setShowVet(false)}
+            openPinId={pinId}
+            onPinOpened={clearPinParam}
+          />
         ) : (
           <CollectionGrid />
         )}
@@ -95,7 +104,11 @@ export default function MainShell() {
         </Link>
       </header>
 
-      {alert && <LostPetAlert pet={alert} onDismiss={() => dismiss(alert.id)} />}
+      {/* Corner pop-ups: a red animal near you first, then a lost pet. */}
+      <div className="pointer-events-none absolute right-4 top-20 z-[1100] flex flex-col gap-2">
+        {redAlert && <RedAlert capture={redAlert} onDismiss={() => dismiss(redAlert.id)} />}
+        {alert && <LostPetAlert pet={alert} onDismiss={() => dismiss(alert.id)} />}
+      </div>
 
       {/* Bottom buttons */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">

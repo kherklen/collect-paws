@@ -67,6 +67,17 @@ export const MATCH_RADIUS_METERS = 500;
 // Lost-pet alerts reach people within this distance of the last-seen place.
 export const ALERT_RADIUS_METERS = 3000;
 
+// Which red animals should alert this person: within 3 km of them, never their own,
+// never ones they dismissed. (Whether a capture is red right now is decided by the caller.)
+export function redAlertsFor<T extends { id: string; user_id: string; lat: number; lng: number }>(
+  captures: T[],
+  me: { id: string; spot: LatLng; dismissed: string[] },
+) {
+  return captures.filter(
+    (c) => c.user_id !== me.id && !me.dismissed.includes(c.id) && distanceMeters(me.spot, c) <= ALERT_RADIUS_METERS,
+  );
+}
+
 type AlertReport = { id: string; owner_id: string; last_seen_lat: number | null; last_seen_lng: number | null };
 
 // Which open lost-pet reports should alert this person: no last-seen place (goes to

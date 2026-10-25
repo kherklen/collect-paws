@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { alertsFor, getLocation, UB_CENTER } from "@/lib/geo";
-import type { LostPet } from "@/lib/types";
+import { alertsFor, getLocation, redAlertsFor, UB_CENTER } from "@/lib/geo";
+import type { Capture, LostPet } from "@/lib/types";
+import { MAY_BE_GONE_DAYS, urgencyNow } from "@/lib/urgency";
+import { getTemperature } from "@/lib/weather";
 
 const POLL_MS = 30000;
 const DISMISSED_KEY = "dismissedAlerts";
@@ -47,6 +49,29 @@ async function fetchAlert(): Promise<LostPet | null> {
   return matches[0] ?? null;
 }
 
+// The newest unhelped SOS animal near this person that is red right now: tagged
+// red, or amber that waited too long. Pins older than "may be gone" don't alert.
+async function fetchRedAlert(): Promise<Capture | null> {
+  const supabase = createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return null;
+  const since = new Date(Date.now() - MAY_BE_GONE_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const spot = (await getLocation()) ?? UB_CENTER;
+  const [{ data }, celsius] = await Promise.all([
+    supabase
+      .from("captures")
+      .select("*")
+      .eq("mode", "sos")
+      .is("helped_at", null)
+      .gt("created_at", since)
+      .order("created_at", { ascending: false }),
+    getTemperature(spot),
+  ]);
+  const now = Date.now();
+  const red = ((data as Capture[]) ?? []).filter((c) => urgencyNow(c, now, celsius).level === "red");
+  return redAlertsFor(red, { id: auth.user.id, spot, dismissed: readDismissed() })[0] ?? null;
+}
+
 // How many sightings on my lost-pet reports I haven't opened yet (the bell's badge).
 async function fetchUnreadCount(): Promise<number> {
   const supabase = createClient();
@@ -61,15 +86,17 @@ async function fetchUnreadCount(): Promise<number> {
 }
 
 // Checks every 30 seconds, and whenever the app comes back into view, for open
-// lost-pet reports near this person (the newest is the corner pop-up) and for
-// new sightings on their own reports.
+// lost-pet reports near this person and red animals near them (the newest of each
+// is a corner pop-up), and for new sightings on their own reports.
 export function useAlerts() {
   const [alert, setAlert] = useState<LostPet | null>(null);
+  const [redAlert, setRedAlert] = useState<Capture | null>(null);
   const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     const load = () => {
       fetchAlert().then(setAlert);
+      fetchRedAlert().then(setRedAlert);
       fetchUnreadCount().then(setUnread);
     };
     load();
@@ -82,11 +109,14 @@ export function useAlerts() {
     };
   }, []);
 
+  // Lost-pet and capture IDs are both UUIDs, so one dismissed list serves both.
   const dismiss = useCallback((id: string) => {
     saveDismissed([...readDismissed(), id]);
     setAlert(null);
+    setRedAlert(null);
     fetchAlert().then(setAlert);
+    fetchRedAlert().then(setRedAlert);
   }, []);
 
-  return { alert, dismiss, unread };
+  return { alert, redAlert, dismiss, unread };
 }

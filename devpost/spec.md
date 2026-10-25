@@ -232,6 +232,8 @@ The newest match shows as the corner pop-up, and tapping it opens `/lost/[id]`. 
 
 PRD ref: `prd.md > Lost-Pet Reports`, `prd.md > Notifications and Profile`.
 
+- (Added after the final review) The poller also looks for **red animals**: unhelped SOS captures from the last 3 days that are red right now (tagged red, or amber that waited too long; `lib/urgency.ts`), within 3 km, not your own, not dismissed (`lib/geo.ts > redAlertsFor`). The newest shows as a red-bordered pop-up (`components/RedAlert.tsx`) above the lost-pet one. Tapping opens `/?pin=<id>`, which centers the map on the pin and opens its card.
+
 ### Lost-pet detail and sightings
 - `/lost/[id]` shows the photo, description, and last-seen place, with two actions:
   - **"I see it now"**: take a photo. The person's current location is attached.

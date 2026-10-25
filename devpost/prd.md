@@ -127,6 +127,9 @@ Develops `scope.md > Later` ("Lost-pet matching"), pulled into the POC by the le
 - [ ] Tapping the pop-up opens the lost pet's details.
 - [ ] The owner can mark the pet **found**, and the alert stops appearing.
 
+### Red Alerts (added after the final review)
+- [ ] When an animal within 3 km is red (tagged red, or amber that waited too long), people nearby get a red-bordered pop-up like the lost-pet one: "🚨 Needs help now", the address, and how long it has waited. Tapping it opens the pin; × hides it on this phone. Never for your own captures or helped ones; if both apply, the red pop-up sits above the lost-pet one.
+
 ### Sightings
 - [ ] From the alert, someone can send **"I see it now"** with a photo.
 - [ ] Or they can send **"Report a sighting"** with when they saw it, where, and what it looked like. The description helps the owner rule out false alarms.

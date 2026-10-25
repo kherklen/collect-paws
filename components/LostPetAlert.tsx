@@ -9,7 +9,7 @@ import type { LostPet } from "@/lib/types";
 export default function LostPetAlert({ pet, onDismiss }: { pet: LostPet; onDismiss: () => void }) {
   const { t } = useI18n();
   return (
-    <div className="pointer-events-auto absolute right-4 top-20 z-[1100] flex w-60 items-center gap-3 rounded-3xl border-2 border-sos/40 bg-white p-2 pr-8 shadow-lg shadow-sos/20">
+    <div className="pointer-events-auto relative flex w-60 items-center gap-3 rounded-3xl border-2 border-sos/40 bg-white p-2 pr-8 shadow-lg shadow-sos/20">
       <Link href={`/lost/${pet.id}`} className="flex min-w-0 items-center gap-3">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={photoUrl(pet.photo_path)} alt="" className="h-14 w-14 shrink-0 rounded-2xl object-cover" />

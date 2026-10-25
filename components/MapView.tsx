@@ -77,9 +77,14 @@ async function fetchMapCaptures(): Promise<Capture[]> {
 export default function MapView({
   showVet = false,
   onCloseVet = () => {},
+  openPinId = null,
+  onPinOpened = () => {},
 }: {
   showVet?: boolean;
   onCloseVet?: () => void;
+  // A pin to open on arrival (from a red alert), and a callback once it's open.
+  openPinId?: string | null;
+  onPinOpened?: () => void;
 }) {
   const [me, setMe] = useState<LatLng | null>(null);
   const [vetList, setVetList] = useState<VetList | null>(null);
@@ -87,6 +92,8 @@ export default function MapView({
   const [chosenVet, setChosenVet] = useState<Vet | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
   const [selected, setSelected] = useState<Capture | null>(null);
+  // Where to center the map instead of on the person (a pin opened from an alert).
+  const [focus, setFocus] = useState<LatLng | null>(null);
   const now = useNow();
   // One temperature for the area on screen; colder weather makes waiting pins turn red sooner.
   const celsius = useTemperature(me ?? UB_CENTER);
@@ -101,6 +108,25 @@ export default function MapView({
   }, []);
 
   const shownVet = chosenVet ?? vetList?.vets[0]?.vet ?? null;
+
+  useEffect(() => {
+    if (!openPinId) return;
+    let cancelled = false;
+    createClient()
+      .from("captures")
+      .select("*")
+      .eq("id", openPinId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setSelected(data as Capture);
+        setFocus({ lat: data.lat, lng: data.lng });
+        onPinOpened();
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [openPinId, onPinOpened]);
 
   function handleHelped(updated: Capture) {
     setCaptures((all) => all.map((c) => (c.id === updated.id ? updated : c)));
@@ -140,9 +166,10 @@ export default function MapView({
               eventHandlers={{ click: () => setChosenVet(vet) }}
             />
           ))}
+        {focus && !showVet && <Recenter to={focus} />}
         {me && (
           <>
-            {!showVet && <Recenter to={me} />}
+            {!showVet && !focus && <Recenter to={me} />}
             <Marker position={[me.lat, me.lng]} icon={youIcon} zIndexOffset={1000} />
           </>
         )}

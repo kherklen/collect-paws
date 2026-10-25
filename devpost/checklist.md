@@ -121,7 +121,7 @@ Build mode: fast
   Learner check: As the demo account, capture one of each color and check the pins and cards. Open an SOS card and check the waiting time, temperature, and tip.
   Commit: `Add urgency colors that rise with time and cold`
 
-- [ ] **12. Red animals alert people nearby**
+- [x] **12. Red animals alert people nearby**
   Becomes usable: When an animal near you (within 3 km) is red, whether tagged red or turned red after waiting, you get a red-bordered pop-up like the lost-pet one: "🚨 Needs help now", the address, and how long it's been waiting. Tapping it opens that pin on the map; × hides it on this phone. Never for your own captures or helped ones. If a lost pet and a red animal both apply, both pop-ups show, red on top.
   Why now: It needs slice 11's urgency, and it reuses the lost-pet alert poller, so it's small.
   PRD ref: `prd.md > Features and Behavior > Lost-Pet Reports` (alert behavior it mirrors)
