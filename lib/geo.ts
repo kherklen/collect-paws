@@ -3,13 +3,14 @@ export const UB_CENTER = { lat: 47.9186, lng: 106.9176 };
 
 export type LatLng = { lat: number; lng: number };
 
-// Street address for a spot, via our /api/address route. Null if it can't be found.
-export async function lookupAddress(spot: LatLng): Promise<string | null> {
+// A short place description for a spot (closest named place or street, plus the area;
+// just the area with `areaOnly`), via our /api/address route. Null if it can't be found.
+export async function lookupAddress(spot: LatLng, areaOnly = false): Promise<string | null> {
   try {
     const res = await fetch("/api/address", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(spot),
+      body: JSON.stringify({ ...spot, areaOnly }),
     });
     const { address } = await res.json();
     return address ?? null;
@@ -31,6 +32,15 @@ export function getLocation(timeoutMs = 10000): Promise<LatLng | null> {
       { enableHighAccuracy: true, timeout: timeoutMs, maximumAge: 60000 },
     );
   });
+}
+
+// A spot moved a random 100–200 m away, for "I'm at home: hide the exact spot".
+export function nudge(spot: LatLng, minMeters = 100, maxMeters = 200): LatLng {
+  const meters = minMeters + Math.random() * (maxMeters - minMeters);
+  const angle = Math.random() * 2 * Math.PI;
+  const dLat = (meters * Math.cos(angle)) / 111_000;
+  const dLng = (meters * Math.sin(angle)) / (111_000 * Math.cos((spot.lat * Math.PI) / 180));
+  return { lat: spot.lat + dLat, lng: spot.lng + dLng };
 }
 
 // Straight-line distance between two spots, in meters (the haversine formula).

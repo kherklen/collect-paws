@@ -3,6 +3,7 @@
 import { createContext, useContext, useState } from "react";
 import { useRouter } from "next/navigation";
 import { dictionaries, type Dict, type Lang } from "@/lib/i18n/dictionaries";
+import { waitingParts } from "@/lib/urgency";
 
 type I18n = { lang: Lang; t: Dict; setLang: (lang: Lang) => void };
 
@@ -41,6 +42,15 @@ export function formatDayTime(t: Dict, date: string | Date) {
   return new Intl.DateTimeFormat(t.locale, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).format(
     new Date(date),
   );
+}
+
+// "5 min ago" / "3 h ago" / "2 days ago", then just the date after a week.
+// Public posts show this instead of who posted them.
+export function formatAgo(t: Dict, date: string | Date, now: number) {
+  const ms = Math.max(0, now - new Date(date).getTime());
+  if (ms >= 7 * 24 * 60 * 60 * 1000) return t.common.onDay(formatDay(t, date));
+  const { unit, n } = waitingParts(ms);
+  return t.common.ago(n, unit);
 }
 
 // "Near 47.9186, 106.9176" when there's no street address.

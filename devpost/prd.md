@@ -142,6 +142,13 @@ Develops `scope.md > Later` ("Notifications"), pulled into the POC by the learne
 - [ ] Tapping the icon lists the sightings, each with its photo or details.
 - [ ] The profile lists everything the person has posted (captures and lost-pet reports), with the details received on each.
 
+## Privacy (added after the final review)
+The learner asked whether the app may expose people's home addresses. It shouldn't without clear consent (Mongolia's Personal Data Protection Law treats a location tied to an identifiable person as personal data). Decisions:
+- [ ] Public posts (SOS pins, lost-pet reports) show **no names**, only how long ago: "Spotted 5 min ago" / "Reported 2 h ago". Your own say "You spotted it…". Sightings stay private between the sender and the owner, so they keep names.
+- [ ] Places never include a **house number**: the closest named place (shop, market, bus stop…) or the street, plus the area.
+- [ ] Posting SOS shows a warning ("Everyone nearby can see where this pin is. Avoid posting from inside your home.") and an option **"🏠 I'm at home: hide the exact spot"**, which moves the pin 100–200 m and shows only the area. Hiding just the text wouldn't help, because the pin itself shows the spot.
+- Photos never carry the phone's hidden GPS tag (shrinking re-encodes them), and Collect captures stay private.
+
 ## States and Boundaries
 
 - **First open**: the sign up / log in screen, then a request to use the person's location.

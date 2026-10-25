@@ -7,9 +7,10 @@ import { useParams } from "next/navigation";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
-import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
+import { formatAgo, formatSpot, useI18n } from "@/lib/i18n";
 import { shrinkPhoto } from "@/lib/image";
 import type { LostPet } from "@/lib/types";
+import { useNow } from "@/lib/useNow";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
@@ -21,8 +22,8 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
 export default function LostPetPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
+  const now = useNow();
   const [pet, setPet] = useState<LostPet | null>(null);
-  const [ownerName, setOwnerName] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [sightings, setSightings] = useState<SightingWithReporter[]>([]);
   const [missing, setMissing] = useState(false);
@@ -43,17 +44,13 @@ export default function LostPetPage() {
       setPet(data as LostPet);
       const mine = auth.user?.id === data.owner_id;
       setIsOwner(mine);
-      const [{ data: owner }, { data: received }] = await Promise.all([
-        supabase.from("profiles").select("display_name").eq("id", data.owner_id).single(),
-        mine
-          ? supabase
-              .from("sightings")
-              .select("*, profiles(display_name)")
-              .eq("lost_pet_id", id)
-              .order("created_at", { ascending: false })
-          : Promise.resolve({ data: [] }),
-      ]);
-      setOwnerName(owner?.display_name ?? null);
+      const { data: received } = mine
+        ? await supabase
+            .from("sightings")
+            .select("*, profiles(display_name)")
+            .eq("lost_pet_id", id)
+            .order("created_at", { ascending: false })
+        : { data: [] };
       setSightings((received as SightingWithReporter[]) ?? []);
     })();
   }, [id]);
@@ -112,7 +109,7 @@ export default function LostPetPage() {
               📍 {place ? t.lost.lastSeen(place) : t.lost.noPlace}
             </p>
             <p className="text-sm text-muted">
-              {t.lost.reportedBy(isOwner ? t.lost.you : (ownerName ?? "…"), formatDay(t, pet.created_at))}
+              {t.lost.reported(formatAgo(t, pet.created_at, now), isOwner)}
             </p>
           </section>
 
@@ -129,7 +126,7 @@ export default function LostPetPage() {
             </button>
           )}
           {!isOwner && pet.status === "open" && (
-            <SightingForms petId={pet.id} ownerName={ownerName} lastSeen={
+            <SightingForms petId={pet.id} lastSeen={
               pet.last_seen_lat != null && pet.last_seen_lng != null
                 ? { lat: pet.last_seen_lat, lng: pet.last_seen_lng }
                 : null
@@ -162,15 +159,7 @@ type SightingMode = "choose" | "now" | "report" | "sent";
 
 // "I see it now" (a photo, with your location attached) or "Report a sighting"
 // (when, where, and a required description of the animal).
-function SightingForms({
-  petId,
-  ownerName,
-  lastSeen,
-}: {
-  petId: string;
-  ownerName: string | null;
-  lastSeen: LatLng | null;
-}) {
+function SightingForms({ petId, lastSeen }: { petId: string; lastSeen: LatLng | null }) {
   const { t } = useI18n();
   const [mode, setMode] = useState<SightingMode>("choose");
   const [photo, setPhoto] = useState<Blob | null>(null);
@@ -261,7 +250,7 @@ function SightingForms({
     return (
       <div className="flex flex-col items-center gap-3 rounded-3xl bg-helped/10 p-5 text-center">
         <p className="text-lg font-extrabold">{t.lost.thanks}</p>
-        <p className="text-sm text-muted">{t.lost.ownerWillSee(ownerName)}</p>
+        <p className="text-sm text-muted">{t.lost.ownerWillSee}</p>
         <button type="button" onClick={reset} className="text-sm font-bold text-brand-dark">
           {t.lost.sendAnother}
         </button>

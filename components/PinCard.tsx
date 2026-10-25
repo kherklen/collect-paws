@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
-import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
+import { formatAgo, formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
 import { URGENCY_COLOR, urgencyNow, waitingParts } from "@/lib/urgency";
 import { useNow } from "@/lib/useNow";
@@ -23,7 +23,6 @@ export default function PinCard({
   onDeleted: (id: string) => void;
 }) {
   const { t } = useI18n();
-  const [spotter, setSpotter] = useState<string | null>(null);
   const [isMine, setIsMine] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -57,12 +56,6 @@ export default function PinCard({
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", capture.user_id)
-      .single()
-      .then(({ data }) => setSpotter(data?.display_name ?? null));
     supabase.auth.getUser().then(({ data }) => setIsMine(data.user?.id === capture.user_id));
   }, [capture.user_id]);
 
@@ -136,7 +129,7 @@ export default function PinCard({
             <h2 className="truncate text-xl font-display font-bold italic">{capture.breed ?? t.pin.unknownBreed}</h2>
             <p className="text-sm text-muted">📍 {capture.address ?? formatSpot(t, capture)}</p>
             <p className="text-xs text-muted">
-              {t.pin.spotted(spotter, formatDay(t, capture.created_at))}
+              {t.pin.spotted(formatAgo(t, capture.created_at, now), isMine)}
             </p>
           </div>
         </div>

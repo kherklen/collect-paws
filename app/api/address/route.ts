@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 
 type NominatimResult = {
+  category?: string;
+  name?: string;
   display_name?: string;
   address?: Record<string, string>;
 };
 
-// lat/lng → a short street address, via OpenStreetMap's Nominatim.
+// Named places worth saying "it's by here": shops, cafés, schools, parks, bus stops…
+// Never buildings or house numbers, which could point at someone's home.
+const PLACE_CATEGORIES = new Set(["amenity", "shop", "leisure", "tourism", "historic", "railway", "highway", "office"]);
+
+// lat/lng → a short, privacy-safe place description, via OpenStreetMap's Nominatim:
+// the closest named place or the street, plus the area — never a house number.
+// `areaOnly` (the "I'm at home" option) gives just the area.
 // Called once per save; the result is stored, never looked up again on view.
 export async function POST(request: Request) {
-  const { lat, lng } = await request.json().catch(() => ({}));
+  const { lat, lng, areaOnly = false } = await request.json().catch(() => ({}));
   if (typeof lat !== "number" || typeof lng !== "number") {
     return NextResponse.json({ address: null }, { status: 400 });
   }
@@ -21,17 +29,20 @@ export async function POST(request: Request) {
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return NextResponse.json({ address: null });
-    return NextResponse.json({ address: shortAddress(await res.json()) });
+    return NextResponse.json({ address: placeName(await res.json(), areaOnly === true) });
   } catch {
     return NextResponse.json({ address: null });
   }
 }
 
-function shortAddress(result: NominatimResult): string | null {
+function placeName(result: NominatimResult, areaOnly: boolean): string | null {
   const a = result.address ?? {};
-  const street = [a.road, a.house_number].filter(Boolean).join(" ");
-  const area = a.suburb ?? a.city_district ?? a.neighbourhood ?? a.quarter;
-  const short = [street, area].filter(Boolean).join(", ");
-  if (short) return short;
-  return result.display_name?.split(",").slice(0, 3).join(",").trim() || null;
+  const area = a.suburb ?? a.neighbourhood ?? a.quarter ?? a.city_district ?? null;
+  if (areaOnly) return area;
+  const named =
+    result.name && result.category && PLACE_CATEGORIES.has(result.category) && result.name !== a.road
+      ? result.name
+      : null;
+  const short = [named ?? a.road, area].filter(Boolean).join(", ");
+  return short || area;
 }

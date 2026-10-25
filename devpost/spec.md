@@ -191,6 +191,7 @@ PRD ref: `prd.md > Capture`, `prd.md > States and Boundaries` (location refused)
 PRD ref: `prd.md > Capture`.
 
 ### Address route (`/api/address`)
+- (Changed after the final review, for privacy) Returns the closest named place when Nominatim's nearest object is a shop, amenity, leisure, tourism, historic, railway, highway (bus stop), or office, otherwise the road, plus the area (suburb, neighbourhood, quarter, or district). Never a house number or building name. `areaOnly: true` (the "I'm at home" option) returns just the area; `/capture` also moves that pin 100–200 m (`lib/geo.ts > nudge`). Checked against live Nominatim results with `scripts/check-privacy.mjs`.
 - A server route.
 - Calls Nominatim reverse geocoding with a proper `User-Agent` (their usage policy requires one).
 - Returns a short address string, or `null`.

@@ -8,7 +8,7 @@ import PhotoInput from "@/components/PhotoInput";
 import { isFreshPhoto } from "@/lib/image";
 import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
-import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
+import { getLocation, lookupAddress, nudge, UB_CENTER, type LatLng } from "@/lib/geo";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n/dictionaries";
 import { NEEDS, type AnimalMatch, type Need, type Urgency } from "@/lib/types";
@@ -75,6 +75,8 @@ export default function CapturePage() {
   // Green is a private Collect capture; amber and red are SOS pins everyone sees.
   const [urgency, setUrgency] = useState<Urgency>("green");
   const mode = urgency === "green" ? "collect" : "sos";
+  // SOS pins are public: "I'm at home" moves the pin 100–200 m and shows only the area.
+  const [hideSpot, setHideSpot] = useState(false);
   const [need, setNeed] = useState<Need | null>(null);
   const [locationStep, setLocationStep] = useState<LocationStep>("auto");
   const [dropped, setDropped] = useState<LatLng | null>(null);
@@ -148,7 +150,8 @@ export default function CapturePage() {
     setError(null);
     setSaving(true);
 
-    const spot: LatLng | null = dropByHand ? dropped : await getLocation();
+    const exact: LatLng | null = dropByHand ? dropped : await getLocation();
+    const spot = exact && mode === "sos" && hideSpot ? nudge(exact) : exact;
     if (!spot) {
       setSaving(false);
       setLocationStep(locationStep === "auto" ? "ask-again" : "drop");
@@ -180,7 +183,7 @@ export default function CapturePage() {
       const path = `${auth.user.id}/${crypto.randomUUID()}.jpg`;
       const [upload, address] = await Promise.all([
         supabase.storage.from("photos").upload(path, photo, { contentType: "image/jpeg" }),
-        lookupAddress(spot),
+        lookupAddress(spot, mode === "sos" && hideSpot),
       ]);
       if (upload.error) throw upload.error;
 
@@ -299,6 +302,22 @@ export default function CapturePage() {
                   ))}
                 </div>
               </div>
+
+              {mode === "sos" && (
+                <div className="flex flex-col gap-2 rounded-3xl bg-white p-4 text-sm shadow-sm shadow-brand/10">
+                  <p>{t.capture.publicWarning}</p>
+                  <label className="flex items-center gap-3 font-bold">
+                    <input
+                      type="checkbox"
+                      checked={hideSpot}
+                      onChange={(e) => setHideSpot(e.target.checked)}
+                      className="h-5 w-5 accent-brand-dark"
+                    />
+                    {t.capture.hideSpot}
+                  </label>
+                  {hideSpot && <p className="text-xs text-muted">{t.capture.hideSpotNote}</p>}
+                </div>
+              )}
 
               {mode === "sos" && (
                 <div className="flex flex-col gap-2">
