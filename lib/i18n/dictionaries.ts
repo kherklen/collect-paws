@@ -46,7 +46,6 @@ const en = {
       `${distance} away${fromMapCenter ? " from the map center (location is off)" : ""}`,
     directions: "Directions ↗",
     all: (n: number) => `All vets (${n}), nearest first`,
-    approximate: "Approximate location: only the khoroo is known.",
   },
   needs: {
     food: "Food",
@@ -271,7 +270,6 @@ const mn: Dict = {
         : `${distance} зайтай`,
     directions: "Зам харах ↗",
     all: (n: number) => `Бүх эмнэлэг (${n}), ойроос нь`,
-    approximate: "Ойролцоо байршил: зөвхөн хороо нь тодорхой.",
   },
   needs: {
     food: "Хоол",

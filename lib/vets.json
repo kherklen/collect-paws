@@ -1,29 +1,33 @@
 [
   {
     "name": "Энэрэх мал эмнэлэг (Enereh Animal Hospital)",
-    "lat": 47.91051,
-    "lng": 106.90878,
+    "lat": 47.8956959,
+    "lng": 106.8935487,
+    "maps": "https://maps.google.com/maps?cid=9604228880674912086",
     "address": { "en": "Chinggis Ave 145/5, Khan-Uul district, 20th khoroo", "mn": "Чингисийн өргөн чөлөө 145/5, Хан-Уул дүүрэг, 20-р хороо" },
     "hours": { "en": "Mon–Sat, closed Sunday", "mn": "Даваа–Бямба, Ням гарагт амарна" }
   },
   {
     "name": "SOS Малын Эмнэлэг",
-    "lat": 47.92179,
-    "lng": 106.88945,
+    "lat": 47.9312696,
+    "lng": 106.8866583,
+    "maps": "https://maps.google.com/maps?cid=1478059126257047441",
     "address": { "en": "Zuragt Rd 150, Bayangol district, 11th khoroo", "mn": "Зурагтын зам 150, Баянгол дүүрэг, 11-р хороо" },
     "hours": { "en": "Daily 9AM–8PM", "mn": "Өдөр бүр 9:00–20:00" }
   },
   {
     "name": "Амар мал эмнэлэг",
-    "lat": 47.91272,
-    "lng": 106.89788,
+    "lat": 47.9127289,
+    "lng": 106.8979728,
+    "maps": "https://maps.google.com/maps?cid=15791127653253036520",
     "address": { "en": "Seoul St, Sükhbaatar district, 5th khoroo", "mn": "Сөүлийн гудамж, Сүхбаатар дүүрэг, 5-р хороо" },
     "hours": { "en": "Daily 10AM–6PM", "mn": "Өдөр бүр 10:00–18:00" }
   },
   {
     "name": "Сонор амьтны эмнэлэг (Sonor Veterinary Hospital)",
-    "lat": 47.9165,
-    "lng": 106.94564,
+    "lat": 47.9137319,
+    "lng": 106.9405559,
+    "maps": "https://maps.google.com/maps?cid=12701371449895445839",
     "address": { "en": "Zuun 4 zam, west side of the Food Security Research Center fence", "mn": "Зүүн 4 зам, Хүнсний аюулгүй байдлын судалгааны төвийн хашааны баруун талд" },
     "hours": { "en": "Closed Tuesday", "mn": "Мягмар гарагт амарна" }
   },
@@ -33,40 +37,59 @@
     "lng": 106.91016
   },
   {
+    "name": "UB Vet animal hospital",
+    "lat": 47.8959769,
+    "lng": 106.8958668,
+    "maps": "https://maps.google.com/maps?cid=1910946873539308805",
+    "address": { "en": "Khan-Uul district, 20th khoroo", "mn": "Хан-Уул дүүрэг, 20-р хороо" },
+    "hours": { "en": "Mon–Fri 9AM–6PM, Sat 10AM–5PM", "mn": "Даваа–Баасан 9:00–18:00, Бямба 10:00–17:00" }
+  },
+  {
     "name": "City Paws Small animal clinic",
-    "lat": 47.92619,
-    "lng": 106.91169,
+    "lat": 47.9262451,
+    "lng": 106.9117379,
+    "maps": "https://maps.google.com/maps?cid=18247591643379788016",
     "address": { "en": "Chingeltei district, 6th khoroo (WWG6+FMW)", "mn": "Чингэлтэй дүүрэг, 6-р хороо (WWG6+FMW)" },
     "hours": { "en": "Daily 10AM–7PM", "mn": "Өдөр бүр 10:00–19:00" }
   },
   {
     "name": "Жаргал мал эмнэлэг",
-    "lat": 47.91544,
-    "lng": 106.88956,
+    "lat": 47.9154714,
+    "lng": 106.8895891,
+    "maps": "https://maps.google.com/maps?cid=4048177056928212870",
     "address": { "en": "Bayangol district, 2nd khoroo (WV8Q+5RP)", "mn": "Баянгол дүүрэг, 2-р хороо (WV8Q+5RP)" },
     "hours": { "en": "Mon–Fri 10AM–6PM", "mn": "Даваа–Баасан 10:00–18:00" }
   },
   {
     "name": "Жонон мал эмнэлэг",
-    "lat": 47.9262,
-    "lng": 106.90726,
-    "approximate": true,
+    "lat": 47.9280158,
+    "lng": 106.9075365,
+    "maps": "https://maps.google.com/maps?cid=4447965857594173468",
     "address": { "en": "Chingeltei district, 6th khoroo", "mn": "Чингэлтэй дүүрэг, 6-р хороо" },
     "hours": { "en": "Mon–Fri 9AM–7PM, Sat–Sun 10AM–6PM", "mn": "Даваа–Баасан 9:00–19:00, Бямба–Ням 10:00–18:00" }
   },
   {
     "name": "Animals Healthy мал эмнэлэг",
-    "lat": 47.92191,
-    "lng": 106.94422,
-    "approximate": true,
+    "lat": 47.9215856,
+    "lng": 106.9445997,
+    "maps": "https://maps.google.com/maps?cid=8744375065434174571",
     "address": { "en": "Bayanzürkh district, 7th khoroo, Building 115, Entrance 4", "mn": "Баянзүрх дүүрэг, 7-р хороо, 115-р байр, 4-р орц" },
     "hours": { "en": "11AM–6PM, closed Wednesday", "mn": "11:00–18:00, Лхагва гарагт амарна" }
   },
   {
     "name": "Mongolia V.E.T.Net NGO",
-    "lat": 47.91051,
-    "lng": 106.90878,
+    "lat": 47.8952729,
+    "lng": 106.8935662,
+    "maps": "https://maps.google.com/maps?cid=17557721995043631414",
     "address": { "en": "Chinggis Khan Ave 145/5, Khan-Uul district, 20th khoroo", "mn": "Чингис хааны өргөн чөлөө 145/5, Хан-Уул дүүрэг, 20-р хороо" },
     "hours": { "en": "Mon–Sat 9AM–6PM · an NGO, not a walk-in clinic", "mn": "Даваа–Бямба 9:00–18:00 · ТББ, шууд үзлэг хийдэггүй" }
+  },
+  {
+    "name": "SOS Pet Care and Salon",
+    "lat": 47.9059693,
+    "lng": 106.9424961,
+    "maps": "https://maps.google.com/maps?cid=5621348201839733806",
+    "address": { "en": "Bayanzürkh district, 36th khoroo", "mn": "Баянзүрх дүүрэг, 36-р хороо" },
+    "hours": { "en": "Mon–Fri 9AM–5PM, Sat 10AM–5PM", "mn": "Даваа–Баасан 9:00–17:00, Бямба 10:00–17:00" }
   }
 ]

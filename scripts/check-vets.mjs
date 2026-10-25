@@ -15,11 +15,10 @@ check("short distances show in meters", formatDistance(640) === "640 m", formatD
 check("long distances show in km", formatDistance(2345) === "2.3 km", formatDistance(2345));
 
 for (const vet of vets) {
-  const nearby = { lat: vet.lat + 0.0005, lng: vet.lng - 0.0005 };
+  // About 10 m away: Энэрэх and V.E.T.Net are only ~30 m apart.
+  const nearby = { lat: vet.lat + 0.00007, lng: vet.lng - 0.00007 };
   const { place, meters } = closestTo(nearby, vets);
-  // Two vets can share a building (Энэрэх and V.E.T.Net), so either one at the spot counts.
-  const samePlace = place.lat === vet.lat && place.lng === vet.lng;
-  check(`next to "${vet.name}" → picks it`, samePlace && meters < 100, `${Math.round(meters)} m`);
+  check(`next to "${vet.name}" → picks it`, place.name === vet.name && meters < 20, `${Math.round(meters)} m`);
   const inUB = vet.lat > 47.8 && vet.lat < 48.05 && vet.lng > 106.6 && vet.lng < 107.2;
   const textOk = [vet.address, vet.hours].every((x) => x === undefined || (x.en?.trim() && x.mn?.trim()));
   check(`"${vet.name}" is in Ulaanbaatar with both languages`, inUB && textOk);

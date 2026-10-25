@@ -1,13 +1,13 @@
 import vetList from "./vets.json";
 
-// Built-in Ulaanbaatar vet list (seeded from OpenStreetMap, plus vets the learner adds).
-// `approximate` means only the khoroo is known, so the pin sits at its office and
-// directions search Google Maps by name instead.
+// Built-in Ulaanbaatar vet list: the learner's vets, placed from their Google Maps
+// links, plus one school from the original OpenStreetMap seed.
 export type Vet = {
   name: string;
   lat: number;
   lng: number;
-  approximate?: boolean;
+  // The vet's own Google Maps page (opens the place, with its directions button).
+  maps?: string;
   address?: { en: string; mn: string };
   hours?: { en: string; mn: string };
 };
@@ -15,9 +15,5 @@ export type Vet = {
 export const VETS: Vet[] = vetList;
 
 export function directionsUrl(vet: Vet) {
-  if (vet.approximate) {
-    const query = [vet.name, vet.address?.en, "Ulaanbaatar"].filter(Boolean).join(", ");
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  }
-  return `https://www.google.com/maps/dir/?api=1&destination=${vet.lat},${vet.lng}`;
+  return vet.maps ?? `https://www.google.com/maps/dir/?api=1&destination=${vet.lat},${vet.lng}`;
 }

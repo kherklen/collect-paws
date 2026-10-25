@@ -33,7 +33,6 @@ export default function VetFinder({
           <p className="text-sm text-muted">{t.vet.away(formatDistance(meters, lang), list.fromMapCenter)}</p>
           {chosen.address && <p className="mt-1 text-sm">📍 {chosen.address[lang]}</p>}
           {chosen.hours && <p className="text-sm">🕒 {chosen.hours[lang]}</p>}
-          {chosen.approximate && <p className="mt-1 text-xs text-muted">{t.vet.approximate}</p>}
         </div>
       </div>
       <a
