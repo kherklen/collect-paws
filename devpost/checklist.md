@@ -69,7 +69,7 @@ Build mode: fast
   Learner check: Tap Vet and check the vet name and distance make sense for where you are. Tap Directions and confirm Google Maps opens to that vet.
   Commit: `Add closest vet finder`
 
-- [ ] **7. An owner can report a lost pet, and people nearby see an alert**
+- [x] **7. An owner can report a lost pet, and people nearby see an alert**
   Becomes usable: From a Report lost pet button on the main screen (or the profile), an owner posts a photo, a description, and an optional last-seen place. Within about 30 seconds, other people within 3 km of that place (or everyone, if no place was given) see a corner pop-up. Tapping it opens the lost pet's details. The owner can mark it found, and the alert stops showing.
   Why now: The owner flow comes after the core loop (`prd.md > Product Decisions > Build order`). Alerts come before sightings because sightings start from the alert.
   PRD ref: `prd.md > The Core Journey` (step 9), `prd.md > Lost-Pet Reports`, `prd.md > States and Boundaries` (lost pet found)
@@ -119,3 +119,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - The paw button is now the camera input itself, and the photo is handed to `/capture` in memory — at the first phone checkpoint the learner wanted the camera to open instantly; phones only open the camera from a direct tap, so `/capture` couldn't open it on load. `/capture` still offers "Take a photo" if opened directly.
 - Added deleting your own captures (tap a card or your pin → Delete → confirm) — requested by the learner at the first phone checkpoint; new `captures: delete own` and own-folder photo read/delete rules.
 - Non-animal photos are now turned away in slice 5 instead of always letting capture continue — the learner worried about people uploading things that aren't cats or dogs. The block applies only when the AI check ran and said "other"; if the AI is down, capture still works.
+- Report lost pet is an icon button at the bottom left (mirroring Vet) plus a profile menu item, and the alert pop-up sits top-right — the learner's placement choice in slice 7. When location is refused, alerts judge "nearby" from central Ulaanbaatar, matching the map's default.

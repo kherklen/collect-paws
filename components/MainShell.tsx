@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
+import LostPetAlert from "@/components/LostPetAlert";
 import { shrinkPhoto } from "@/lib/image";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
+import { useAlerts } from "@/lib/useAlerts";
 
 // Leaflet needs the browser's `window`, so the map only loads on the client.
 const MapView = dynamic(() => import("@/components/MapView"), {
@@ -23,6 +25,7 @@ export default function MainShell() {
 
   const [shrinking, setShrinking] = useState(false);
   const [showVet, setShowVet] = useState(false);
+  const { alert, dismiss } = useAlerts();
 
   function openVetFinder() {
     if (tab !== "map") selectTab("map");
@@ -77,9 +80,18 @@ export default function MainShell() {
         </nav>
       </header>
 
+      {alert && <LostPetAlert pet={alert} onDismiss={() => dismiss(alert.id)} />}
+
       {/* Bottom buttons */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="relative flex items-center">
+          <Link
+            href="/lost/new"
+            aria-label="Report a lost pet"
+            className="pointer-events-auto absolute right-full mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-sos shadow-md shadow-brand/15 transition active:scale-95"
+          >
+            <LostIcon />
+          </Link>
           {/* The paw is the camera input itself: phones only open the camera straight from a tap. */}
           <label
             aria-label="Capture an animal"
@@ -150,6 +162,22 @@ function PawIcon() {
       <ellipse cx="14.5" cy="5.5" rx="2" ry="2.6" />
       <ellipse cx="18.5" cy="9" rx="2" ry="2.6" />
       <path d="M12.2 11c-3 0-6.2 4.2-6.2 6.6 0 1.8 1.4 2.6 3 2.6 1.3 0 2.1-.6 3.2-.6s1.9.6 3.2.6c1.6 0 3-.8 3-2.6 0-2.4-3.2-6.6-6.2-6.6z" />
+    </svg>
+  );
+}
+
+// A magnifying glass with a paw: "looking for my pet".
+function LostIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+      <circle cx="10.5" cy="10.5" r="7" />
+      <path d="M15.5 15.5 21 21" />
+      <g fill="currentColor" stroke="none">
+        <circle cx="8" cy="9" r="1.1" />
+        <circle cx="10.5" cy="7.6" r="1.1" />
+        <circle cx="13" cy="9" r="1.1" />
+        <path d="M10.5 10.4c-1.3 0-2.6 1.6-2.6 2.6 0 .8.6 1.1 1.3 1.1.5 0 .8-.3 1.3-.3s.8.3 1.3.3c.7 0 1.3-.3 1.3-1.1 0-1-1.3-2.6-2.6-2.6z" />
+      </g>
     </svg>
   );
 }

@@ -144,3 +144,44 @@ $$;
 
 revoke execute on function public.mark_helped(uuid) from public, anon;
 grant execute on function public.mark_helped(uuid) to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- lost_pets: an owner's report of a missing pet.
+-- Everyone logged in can read them (that's how the nearby alert finds them);
+-- only the owner can file one and later mark it found.
+-- No last-seen place (null lat/lng) means the alert goes to everyone.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.lost_pets (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  photo_path text not null,
+  description text not null check (length(trim(description)) > 0),
+  last_seen_lat double precision,
+  last_seen_lng double precision,
+  last_seen_address text,
+  status text not null default 'open' check (status in ('open', 'found')),
+  created_at timestamptz not null default now(),
+  found_at timestamptz,
+  -- A last-seen place has both coordinates or neither.
+  constraint lost_pets_place_complete check ((last_seen_lat is null) = (last_seen_lng is null))
+);
+
+create index if not exists lost_pets_open_idx on public.lost_pets (created_at desc) where status = 'open';
+
+alter table public.lost_pets enable row level security;
+
+drop policy if exists "lost_pets: logged-in can read" on public.lost_pets;
+create policy "lost_pets: logged-in can read" on public.lost_pets
+  for select to authenticated using (true);
+
+-- You can only file reports as yourself, and they always start open.
+drop policy if exists "lost_pets: insert own" on public.lost_pets;
+create policy "lost_pets: insert own" on public.lost_pets
+  for insert to authenticated
+  with check (owner_id = auth.uid() and status = 'open' and found_at is null);
+
+-- Only the owner can change their report (that's how it gets marked found).
+drop policy if exists "lost_pets: update own" on public.lost_pets;
+create policy "lost_pets: update own" on public.lost_pets
+  for update to authenticated
+  using (owner_id = auth.uid()) with check (owner_id = auth.uid());

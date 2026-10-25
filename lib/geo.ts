@@ -58,3 +58,23 @@ export function closestTo<T extends LatLng>(from: LatLng, places: T[]) {
     .map((place) => ({ place, meters: distanceMeters(from, place) }))
     .reduce((best, next) => (next.meters < best.meters ? next : best));
 }
+
+// Lost-pet alerts reach people within this distance of the last-seen place.
+export const ALERT_RADIUS_METERS = 3000;
+
+type AlertReport = { id: string; owner_id: string; last_seen_lat: number | null; last_seen_lng: number | null };
+
+// Which open lost-pet reports should alert this person: no last-seen place (goes to
+// everyone) or seen within 3 km of them. Never their own, never ones they dismissed.
+// If we don't know where they are, only the "everyone" reports match.
+export function alertsFor<T extends AlertReport>(
+  reports: T[],
+  me: { id: string; spot: LatLng | null; dismissed: string[] },
+) {
+  return reports.filter((r) => {
+    if (r.owner_id === me.id || me.dismissed.includes(r.id)) return false;
+    if (r.last_seen_lat === null || r.last_seen_lng === null) return true;
+    if (!me.spot) return false;
+    return distanceMeters(me.spot, { lat: r.last_seen_lat, lng: r.last_seen_lng }) <= ALERT_RADIUS_METERS;
+  });
+}

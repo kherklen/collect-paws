@@ -124,7 +124,7 @@ PRD ref: `prd.md > Accounts`.
 
 ### Main screen shell
 - The shared frame for both tabs: the top-center **Nearby Friends | My Collection** toggle (underline on the active tab), the top-left **notification icon** with its badge (also leads to the profile), and the bottom-center **Capture** button with the **Vet** button beside it.
-- A **Report lost pet** button (placement decided in the build) and the corner **lost-pet alert** pop-up.
+- A **Report lost pet** icon button at the bottom left of Capture, mirroring the Vet button (decided by the learner in `5-build`; also a menu item in the profile), and the **lost-pet alert** pop-up in the top-right corner.
 - The active tab is kept in the URL (`/?tab=collection`), so going back returns to the same tab.
 
 PRD ref: `prd.md > Screens and Layout`.

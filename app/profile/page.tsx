@@ -46,6 +46,15 @@ export default function ProfilePage() {
         </div>
       </section>
 
+      <Link
+        href="/lost/new"
+        className="mt-6 flex items-center gap-3 rounded-3xl bg-white p-4 font-bold shadow-sm shadow-brand/10 transition active:scale-[0.98]"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sos/10 text-xl">🔍</span>
+        Report lost pet
+        <span className="ml-auto text-muted">›</span>
+      </Link>
+
       <button
         type="button"
         onClick={logOut}

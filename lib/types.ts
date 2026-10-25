@@ -26,3 +26,16 @@ export const NEEDS: { value: Need; label: string; emoji: string }[] = [
 export function needInfo(need: Need | null) {
   return NEEDS.find((n) => n.value === need) ?? null;
 }
+
+export type LostPet = {
+  id: string;
+  owner_id: string;
+  photo_path: string;
+  description: string;
+  last_seen_lat: number | null;
+  last_seen_lng: number | null;
+  last_seen_address: string | null;
+  status: "open" | "found";
+  created_at: string;
+  found_at: string | null;
+};
