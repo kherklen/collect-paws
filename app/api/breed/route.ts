@@ -9,12 +9,19 @@ const PROMPT = `Look at this photo. Is the main subject a cat, a dog, or somethi
 If it is a cat or dog, give its most likely breed in a few words (e.g. "Tabby cat", "Husky mix", "Mixed-breed dog").
 Answer only with the JSON format requested.`;
 
+// The breed is shown to the person, so it comes back in their language.
+const BREED_LANGUAGE = {
+  en: "Write the breed in English.",
+  mn: 'Write the breed in Mongolian (Cyrillic), e.g. "Судалтай муур", "Хаски эрлийз". Keep "animal" in English.',
+};
+
 type BreedResult = { animal: "cat" | "dog" | "other" | null; breed: string | null };
 
 // "Couldn't check" — the capture page lets the person carry on and type a breed.
 const UNKNOWN: BreedResult = { animal: null, breed: null };
 
-// Photo (JPEG body) → { animal, breed }. Logged-in only, so strangers can't spend OpenAI credit.
+// Photo (JPEG body) → { animal, breed }, with ?lang=mn|en for the breed's language.
+// Logged-in only, so strangers can't spend OpenAI credit.
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
@@ -22,6 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not logged in" }, { status: 401 });
   }
 
+  const lang = new URL(request.url).searchParams.get("lang") === "en" ? "en" : "mn";
   const photo = Buffer.from(await request.arrayBuffer());
   if (photo.length === 0 || photo.length > 4_000_000) {
     return NextResponse.json(UNKNOWN, { status: 400 });
@@ -36,7 +44,7 @@ export async function POST(request: Request) {
         {
           role: "user",
           content: [
-            { type: "input_text", text: PROMPT },
+            { type: "input_text", text: `${PROMPT}\n${BREED_LANGUAGE[lang]}` },
             {
               type: "input_image",
               image_url: `data:image/jpeg;base64,${photo.toString("base64")}`,

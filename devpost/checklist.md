@@ -99,6 +99,7 @@ Build mode: fast
 - [x] Check scripts left test lost-pet reports (broken photos) and test SOS pins visible to everyone — scripts now clean up after themselves; leftovers removed. Confirmed by the learner.
 - [x] My profile was hard to find (only via the bell → Notifications) — added a profile button in the top-right corner; the bell now means Notifications only. Confirmed by the learner.
 - [x] Learner couldn't see their report in the profile or their sighting in notifications — reproduced in a browser and both work; the sighting had gone to the script's leftover "Test" report, and reports only show for the account that filed them. Learner retried with their own accounts: working.
+- [ ] Mongolian + English — location picks the first language, flags switch it (login screen and profile); Mongolian text drafted by the agent for the learner to review.
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. The learner plans a design refresh later and will raise it separately; nothing else requested now.
 
 ## Code Tour and App Map
@@ -126,3 +127,4 @@ Activity mode: Prior practice connected (brief recap).
 - The bell now opens `/notifications`, which links to the profile (it used to open the profile directly) — tapping the icon has to list sightings, and the profile stays one tap away.
 - Sightings can only change their `read_at` column (column-level grant), and can't be sent once a pet is found — tighter than the spec's "owner can update read_at", so a sighting's content can't be rewritten by anyone.
 - The `scripts/check-*.mjs` runs now delete their test captures and photos and mark their test reports found when they finish — at the final review the learner opened a test report from a script (broken photo), and six test SOS pins were on the shared map in central Ulaanbaatar.
+- Added Mongolian and English after the final review — the learner noticed the app targets Mongolian people. First language follows Vercel's visitor-country header (no GPS prompt), flags switch it; Mongolian tab labels shortened to "Ойролцоо" / "Цуглуулга" so the top bar fits on phones.

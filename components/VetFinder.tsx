@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDistance } from "@/lib/geo";
+import { useI18n } from "@/lib/i18n";
 import type { Vet } from "@/lib/vets";
 
 // Bottom sheet with the closest vet and a Google Maps directions link.
@@ -15,6 +16,7 @@ export default function VetFinder({
   fromMapCenter: boolean;
   onClose: () => void;
 }) {
+  const { lang, t } = useI18n();
   const directions = `https://www.google.com/maps/dir/?api=1&destination=${vet.lat},${vet.lng}`;
 
   return (
@@ -23,10 +25,10 @@ export default function VetFinder({
       <div className="flex items-center gap-4">
         <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-vet/15 text-3xl">🩺</div>
         <div className="min-w-0">
-          <p className="text-xs font-extrabold uppercase tracking-wide text-vet">Closest vet</p>
+          <p className="text-xs font-extrabold uppercase tracking-wide text-vet">{t.vet.closest}</p>
           <h2 className="text-lg font-extrabold leading-tight">{vet.name}</h2>
           <p className="text-sm text-muted">
-            {formatDistance(meters)} away{fromMapCenter ? " from the map center (location is off)" : ""}
+            {t.vet.away(formatDistance(meters, lang), fromMapCenter)}
           </p>
         </div>
       </div>
@@ -36,10 +38,10 @@ export default function VetFinder({
         rel="noopener noreferrer"
         className="mt-5 flex w-full items-center justify-center rounded-full bg-vet py-3.5 font-extrabold text-white shadow-md shadow-vet/30 transition active:scale-[0.98]"
       >
-        Directions ↗
+        {t.vet.directions}
       </a>
       <button type="button" onClick={onClose} className="mt-3 w-full py-2 text-sm font-bold text-muted">
-        Close
+        {t.common.close}
       </button>
     </div>
   );

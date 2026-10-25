@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
+import { useI18n } from "@/lib/i18n";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 
 type Notification = SightingWithReporter & {
@@ -12,6 +13,7 @@ type Notification = SightingWithReporter & {
 // Sightings on my lost-pet reports, newest first. Opening the page marks them read,
 // which clears the bell's badge.
 export default function NotificationsPage() {
+  const { t } = useI18n();
   const [items, setItems] = useState<Notification[] | null>(null);
   // Which ones were unread when the page opened, so they keep their "NEW" tag.
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
@@ -40,22 +42,22 @@ export default function NotificationsPage() {
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-sm font-bold text-brand-dark">
-          ← Back to map
+          {t.common.backToMap}
         </Link>
         <Link href="/profile" className="rounded-full bg-white px-3 py-1.5 text-sm font-bold text-brand-dark shadow-sm shadow-brand/10">
-          🐾 My profile
+          {t.notifications.myProfile}
         </Link>
       </div>
 
-      <h1 className="mt-6 text-2xl font-extrabold">Notifications</h1>
+      <h1 className="mt-6 text-2xl font-extrabold">{t.notifications.title}</h1>
 
       {items === null ? (
         <div className="mt-4 h-28 animate-pulse rounded-3xl bg-brand-soft" />
       ) : items.length === 0 ? (
         <div className="mx-auto mt-16 max-w-xs text-center">
           <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-5xl">🔔</div>
-          <h2 className="text-xl font-extrabold">All quiet</h2>
-          <p className="mt-2 text-muted">When someone spots a pet you reported lost, it shows up here.</p>
+          <h2 className="text-xl font-extrabold">{t.notifications.emptyTitle}</h2>
+          <p className="mt-2 text-muted">{t.notifications.emptyText}</p>
         </div>
       ) : (
         <ul className="mt-4 flex flex-col gap-4">
@@ -64,7 +66,7 @@ export default function NotificationsPage() {
               <Link href={`/lost/${s.lost_pets.id}`} className="flex items-center gap-2 px-1 text-xs text-muted">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photoUrl(s.lost_pets.photo_path)} alt="" className="h-6 w-6 rounded-full object-cover" />
-                <span className="truncate">About: {s.lost_pets.description}</span>
+                <span className="truncate">{t.notifications.about(s.lost_pets.description)}</span>
               </Link>
               <SightingCard sighting={s} isNew={newIds.has(s.id)} />
             </li>

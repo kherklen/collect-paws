@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
 import { createClient, photoUrl } from "@/lib/supabase/client";
-import { formatSpot, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { shrinkPhoto } from "@/lib/image";
 import type { LostPet } from "@/lib/types";
 
@@ -19,6 +20,7 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
 // the owner sees the sightings and can mark it found, which stops the alert for everyone.
 export default function LostPetPage() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useI18n();
   const [pet, setPet] = useState<LostPet | null>(null);
   const [ownerName, setOwnerName] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
@@ -68,7 +70,7 @@ export default function LostPetPage() {
       .single();
     setBusy(false);
     if (error || !data) {
-      setError("Couldn't update — try again.");
+      setError(t.lost.updateError);
       return;
     }
     setPet(data as LostPet);
@@ -77,41 +79,40 @@ export default function LostPetPage() {
   const place =
     pet?.last_seen_address ??
     (pet?.last_seen_lat != null && pet.last_seen_lng != null
-      ? formatSpot({ lat: pet.last_seen_lat, lng: pet.last_seen_lng })
+      ? formatSpot(t, { lat: pet.last_seen_lat, lng: pet.last_seen_lng })
       : null);
 
   return (
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <Link href="/" className="inline-flex items-center gap-1 text-sm font-bold text-brand-dark">
-        ← Back to map
+        {t.common.backToMap}
       </Link>
 
       {missing ? (
-        <p className="mt-16 text-center text-muted">This lost-pet report doesn&apos;t exist anymore.</p>
+        <p className="mt-16 text-center text-muted">{t.lost.gone}</p>
       ) : !pet ? (
         <div className="mt-6 aspect-square w-full animate-pulse rounded-[2rem] bg-brand-soft" />
       ) : (
         <div className="mt-6 flex flex-col gap-5">
           <div className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl(pet.photo_path)} alt="The lost pet" className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
+            <img src={photoUrl(pet.photo_path)} alt={t.lost.photoAlt} className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
             <span
               className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-sm font-extrabold text-white shadow ${
                 pet.status === "found" ? "bg-helped" : "bg-sos"
               }`}
             >
-              {pet.status === "found" ? "Found 🎉" : "Lost"}
+              {pet.status === "found" ? t.lost.found : t.lost.lost}
             </span>
           </div>
 
           <section className="flex flex-col gap-3 rounded-3xl bg-white p-5 shadow-sm shadow-brand/10">
             <p className="whitespace-pre-line text-lg font-bold">{pet.description}</p>
             <p className="text-sm text-muted">
-              📍 {place ? `Last seen: ${place}` : "No last-seen place given"}
+              📍 {place ? t.lost.lastSeen(place) : t.lost.noPlace}
             </p>
             <p className="text-sm text-muted">
-              Reported by {isOwner ? "you" : (ownerName ?? "…")} ·{" "}
-              {new Date(pet.created_at).toLocaleDateString()}
+              {t.lost.reportedBy(isOwner ? t.lost.you : (ownerName ?? "…"), formatDay(t, pet.created_at))}
             </p>
           </section>
 
@@ -124,7 +125,7 @@ export default function LostPetPage() {
               disabled={busy}
               className="rounded-full bg-helped py-4 text-lg font-extrabold text-white shadow-lg shadow-helped/30 transition active:scale-[0.98] disabled:opacity-50"
             >
-              {busy ? "Saving…" : "🏠 Mark found"}
+              {busy ? t.common.saving : t.lost.markFound}
             </button>
           )}
           {!isOwner && pet.status === "open" && (
@@ -137,9 +138,9 @@ export default function LostPetPage() {
 
           {isOwner && (
             <section className="flex flex-col gap-3">
-              <h2 className="px-1 font-extrabold">Sightings received ({sightings.length})</h2>
+              <h2 className="px-1 font-extrabold">{t.lost.sightingsReceived} ({sightings.length})</h2>
               {sightings.length === 0 ? (
-                <p className="px-1 text-sm text-muted">No sightings yet. We&apos;ll show a count on the bell when one arrives.</p>
+                <p className="px-1 text-sm text-muted">{t.lost.noSightings}</p>
               ) : (
                 sightings.map((s) => <SightingCard key={s.id} sighting={s} />)
               )}
@@ -148,7 +149,7 @@ export default function LostPetPage() {
 
           {pet.status === "found" && (
             <p className="text-center text-sm text-muted">
-              {isOwner ? "Glad they're home! The alert has stopped." : "This pet has been found. Thank you for looking!"}
+              {isOwner ? t.lost.foundOwner : t.lost.foundOther}
             </p>
           )}
         </div>
@@ -170,6 +171,7 @@ function SightingForms({
   ownerName: string | null;
   lastSeen: LatLng | null;
 }) {
+  const { t } = useI18n();
   const [mode, setMode] = useState<SightingMode>("choose");
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -193,7 +195,7 @@ function SightingForms({
       setPreview(URL.createObjectURL(shrunk));
       setMode("now");
     } catch {
-      setError("Couldn't read that photo. Try another one.");
+      setError(t.photo.readError);
     } finally {
       setBusy(false);
     }
@@ -237,7 +239,7 @@ function SightingForms({
       }
       setMode("sent");
     } catch {
-      setError("Couldn't send — try again.");
+      setError(t.lost.sendError);
     } finally {
       setBusy(false);
     }
@@ -258,10 +260,10 @@ function SightingForms({
   if (mode === "sent") {
     return (
       <div className="flex flex-col items-center gap-3 rounded-3xl bg-helped/10 p-5 text-center">
-        <p className="text-lg font-extrabold">Thank you! 💜</p>
-        <p className="text-sm text-muted">{ownerName ?? "The owner"} will see your sighting.</p>
+        <p className="text-lg font-extrabold">{t.lost.thanks}</p>
+        <p className="text-sm text-muted">{t.lost.ownerWillSee(ownerName)}</p>
         <button type="button" onClick={reset} className="text-sm font-bold text-brand-dark">
-          Send another
+          {t.lost.sendAnother}
         </button>
       </div>
     );
@@ -270,13 +272,13 @@ function SightingForms({
   if (mode === "choose") {
     return (
       <section className="flex flex-col gap-3">
-        <h2 className="px-1 font-extrabold">Have you seen this pet?</h2>
+        <h2 className="px-1 font-extrabold">{t.lost.seenQuestion}</h2>
         <div className="grid grid-cols-2 gap-3">
           {/* A label around the camera input: phones only open the camera from a direct tap. */}
           <label className="flex cursor-pointer flex-col items-center gap-1 rounded-3xl border-2 border-sos bg-sos/10 p-4 text-center transition active:scale-[0.98]">
             <span className="text-2xl">{busy ? "⏳" : "📸"}</span>
-            <span className="font-extrabold">I see it now</span>
-            <span className="text-xs text-muted">Snap a photo</span>
+            <span className="font-extrabold">{t.lost.seeNow}</span>
+            <span className="text-xs text-muted">{t.lost.snapPhoto}</span>
             <input type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="sr-only" />
           </label>
           <button
@@ -285,8 +287,8 @@ function SightingForms({
             className="flex flex-col items-center gap-1 rounded-3xl border-2 border-brand-soft bg-white p-4 transition active:scale-[0.98]"
           >
             <span className="text-2xl">👀</span>
-            <span className="font-extrabold">Report a sighting</span>
-            <span className="text-xs text-muted">When and where</span>
+            <span className="font-extrabold">{t.lost.reportSighting}</span>
+            <span className="text-xs text-muted">{t.lost.whenWhere}</span>
           </button>
         </div>
         {error && <p className="text-center text-sm font-bold text-sos">{error}</p>}
@@ -299,9 +301,9 @@ function SightingForms({
   return (
     <section className="flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm shadow-brand/10">
       <div className="flex items-center justify-between">
-        <h2 className="font-extrabold">{mode === "now" ? "📸 I see it now" : "👀 Report a sighting"}</h2>
+        <h2 className="font-extrabold">{mode === "now" ? t.lost.seeNowTitle : t.lost.reportTitle}</h2>
         <button type="button" onClick={reset} className="text-sm font-bold text-muted">
-          Cancel
+          {t.common.cancel}
         </button>
       </div>
 
@@ -309,14 +311,14 @@ function SightingForms({
         <>
           {preview && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt="Your sighting" className="aspect-square w-full rounded-3xl object-cover" />
+            <img src={preview} alt={t.lost.yourSighting} className="aspect-square w-full rounded-3xl object-cover" />
           )}
-          <p className="text-xs text-muted">Your current location is sent with the photo.</p>
+          <p className="text-xs text-muted">{t.lost.locationSent}</p>
         </>
       ) : (
         <>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-bold text-muted">When did you see it?</span>
+            <span className="text-sm font-bold text-muted">{t.lost.whenQuestion}</span>
             <input
               type="datetime-local"
               value={seenAt}
@@ -326,23 +328,23 @@ function SightingForms({
             />
           </label>
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-bold text-muted">Where?</span>
+            <span className="text-sm font-bold text-muted">{t.lost.whereQuestion}</span>
             <input
               value={placeText}
               onChange={(e) => setPlaceText(e.target.value)}
-              placeholder="e.g. Near the State Department Store"
+              placeholder={t.lost.placePlaceholder}
               className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
             />
             <LocationPicker value={spot} onChange={setSpot} center={lastSeen ?? UB_CENTER} />
-            <p className="px-1 text-xs text-muted">Type a place, tap the map, or both.</p>
+            <p className="px-1 text-xs text-muted">{t.lost.placeHint}</p>
           </div>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-bold text-muted">What did it look like?</span>
+            <span className="text-sm font-bold text-muted">{t.lost.lookedLike}</span>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              placeholder="Color, size, collar — helps the owner know it's really theirs"
+              placeholder={t.lost.lookedLikePlaceholder}
               className="resize-none rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
             />
           </label>
@@ -357,7 +359,7 @@ function SightingForms({
         disabled={!canSend || busy}
         className="rounded-full bg-sos py-3.5 text-lg font-extrabold text-white shadow-lg shadow-sos/30 transition active:scale-[0.98] disabled:opacity-50"
       >
-        {busy ? "Sending…" : "Send to owner"}
+        {busy ? t.lost.sending : t.lost.sendToOwner}
       </button>
     </section>
   );

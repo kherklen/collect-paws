@@ -16,11 +16,12 @@ export type Capture = {
   helped_by: string | null;
 };
 
-export const NEEDS: { value: Need; label: string; emoji: string }[] = [
-  { value: "food", label: "Food", emoji: "🍖" },
-  { value: "water", label: "Water", emoji: "💧" },
-  { value: "vet", label: "Vet", emoji: "🩺" },
-  { value: "owner", label: "Might be lost / looking for owner", emoji: "🏠" },
+// Labels for each need are in lib/i18n/dictionaries.ts (`needs`).
+export const NEEDS: { value: Need; emoji: string }[] = [
+  { value: "food", emoji: "🍖" },
+  { value: "water", emoji: "💧" },
+  { value: "vet", emoji: "🩺" },
+  { value: "owner", emoji: "🏠" },
 ];
 
 export function needInfo(need: Need | null) {

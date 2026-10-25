@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
+import { formatDay, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
 
-const dateFormat = new Intl.DateTimeFormat("en", { month: "short", day: "numeric" });
-
 // My Collection: a three-column grid of the person's own captures, newest first.
 export default function CollectionGrid() {
+  const { t } = useI18n();
   const [captures, setCaptures] = useState<Capture[] | null>(null);
   const [selected, setSelected] = useState<Capture | null>(null);
 
@@ -37,9 +37,9 @@ export default function CollectionGrid() {
           <div className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-brand-soft text-5xl">
             🐱
           </div>
-          <h2 className="text-xl font-extrabold">No friends yet!</h2>
+          <h2 className="text-xl font-extrabold">{t.grid.emptyTitle}</h2>
           <p className="mt-2 text-muted">
-            Spot a stray cat or dog and tap the paw button to add it to your collection.
+            {t.grid.emptyText}
           </p>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function CollectionGrid() {
   return (
     <div className="h-full overflow-y-auto bg-canvas px-3 pb-36 pt-20">
       <p className="mb-3 px-1 text-sm font-bold text-muted">
-        {captures.length} {captures.length === 1 ? "friend" : "friends"} collected
+        {t.grid.collected(captures.length)}
       </p>
       <ul className="grid grid-cols-3 gap-3">
         {captures.map((c) => (
@@ -59,14 +59,14 @@ export default function CollectionGrid() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photoUrl(c.photo_path)}
-                  alt={c.breed ?? "Captured animal"}
+                  alt={c.breed ?? t.pin.capturedAnimal}
                   className={`aspect-square w-full rounded-2xl border-[3px] object-cover shadow-sm ${
                     c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
                   }`}
                 />
                 {c.helped_at ? (
                   <span className="absolute bottom-1.5 left-1.5 rounded-full bg-helped px-2 py-0.5 text-[10px] font-extrabold text-white">
-                    ✓ Helped
+                    {t.pin.helpedBadge}
                   </span>
                 ) : c.mode === "sos" && (
                   <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-sos text-xs">
@@ -75,8 +75,8 @@ export default function CollectionGrid() {
                 )}
               </div>
               <p className="truncate px-0.5 text-xs">
-                <span className="font-bold">{c.breed ?? "Unknown"}</span>
-                <span className="text-muted"> / {dateFormat.format(new Date(c.created_at))}</span>
+                <span className="font-bold">{c.breed ?? t.common.unknown}</span>
+                <span className="text-muted"> / {formatDay(t, c.created_at)}</span>
               </p>
             </button>
           </li>

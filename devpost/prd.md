@@ -28,6 +28,13 @@ Develops `scope.md > The Core Loop` and `scope.md > What "Working" Looks Like`.
 
 **Success:** going outside, capturing a real stray, seeing it appear as a pin and in My Collection with its breed and status, finding the closest vet, and marking it helped. Then, with a second account, reporting a lost pet, sending a sighting, and watching the owner receive it.
 
+## Language
+
+Added after the final review: the app is for people in Mongolia, so it speaks **Mongolian and English**.
+- The first language follows where the person is: Mongolian in Mongolia, English elsewhere.
+- Flag buttons (🇲🇳 / 🇬🇧) switch it, on the login screen and in the profile. The choice is remembered and wins over location.
+- The AI breed guess answers in the chosen language. Street addresses already come back in Mongolian.
+
 ## Screens and Layout
 
 - **Sign up / Log in**: shown before anything else.

@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useI18n } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 
 type Mode = "login" | "signup";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +34,14 @@ export default function LoginPage() {
         : await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
+      // Supabase's own messages are English; translate the two people actually hit.
+      setError(
+        error.code === "invalid_credentials"
+          ? t.login.badCredentials
+          : error.code === "user_already_exists" || error.code === "email_exists"
+            ? t.login.alreadyRegistered
+            : error.message,
+      );
       setBusy(false);
       return;
     }
@@ -40,13 +50,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-full max-w-sm flex-col justify-center px-6 py-12">
+    <main className="relative mx-auto flex min-h-full max-w-sm flex-col justify-center px-6 py-12">
+      <div className="absolute right-4 top-4">
+        <LanguageSwitcher compact />
+      </div>
       <div className="mb-8 text-center">
         <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-brand-soft text-4xl">
           🐾
         </div>
         <h1 className="text-3xl font-extrabold text-ink">Collect Savar</h1>
-        <p className="mt-2 text-muted">Spot strays, collect them, help the ones that need it.</p>
+        <p className="mt-2 text-muted">{t.login.tagline}</p>
       </div>
 
       <div className="mb-6 flex rounded-full bg-brand-soft p-1">
@@ -62,7 +75,7 @@ export default function LoginPage() {
               mode === m ? "bg-white text-brand-dark shadow-sm" : "text-muted"
             }`}
           >
-            {m === "login" ? "Log in" : "Sign up"}
+            {m === "login" ? t.login.logIn : t.login.signUp}
           </button>
         ))}
       </div>
@@ -73,7 +86,7 @@ export default function LoginPage() {
             required
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Display name"
+            placeholder={t.login.displayName}
             autoComplete="nickname"
             className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
           />
@@ -83,7 +96,7 @@ export default function LoginPage() {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
+          placeholder={t.login.email}
           autoComplete="email"
           className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
         />
@@ -93,7 +106,7 @@ export default function LoginPage() {
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
+          placeholder={t.login.password}
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
         />
@@ -103,7 +116,7 @@ export default function LoginPage() {
           disabled={busy}
           className="mt-2 rounded-full bg-brand py-3 font-bold text-white shadow-md shadow-brand/30 transition active:scale-[0.98] disabled:opacity-60"
         >
-          {busy ? "One moment…" : mode === "login" ? "Log in" : "Create account"}
+          {busy ? t.login.oneMoment : mode === "login" ? t.login.logIn : t.login.createAccount}
         </button>
       </form>
     </main>

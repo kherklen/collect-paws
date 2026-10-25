@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
-import { formatSpot } from "@/lib/geo";
+import { formatDay, formatSpot, useI18n } from "@/lib/i18n";
 import { needInfo, type Capture } from "@/lib/types";
 
 // Bottom sheet for a tapped pin or collection card. Unhelped SOS pins get a
@@ -18,6 +18,7 @@ export default function PinCard({
   onHelped: (updated: Capture) => void;
   onDeleted: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const [spotter, setSpotter] = useState<string | null>(null);
   const [isMine, setIsMine] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -45,7 +46,7 @@ export default function PinCard({
       .eq("id", capture.id);
     if (error || count === 0) {
       setBusy(false);
-      setError("Couldn't delete — try again.");
+      setError(t.pin.deleteError);
       return;
     }
     // The row is gone; a leftover photo file is harmless, so don't block on it.
@@ -59,7 +60,7 @@ export default function PinCard({
     const { data, error } = await createClient().rpc("mark_helped", { capture_id: capture.id });
     setBusy(false);
     if (error) {
-      setError("Couldn't mark it helped — try again.");
+      setError(t.pin.helpedError);
       return;
     }
     onHelped(data as Capture);
@@ -68,10 +69,10 @@ export default function PinCard({
   const need = needInfo(capture.need);
   const helped = !!capture.helped_at;
   const status = helped
-    ? { text: "Helped 💚", className: "bg-helped/15 text-helped" }
+    ? { text: t.pin.helped, className: "bg-helped/15 text-helped" }
     : capture.mode === "sos"
-      ? { text: `Needs ${need?.value === "owner" ? "its owner" : (need?.label.toLowerCase() ?? "help")}`, className: "bg-sos/15 text-sos" }
-      : { text: "Doing fine", className: "bg-collect/15 text-brand-dark" };
+      ? { text: need ? t.needsStatus[need.value] : t.pin.needsHelp, className: "bg-sos/15 text-sos" }
+      : { text: t.pin.doingFine, className: "bg-collect/15 text-brand-dark" };
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-end bg-ink/20" onClick={onClose}>
@@ -84,7 +85,7 @@ export default function PinCard({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photoUrl(capture.photo_path)}
-            alt={capture.breed ?? "Captured animal"}
+            alt={capture.breed ?? t.pin.capturedAnimal}
             className="h-28 w-28 shrink-0 rounded-3xl object-cover"
           />
           <div className="flex min-w-0 flex-col gap-1.5">
@@ -92,11 +93,10 @@ export default function PinCard({
               {need && !helped ? `${need.emoji} ` : ""}
               {status.text}
             </span>
-            <h2 className="truncate text-xl font-extrabold">{capture.breed ?? "Unknown breed"}</h2>
-            <p className="text-sm text-muted">📍 {capture.address ?? formatSpot(capture)}</p>
+            <h2 className="truncate text-xl font-extrabold">{capture.breed ?? t.pin.unknownBreed}</h2>
+            <p className="text-sm text-muted">📍 {capture.address ?? formatSpot(t, capture)}</p>
             <p className="text-xs text-muted">
-              Spotted {spotter ? `by ${spotter} ` : ""}
-              {new Date(capture.created_at).toLocaleDateString("en", { month: "short", day: "numeric" })}
+              {t.pin.spotted(spotter, formatDay(t, capture.created_at))}
             </p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function PinCard({
             disabled={busy}
             className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-helped py-3.5 font-extrabold text-white shadow-md shadow-helped/30 transition active:scale-[0.98] disabled:opacity-60"
           >
-            {busy ? "Saving…" : "✓ I helped this friend"}
+            {busy ? t.common.saving : t.pin.iHelped}
           </button>
         )}
         {error && <p className="mt-2 text-center text-sm font-bold text-sos">{error}</p>}
@@ -116,9 +116,10 @@ export default function PinCard({
         {isMine &&
           (confirmDelete ? (
             <div className="mt-4 rounded-3xl bg-sos/10 p-4 text-center">
-              <p className="font-bold">Delete this friend from your collection?</p>
+              <p className="font-bold">{t.pin.deleteQuestion}</p>
               <p className="mt-1 text-sm text-muted">
-                {capture.mode === "sos" ? "Its pin disappears from everyone's map too. " : ""}This can&apos;t be undone.
+                {capture.mode === "sos" ? t.pin.deleteSosNote : ""}
+                {t.pin.cantUndo}
               </p>
               <div className="mt-3 flex gap-2">
                 <button
@@ -126,7 +127,7 @@ export default function PinCard({
                   onClick={() => setConfirmDelete(false)}
                   className="flex-1 rounded-full bg-white py-2.5 font-bold text-ink"
                 >
-                  Keep it
+                  {t.pin.keep}
                 </button>
                 <button
                   type="button"
@@ -134,7 +135,7 @@ export default function PinCard({
                   disabled={busy}
                   className="flex-1 rounded-full bg-sos py-2.5 font-bold text-white disabled:opacity-60"
                 >
-                  {busy ? "Deleting…" : "Delete"}
+                  {busy ? t.pin.deleting : t.pin.delete}
                 </button>
               </div>
             </div>
@@ -144,12 +145,12 @@ export default function PinCard({
               onClick={() => setConfirmDelete(true)}
               className="mt-3 w-full py-2 text-sm font-bold text-sos"
             >
-              🗑 Delete from my collection
+              {t.pin.deleteFromCollection}
             </button>
           ))}
 
         <button type="button" onClick={onClose} className="mt-3 w-full py-2 text-sm font-bold text-muted">
-          Close
+          {t.common.close}
         </button>
       </div>
     </div>

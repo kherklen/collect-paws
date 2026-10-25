@@ -3,18 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
+import { formatDay, useI18n } from "@/lib/i18n";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import type { Capture, LostPet } from "@/lib/types";
 
 type Report = LostPet & { sightings: SightingWithReporter[] };
 
-const dateFormat = new Intl.DateTimeFormat("en", { month: "short", day: "numeric" });
-
 // Profile: display name, everything I've posted (captures and lost-pet reports)
 // with the sightings received on each report, Report lost pet, and log out.
 export default function ProfilePage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [name, setName] = useState<string | null>(null);
   const [captures, setCaptures] = useState<Capture[] | null>(null);
   const [reports, setReports] = useState<Report[] | null>(null);
@@ -53,7 +54,7 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <Link href="/" className="inline-flex items-center gap-1 text-sm font-bold text-brand-dark">
-        ← Back to map
+        {t.common.backToMap}
       </Link>
 
       <section className="mt-6 flex items-center gap-4 rounded-3xl bg-white p-5 shadow-sm shadow-brand/10">
@@ -61,29 +62,36 @@ export default function ProfilePage() {
           🐾
         </div>
         <div>
-          <p className="text-sm text-muted">Hi there,</p>
+          <p className="text-sm text-muted">{t.profile.hiThere}</p>
           <h1 className="text-2xl font-extrabold">{name ?? "…"}</h1>
         </div>
       </section>
 
       <nav className="mt-6 flex flex-col gap-3">
         <MenuLink href="/notifications" emoji="🔔" tint="bg-brand-soft">
-          Notifications
+          {t.notifications.title}
         </MenuLink>
         <MenuLink href="/lost/new" emoji="🔍" tint="bg-sos/10">
-          Report lost pet
+          {t.lostNew.title}
         </MenuLink>
+        <div className="flex items-center gap-3 rounded-3xl bg-white p-4 font-bold shadow-sm shadow-brand/10">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-xl">🌐</span>
+          {t.language.label}
+          <div className="ml-auto">
+            <LanguageSwitcher />
+          </div>
+        </div>
       </nav>
 
       <section className="mt-8">
         <div className="flex items-baseline justify-between px-1">
-          <h2 className="font-extrabold">My captures {captures && `(${captures.length})`}</h2>
+          <h2 className="font-extrabold">{t.profile.myCaptures} {captures && `(${captures.length})`}</h2>
           <Link href="/?tab=collection" className="text-sm font-bold text-brand-dark">
-            See all
+            {t.profile.seeAll}
           </Link>
         </div>
         {captures?.length === 0 ? (
-          <p className="mt-2 px-1 text-sm text-muted">No captures yet. Tap the paw on the map to start.</p>
+          <p className="mt-2 px-1 text-sm text-muted">{t.profile.noCaptures}</p>
         ) : (
           <ul className="mt-3 flex gap-3 overflow-x-auto pb-1">
             {(captures ?? []).slice(0, 12).map((c) => (
@@ -91,14 +99,14 @@ export default function ProfilePage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photoUrl(c.photo_path)}
-                  alt={c.breed ?? "Captured animal"}
+                  alt={c.breed ?? t.pin.capturedAnimal}
                   className={`aspect-square w-full rounded-2xl border-[3px] object-cover ${
                     c.helped_at ? "border-helped opacity-75" : c.mode === "sos" ? "border-sos" : "border-collect"
                   }`}
                 />
                 <p className="mt-1 truncate text-[11px]">
-                  <span className="font-bold">{c.breed ?? "Unknown"}</span>
-                  <span className="text-muted"> / {dateFormat.format(new Date(c.created_at))}</span>
+                  <span className="font-bold">{c.breed ?? t.common.unknown}</span>
+                  <span className="text-muted"> / {formatDay(t, c.created_at)}</span>
                 </p>
               </li>
             ))}
@@ -107,9 +115,9 @@ export default function ProfilePage() {
       </section>
 
       <section className="mt-8">
-        <h2 className="px-1 font-extrabold">My lost-pet reports {reports && `(${reports.length})`}</h2>
+        <h2 className="px-1 font-extrabold">{t.profile.myReports} {reports && `(${reports.length})`}</h2>
         {reports?.length === 0 ? (
-          <p className="mt-2 px-1 text-sm text-muted">You haven&apos;t reported a lost pet.</p>
+          <p className="mt-2 px-1 text-sm text-muted">{t.profile.noReports}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-4">
             {(reports ?? []).map((r) => (
@@ -120,8 +128,7 @@ export default function ProfilePage() {
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-bold">{r.description}</p>
                     <p className="text-xs text-muted">
-                      {dateFormat.format(new Date(r.created_at))} · {r.sightings.length}{" "}
-                      {r.sightings.length === 1 ? "sighting" : "sightings"}
+                      {formatDay(t, r.created_at)} · {t.profile.sightingCount(r.sightings.length)}
                     </p>
                   </div>
                   <span
@@ -129,7 +136,7 @@ export default function ProfilePage() {
                       r.status === "found" ? "bg-helped" : "bg-sos"
                     }`}
                   >
-                    {r.status === "found" ? "Found" : "Lost"}
+                    {r.status === "found" ? t.lost.found : t.lost.lost}
                   </span>
                 </Link>
                 {r.sightings.map((s) => (
@@ -146,7 +153,7 @@ export default function ProfilePage() {
         onClick={logOut}
         className="mt-8 w-full rounded-full border-2 border-brand-soft bg-white py-3 font-bold text-brand-dark transition active:scale-[0.98]"
       >
-        Log out
+        {t.profile.logOut}
       </button>
     </main>
   );

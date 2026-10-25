@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
 import { createClient } from "@/lib/supabase/client";
 import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
+import { useI18n } from "@/lib/i18n";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
   ssr: false,
@@ -17,6 +18,7 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
 // With a place, people within 3 km get an alert; without one, everyone does.
 export default function NewLostPetPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [photo, setPhoto] = useState<Blob | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [description, setDescription] = useState("");
@@ -39,7 +41,7 @@ export default function NewLostPetPage() {
     const here = await getLocation();
     setLocating(false);
     if (!here) {
-      setLocationNote("Couldn't get your location — tap the map instead.");
+      setLocationNote(t.lostNew.noLocation);
       return;
     }
     setSpot(here);
@@ -79,7 +81,7 @@ export default function NewLostPetPage() {
 
       router.replace(`/lost/${data.id}`);
     } catch {
-      setError("Couldn't save — try again.");
+      setError(t.common.saveError);
       setSaving(false);
     }
   }
@@ -88,51 +90,51 @@ export default function NewLostPetPage() {
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-sm font-bold text-brand-dark">
-          ← Cancel
+          ← {t.common.cancel}
         </Link>
-        <h1 className="text-lg font-extrabold">Report lost pet</h1>
+        <h1 className="text-lg font-extrabold">{t.lostNew.title}</h1>
         <span className="w-12" />
       </div>
 
       <div className="mt-6 flex flex-col gap-6">
         {!photo ? (
           <div className="flex flex-col items-center gap-4 text-center">
-            <PhotoInput onPhoto={choosePhoto} label="Add a photo of your pet" />
-            <p className="max-w-xs text-sm text-muted">A clear photo helps people nearby recognize them.</p>
+            <PhotoInput onPhoto={choosePhoto} label={t.lostNew.addPhoto} />
+            <p className="max-w-xs text-sm text-muted">{t.lostNew.photoHint}</p>
           </div>
         ) : (
           <div className="relative">
             {preview && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Your pet" className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
+              <img src={preview} alt={t.lostNew.yourPet} className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
             )}
             <button
               type="button"
               onClick={() => choosePhoto(null)}
               className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1.5 text-sm font-bold text-brand-dark shadow"
             >
-              Change
+              {t.lostNew.change}
             </button>
           </div>
         )}
 
         <label className="flex flex-col gap-2">
-          <span className="text-sm font-bold text-muted">Description</span>
+          <span className="text-sm font-bold text-muted">{t.lostNew.description}</span>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
-            placeholder="Name, color, collar, anything that stands out"
+            placeholder={t.lostNew.descriptionPlaceholder}
             className="resize-none rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
           />
         </label>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-muted">Last seen (optional)</span>
+            <span className="text-sm font-bold text-muted">{t.lostNew.lastSeen}</span>
             {spot && (
               <button type="button" onClick={() => setSpot(null)} className="text-xs font-bold text-brand-dark">
-                Clear
+                {t.lostNew.clear}
               </button>
             )}
           </div>
@@ -142,14 +144,12 @@ export default function NewLostPetPage() {
             disabled={locating}
             className="rounded-full border-2 border-brand-soft bg-white py-2.5 text-sm font-bold text-brand-dark transition active:scale-[0.98] disabled:opacity-50"
           >
-            {locating ? "Finding you…" : "📍 Use my location"}
+            {locating ? t.lostNew.findingYou : t.lostNew.useMyLocation}
           </button>
           <LocationPicker key={`${pickerCenter.lat},${pickerCenter.lng}`} value={spot} onChange={setSpot} center={pickerCenter} />
           <p className="px-1 text-xs text-muted">
             {locationNote ??
-              (spot
-                ? "People within 3 km of this spot will get an alert."
-                : "Or tap the map. With no place, everyone gets the alert.")}
+              (spot ? t.lostNew.withSpot : t.lostNew.withoutSpot)}
           </p>
         </div>
 
@@ -161,7 +161,7 @@ export default function NewLostPetPage() {
           disabled={!canSave || saving}
           className="rounded-full bg-sos py-4 text-lg font-extrabold text-white shadow-lg shadow-sos/30 transition active:scale-[0.98] disabled:opacity-50"
         >
-          {saving ? "Saving…" : "Send alert"}
+          {saving ? t.common.saving : t.lostNew.send}
         </button>
       </div>
     </main>

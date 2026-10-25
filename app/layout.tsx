@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "leaflet/dist/leaflet.css";
 import "./globals.css";
+import { LanguageProvider } from "@/lib/i18n";
+import { getLang } from "@/lib/i18n/server";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -20,10 +22,13 @@ export const viewport: Viewport = {
   themeColor: "#faf8ff",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const lang = await getLang();
   return (
-    <html lang="en" className={`${nunito.variable} h-full antialiased`}>
-      <body className="h-full">{children}</body>
+    <html lang={lang} className={`${nunito.variable} h-full antialiased`}>
+      <body className="h-full">
+        <LanguageProvider initial={lang}>{children}</LanguageProvider>
+      </body>
     </html>
   );
 }

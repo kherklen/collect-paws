@@ -18,10 +18,6 @@ export async function lookupAddress(spot: LatLng): Promise<string | null> {
   }
 }
 
-export function formatSpot(spot: LatLng) {
-  return `Near ${spot.lat.toFixed(4)}, ${spot.lng.toFixed(4)}`;
-}
-
 // Ask the browser for the person's location. Resolves null if refused or unavailable.
 export function getLocation(timeoutMs = 10000): Promise<LatLng | null> {
   return new Promise((resolve) => {
@@ -48,8 +44,9 @@ export function distanceMeters(a: LatLng, b: LatLng) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
-export function formatDistance(meters: number) {
-  return meters < 1000 ? `${Math.round(meters / 10) * 10} m` : `${(meters / 1000).toFixed(1)} km`;
+export function formatDistance(meters: number, lang: "en" | "mn" = "en") {
+  const [m, km] = lang === "mn" ? ["м", "км"] : ["m", "km"];
+  return meters < 1000 ? `${Math.round(meters / 10) * 10} ${m}` : `${(meters / 1000).toFixed(1)} ${km}`;
 }
 
 // The place closest to a spot, with its straight-line distance.

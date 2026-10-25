@@ -7,6 +7,7 @@ import { useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
 import LostPetAlert from "@/components/LostPetAlert";
 import { shrinkPhoto } from "@/lib/image";
+import { useI18n } from "@/lib/i18n";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
 import { useAlerts } from "@/lib/useAlerts";
 
@@ -21,6 +22,7 @@ type Tab = "map" | "collection";
 export default function MainShell() {
   const router = useRouter();
   const params = useSearchParams();
+  const { t } = useI18n();
   const tab: Tab = params.get("tab") === "collection" ? "collection" : "map";
 
   const [shrinking, setShrinking] = useState(false);
@@ -61,11 +63,11 @@ export default function MainShell() {
       </div>
 
       {/* Top bar */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex items-center justify-center px-4 pt-4">
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex items-center justify-between gap-2 px-3 pt-4">
         <Link
           href="/notifications"
-          aria-label={unread ? `${unread} new sightings` : "Notifications"}
-          className="pointer-events-auto absolute left-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
+          aria-label={unread ? t.shell.newSightings(unread) : t.shell.notifications}
+          className="pointer-events-auto relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
         >
           <BellIcon />
           {unread > 0 && (
@@ -75,19 +77,19 @@ export default function MainShell() {
           )}
         </Link>
 
-        <nav className="pointer-events-auto flex gap-1 rounded-full bg-white/95 p-1 shadow-md shadow-brand/15 backdrop-blur">
+        <nav className="pointer-events-auto flex min-w-0 gap-1 rounded-full bg-white/95 p-1 shadow-md shadow-brand/15 backdrop-blur">
           <TabButton active={tab === "map"} onClick={() => selectTab("map")}>
-            Nearby Friends
+            {t.shell.nearbyFriends}
           </TabButton>
           <TabButton active={tab === "collection"} onClick={() => selectTab("collection")}>
-            My Collection
+            {t.shell.myCollection}
           </TabButton>
         </nav>
 
         <Link
           href="/profile"
-          aria-label="My profile"
-          className="pointer-events-auto absolute right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-dark shadow-md shadow-brand/15"
+          aria-label={t.shell.myProfile}
+          className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-brand-dark shadow-md shadow-brand/15"
         >
           <ProfileIcon />
         </Link>
@@ -100,14 +102,14 @@ export default function MainShell() {
         <div className="relative flex items-center">
           <Link
             href="/lost/new"
-            aria-label="Report a lost pet"
+            aria-label={t.shell.reportLost}
             className="pointer-events-auto absolute right-full mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-sos shadow-md shadow-brand/15 transition active:scale-95"
           >
             <LostIcon />
           </Link>
           {/* The paw is the camera input itself: phones only open the camera straight from a tap. */}
           <label
-            aria-label="Capture an animal"
+            aria-label={t.shell.capture}
             className="pointer-events-auto flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-brand text-white shadow-lg shadow-brand/40 transition active:scale-95"
           >
             {shrinking ? <span className="text-3xl">⏳</span> : <PawIcon />}
@@ -121,7 +123,7 @@ export default function MainShell() {
           </label>
           <button
             type="button"
-            aria-label="Find the closest vet"
+            aria-label={t.shell.findVet}
             onClick={openVetFinder}
             className="pointer-events-auto absolute left-full ml-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-vet shadow-md shadow-brand/15 transition active:scale-95"
           >
@@ -146,7 +148,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`relative rounded-full px-2.5 py-2 text-sm min-[380px]:px-3 font-bold transition ${
+      className={`relative whitespace-nowrap rounded-full px-2.5 py-2 text-sm min-[380px]:px-3 font-bold transition ${
         active ? "text-brand-dark" : "text-muted"
       }`}
     >

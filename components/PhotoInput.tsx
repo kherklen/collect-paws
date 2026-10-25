@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useI18n } from "@/lib/i18n";
 import { shrinkPhoto } from "@/lib/image";
 
 // Opens the phone camera directly (a file picker on desktop), then shrinks the photo.
 export default function PhotoInput({
   onPhoto,
-  label = "Take a photo",
+  label,
 }: {
   onPhoto: (photo: Blob) => void;
   label?: string;
 }) {
+  const { t } = useI18n();
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -23,7 +25,7 @@ export default function PhotoInput({
     try {
       onPhoto(await shrinkPhoto(file));
     } catch {
-      setError("Couldn't read that photo. Try another one.");
+      setError(t.photo.readError);
     } finally {
       setBusy(false);
     }
@@ -33,7 +35,7 @@ export default function PhotoInput({
     <div className="flex flex-col items-center">
       <label className="flex h-56 w-56 cursor-pointer flex-col items-center justify-center gap-3 rounded-[2.5rem] border-4 border-dashed border-brand/40 bg-white text-brand-dark shadow-sm shadow-brand/10 transition active:scale-[0.98]">
         <span className="text-6xl">{busy ? "⏳" : "📷"}</span>
-        <span className="font-bold">{busy ? "Getting photo…" : label}</span>
+        <span className="font-bold">{busy ? t.photo.getting : (label ?? t.photo.take)}</span>
         <input
           type="file"
           accept="image/*"

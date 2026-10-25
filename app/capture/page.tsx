@@ -8,6 +8,8 @@ import PhotoInput from "@/components/PhotoInput";
 import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
 import { getLocation, lookupAddress, type LatLng } from "@/lib/geo";
+import { useI18n } from "@/lib/i18n";
+import type { Lang } from "@/lib/i18n/dictionaries";
 import { NEEDS, type Mode, type Need } from "@/lib/types";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
@@ -18,9 +20,9 @@ const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
 type Guess = { animal: "cat" | "dog" | "other" | null; breed: string | null };
 
 // Ask our /api/breed route what's in the photo. Null fields mean "couldn't check".
-async function guessBreed(photo: Blob): Promise<Guess> {
+async function guessBreed(photo: Blob, lang: Lang): Promise<Guess> {
   try {
-    const res = await fetch("/api/breed", {
+    const res = await fetch(`/api/breed?lang=${lang}`, {
       method: "POST",
       headers: { "Content-Type": "image/jpeg" },
       body: photo,
@@ -39,6 +41,7 @@ type LocationStep = "auto" | "ask-again" | "drop";
 
 export default function CapturePage() {
   const router = useRouter();
+  const { lang, t } = useI18n();
   // A photo taken from the paw button arrives here ready to go.
   const [photo, setPhoto] = useState<Blob | null>(() => peekPendingPhoto());
   const [preview, setPreview] = useState<string | null>(() => {
@@ -58,7 +61,7 @@ export default function CapturePage() {
   useEffect(() => {
     if (!photo) return;
     let cancelled = false;
-    guessBreed(photo).then((result) => {
+    guessBreed(photo, lang).then((result) => {
       if (cancelled) return;
       setGuess({ ...result, photo });
       // Fill in the breed unless the person already typed one.
@@ -67,6 +70,8 @@ export default function CapturePage() {
     return () => {
       cancelled = true;
     };
+    // Only re-guess for a new photo, not when the language changes mid-capture.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photo]);
 
   const guessing = !!photo && guess?.photo !== photo;
@@ -127,7 +132,7 @@ export default function CapturePage() {
       router.push("/");
       router.refresh();
     } catch {
-      setError("Couldn't save — try again.");
+      setError(t.common.saveError);
       setSaving(false);
     }
   }
@@ -136,75 +141,75 @@ export default function CapturePage() {
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <div className="flex items-center justify-between">
         <Link href="/" className="text-sm font-bold text-brand-dark">
-          ← Cancel
+          ← {t.common.cancel}
         </Link>
-        <h1 className="text-lg font-extrabold">Capture</h1>
+        <h1 className="text-lg font-extrabold">{t.capture.title}</h1>
         <span className="w-12" />
       </div>
 
       {!photo ? (
         <div className="mt-16 flex flex-col items-center gap-6 text-center">
           <PhotoInput onPhoto={choosePhoto} />
-          <p className="max-w-xs text-muted">Spotted a stray cat or dog? Snap a photo to add it to your collection.</p>
+          <p className="max-w-xs text-muted">{t.capture.intro}</p>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
           <div className="relative">
             {preview && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Your capture" className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
+              <img src={preview} alt={t.capture.yourCapture} className="aspect-square w-full rounded-[2rem] object-cover shadow-md shadow-brand/15" />
             )}
             <button
               type="button"
               onClick={() => choosePhoto(null)}
               className="absolute right-3 top-3 rounded-full bg-white/90 px-3 py-1.5 text-sm font-bold text-brand-dark shadow"
             >
-              Retake
+              {t.capture.retake}
             </button>
           </div>
 
           {notAnimal ? (
             <div className="flex flex-col items-center gap-5 text-center">
               <div>
-                <p className="text-xl font-extrabold">Hmm, no cat or dog in this picture 🐾</p>
-                <p className="mt-1 text-muted">Try another photo with the animal in clear view.</p>
+                <p className="text-xl font-extrabold">{t.capture.notAnimalTitle}</p>
+                <p className="mt-1 text-muted">{t.capture.notAnimalText}</p>
               </div>
-              <PhotoInput onPhoto={choosePhoto} label="Take another photo" />
+              <PhotoInput onPhoto={choosePhoto} label={t.capture.takeAnother} />
             </div>
           ) : (
             <>
               <label className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-muted">Breed</span>
+                <span className="text-sm font-bold text-muted">{t.capture.breed}</span>
                 <input
                   value={breed}
                   onChange={(e) => setBreed(e.target.value)}
-                  placeholder={guessing ? "Guessing the breed… ✨" : "e.g. Tabby cat, Husky mix"}
+                  placeholder={guessing ? t.capture.guessing : t.capture.breedPlaceholder}
                   className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
                 />
                 {couldntGuess && !breed && (
-                  <span className="px-1 text-xs text-muted">Couldn&apos;t guess — type it in.</span>
+                  <span className="px-1 text-xs text-muted">{t.capture.couldntGuess}</span>
                 )}
               </label>
 
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-muted">How is it doing?</span>
+                <span className="text-sm font-bold text-muted">{t.capture.howIsIt}</span>
                 <div className="grid grid-cols-2 gap-3">
                   <ModeButton active={mode === "collect"} onClick={() => setMode("collect")} color="collect">
                     <span className="text-2xl">😺</span>
-                    <span className="font-extrabold">Collect</span>
-                    <span className="text-xs text-muted">It&apos;s doing fine</span>
+                    <span className="font-extrabold">{t.capture.collect}</span>
+                    <span className="text-xs text-muted">{t.capture.collectHint}</span>
                   </ModeButton>
                   <ModeButton active={mode === "sos"} onClick={() => setMode("sos")} color="sos">
                     <span className="text-2xl">🆘</span>
-                    <span className="font-extrabold">SOS</span>
-                    <span className="text-xs text-muted">It needs something</span>
+                    <span className="font-extrabold">{t.capture.sos}</span>
+                    <span className="text-xs text-muted">{t.capture.sosHint}</span>
                   </ModeButton>
                 </div>
               </div>
 
               {mode === "sos" && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-bold text-muted">What does it need?</span>
+                  <span className="text-sm font-bold text-muted">{t.capture.whatNeed}</span>
                   <div className="flex flex-wrap gap-2">
                     {NEEDS.map((n) => (
                       <button
@@ -215,7 +220,7 @@ export default function CapturePage() {
                           need === n.value ? "border-sos bg-sos text-white" : "border-sos/30 bg-white text-ink"
                         }`}
                       >
-                        {n.emoji} {n.label}
+                        {n.emoji} {t.needs[n.value]}
                       </button>
                     ))}
                   </div>
@@ -224,12 +229,12 @@ export default function CapturePage() {
 
               {locationStep === "ask-again" && (
                 <p className="rounded-2xl bg-brand-soft p-4 text-sm">
-                  📍 We need your location to place the pin. Please allow location for this site, then tap Save again.
+                  {t.capture.needLocation}
                 </p>
               )}
               {locationStep === "drop" && (
                 <div className="flex flex-col gap-2">
-                  <span className="text-sm font-bold text-muted">Still no location — tap the map where you saw it</span>
+                  <span className="text-sm font-bold text-muted">{t.capture.dropPin}</span>
                   <LocationPicker value={dropped} onChange={setDropped} />
                 </div>
               )}
@@ -242,7 +247,7 @@ export default function CapturePage() {
                 disabled={!canSave || saving}
                 className="rounded-full bg-brand py-4 text-lg font-extrabold text-white shadow-lg shadow-brand/30 transition active:scale-[0.98] disabled:opacity-50"
               >
-                {saving ? "Saving…" : guessing ? "Checking the photo…" : "Save to my collection"}
+                {saving ? t.common.saving : guessing ? t.capture.checking : t.capture.save}
               </button>
             </>
           )}

@@ -113,6 +113,12 @@ What's settled:
 
 ## Components
 
+### Language (added after the final review)
+- All text lives in `lib/i18n/dictionaries.ts` (`en` and `mn`, same shape, checked by TypeScript). Screens read it with `useI18n()` from `lib/i18n/index.tsx`.
+- The root layout picks the starting language with `getLang()` (`lib/i18n/server.ts`): the `lang` cookie if the person tapped a flag, otherwise Vercel's `x-vercel-ip-country` header (MN → Mongolian, anything else → English), and Mongolian when there's no header (localhost).
+- `LanguageSwitcher` (flags) sits on the login screen and in the profile; it saves the `lang` cookie for a year.
+- Dates use `Intl` with the chosen locale; distances switch m/km ↔ м/км; `/api/breed?lang=` asks OpenAI for the breed in that language.
+
 ### Auth and session
 - `/login` page with sign up (email, password, display name) and log in.
 - Supabase Auth handles sessions.
