@@ -38,6 +38,8 @@ const en = {
     myProfile: "My profile",
     capture: "Capture an animal",
     findVet: "Find the closest vet",
+    vetsShort: "Vets",
+    lostShort: "Lost pet",
     reportLost: "Report a lost pet",
   },
   vet: {
@@ -269,6 +271,8 @@ const mn: Dict = {
     myProfile: "Миний профайл",
     capture: "Амьтан бүртгэх",
     findVet: "Хамгийн ойрын амьтны эмнэлэг хайх",
+    vetsShort: "Эмнэлэг",
+    lostShort: "Төөрсөн",
     reportLost: "Төөрсөн амьтан мэдээлэх",
   },
   vet: {

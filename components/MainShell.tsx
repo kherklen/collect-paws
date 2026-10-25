@@ -103,9 +103,12 @@ export default function MainShell() {
           <Link
             href="/lost/new"
             aria-label={t.shell.reportLost}
-            className="pointer-events-auto absolute right-full mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-sos shadow-md shadow-brand/15 transition active:scale-95"
+            className="pointer-events-auto absolute right-full mr-3 flex w-16 flex-col items-center gap-1 transition active:scale-95"
           >
-            <LostIcon />
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-sos shadow-md shadow-brand/15">
+              <LostIcon />
+            </span>
+            <SideLabel>{t.shell.lostShort}</SideLabel>
           </Link>
           {/* The paw is the camera input itself: phones only open the camera straight from a tap. */}
           <label
@@ -125,9 +128,12 @@ export default function MainShell() {
             type="button"
             aria-label={t.shell.findVet}
             onClick={openVetFinder}
-            className="pointer-events-auto absolute left-full ml-4 flex h-12 w-12 items-center justify-center rounded-full bg-white text-vet shadow-md shadow-brand/15 transition active:scale-95"
+            className="pointer-events-auto absolute left-full ml-3 flex w-16 flex-col items-center gap-1 transition active:scale-95"
           >
-            <VetIcon />
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-vet shadow-md shadow-brand/15">
+              <VetIcon />
+            </span>
+            <SideLabel>{t.shell.vetsShort}</SideLabel>
           </button>
         </div>
       </footer>
@@ -206,11 +212,22 @@ function LostIcon() {
   );
 }
 
+// The small name under the side buttons, on a pill so it reads over the map.
+function SideLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="whitespace-nowrap rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-bold text-ink shadow-sm">
+      {children}
+    </span>
+  );
+}
+
+// A stethoscope: "vets".
 function VetIcon() {
   return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <path d="M12 8v8M8 12h8" />
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 3v5a4 4 0 0 0 8 0V3" />
+      <path d="M9 12v2a5 5 0 0 0 10 0v-2" />
+      <circle cx="19" cy="10" r="2" />
     </svg>
   );
 }
