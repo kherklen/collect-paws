@@ -132,7 +132,7 @@ Build mode: fast
   Commit: `Alert people nearby about red animals`
 
 - [ ] **13. Your vets are on the map**
-  Becomes usable: The vets the learner lists are added to the built-in vet list, so they appear on the map and can be the "closest vet."
+  Becomes usable: The vets the learner lists are added to the built-in vet list, so they appear on the map and can be the "closest vet." (Checkpoint feedback) The vet sheet lists every vet nearest first, and tapping one shows its address, hours, and directions. Done early; UB Vet and SOS Pet Care still need a Google Maps link before this slice is ticked.
   Why now: It's only data and doesn't depend on anything else, so it can go in whenever the learner sends the vets.
   PRD ref: `prd.md > Features and Behavior > Closest Vet`
   Spec ref: `spec.md > External Services and Dependencies > Vet list (lib/vets.json)`
@@ -144,7 +144,7 @@ Build mode: fast
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
-- [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13.
+- [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13. Feedback so far: list every vet nearest first and show a tapped vet's details (done, see slice 13). They also sent their vets (added; two still need a location). Waiting on their try of slices 9–10.
 - [ ] Additions: final kick-the-tires after slice 13.
 - [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 

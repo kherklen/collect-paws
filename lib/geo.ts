@@ -49,11 +49,16 @@ export function formatDistance(meters: number, lang: "en" | "mn" = "en") {
   return meters < 1000 ? `${Math.round(meters / 10) * 10} ${m}` : `${(meters / 1000).toFixed(1)} ${km}`;
 }
 
-// The place closest to a spot, with its straight-line distance.
-export function closestTo<T extends LatLng>(from: LatLng, places: T[]) {
+// Every place with its straight-line distance from a spot, nearest first.
+export function byDistance<T extends LatLng>(from: LatLng, places: T[]) {
   return places
     .map((place) => ({ place, meters: distanceMeters(from, place) }))
-    .reduce((best, next) => (next.meters < best.meters ? next : best));
+    .sort((a, b) => a.meters - b.meters);
+}
+
+// The place closest to a spot, with its straight-line distance.
+export function closestTo<T extends LatLng>(from: LatLng, places: T[]) {
+  return byDistance(from, places)[0];
 }
 
 // Re-identification compares a new capture with animals captured this close to it.

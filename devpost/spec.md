@@ -207,6 +207,7 @@ PRD ref: `prd.md > My Collection`.
 - Uses the person's location (or the map center if location was refused).
 - Computes the straight-line distance (the haversine formula) to every entry in `vets.json`.
 - Shows the closest vet's name and distance, highlights its pin on the map, and offers a **Directions** link: `https://www.google.com/maps/dir/?api=1&destination={lat},{lng}`.
+- (Added after the final review) Lists every vet nearest first (`lib/geo.ts > byDistance`). Tapping a row or a vet pin makes it the shown vet, fits it and the person on the map, and shows its address and hours in the current language. For `approximate` vets, Directions is a Google Maps search by name and address instead (`lib/vets.ts > directionsUrl`).
 
 PRD ref: `prd.md > Closest Vet`.
 
@@ -426,7 +427,9 @@ Seeded from an OpenStreetMap query run during planning (vets within 20 km of cen
 | Сонор амьтны эмнэлэг (Sonor Animal Hospital) | 47.91650, 106.94564 | listed twice in OSM ~100 m apart; kept one |
 | ХААИС Мал эмнэлгийн сургууль (ULSM Veterinary Medicine) | 47.88322, 106.91016 | a university school; learner to confirm it treats animals |
 
-**Shape:** `[{ "name": "...", "lat": 0, "lng": 0 }]`. The learner adds vets they know are missing (name + location from Google Maps).
+**Shape:** `[{ "name": "...", "lat": 0, "lng": 0, "address"?: { "en", "mn" }, "hours"?: { "en", "mn" }, "approximate"?: true }]`.
+
+(Added after the final review) The learner sent 11 vets with addresses and hours. The 4 already listed kept their OSM spots and gained address and hours. City Paws and Жаргал were placed from their plus codes (WWG6+FMW, WV8Q+5RP). Жонон and Animals Healthy aren't in OSM, so they sit at their khoroo office (OSM) with `approximate: true`. Mongolia V.E.T.Net shares Энэрэх's address. UB Vet (Khan-Uul 20th khoroo) and SOS Pet Care (Bayanzürkh 36th khoroo) are waiting for a Google Maps link. Mongolian address and hours text was drafted by the agent for the learner to review.
 
 ### Vercel
 - **What:** hosting, auto-deploys on push to GitHub. Docs: https://vercel.com/docs

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
-import { closestTo, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { byDistance, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";
@@ -27,7 +27,8 @@ function vetIcon(closest: boolean) {
   });
 }
 
-type VetResult = { vet: Vet; meters: number; fromMapCenter: boolean };
+// Every vet, nearest first, measured from the person (or the map center if location is off).
+export type VetList = { vets: { vet: Vet; meters: number }[]; fromMapCenter: boolean };
 
 // Square photo pin. SOS pins get a coral border and a need badge,
 // helped pins turn mint and fade, and your own Collect pins are lavender.
@@ -79,7 +80,9 @@ export default function MapView({
   onCloseVet?: () => void;
 }) {
   const [me, setMe] = useState<LatLng | null>(null);
-  const [vetResult, setVetResult] = useState<VetResult | null>(null);
+  const [vetList, setVetList] = useState<VetList | null>(null);
+  // The vet shown in the sheet and highlighted on the map: the closest until another is tapped.
+  const [chosenVet, setChosenVet] = useState<Vet | null>(null);
   const [captures, setCaptures] = useState<Capture[]>([]);
   const [selected, setSelected] = useState<Capture | null>(null);
 
@@ -91,6 +94,8 @@ export default function MapView({
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
+
+  const shownVet = chosenVet ?? vetList?.vets[0]?.vet ?? null;
 
   function handleHelped(updated: Capture) {
     setCaptures((all) => all.map((c) => (c.id === updated.id ? updated : c)));
@@ -118,16 +123,16 @@ export default function MapView({
             eventHandlers={{ click: () => setSelected(c) }}
           />
         ))}
-          {showVet && (
-          <ClosestVet me={me} onFound={setVetResult} />
-        )}
+        {showVet && <SortVets me={me} onSorted={setVetList} />}
+        {showVet && chosenVet && <ShowVet me={me} vet={chosenVet} />}
         {showVet &&
           VETS.map((vet) => (
             <Marker
               key={vet.name}
               position={[vet.lat, vet.lng]}
-              icon={vetIcon(vet.name === vetResult?.vet.name)}
-              zIndexOffset={vet.name === vetResult?.vet.name ? 900 : 0}
+              icon={vetIcon(vet.name === shownVet?.name)}
+              zIndexOffset={vet.name === shownVet?.name ? 900 : 0}
+              eventHandlers={{ click: () => setChosenVet(vet) }}
             />
           ))}
         {me && (
@@ -137,8 +142,16 @@ export default function MapView({
           </>
         )}
       </MapContainer>
-      {showVet && vetResult && (
-        <VetFinder {...vetResult} onClose={onCloseVet} />
+      {showVet && vetList && shownVet && (
+        <VetFinder
+          list={vetList}
+          chosen={shownVet}
+          onChoose={setChosenVet}
+          onClose={() => {
+            setChosenVet(null);
+            onCloseVet();
+          }}
+        />
       )}
       {selected && (
         <PinCard
@@ -155,24 +168,38 @@ export default function MapView({
   );
 }
 
-// Finds the vet closest to the person (or the map center if location is off)
-// and fits both on screen.
-function ClosestVet({ me, onFound }: { me: LatLng | null; onFound: (r: VetResult) => void }) {
+// Sorts every vet by distance from the person (or the map center if location is off)
+// and fits the closest one and the person on screen.
+function SortVets({ me, onSorted }: { me: LatLng | null; onSorted: (list: VetList) => void }) {
   const map = useMap();
   useEffect(() => {
     const center = map.getCenter();
     const from = me ?? { lat: center.lat, lng: center.lng };
-    const { place: vet, meters } = closestTo(from, VETS);
-    onFound({ vet, meters, fromMapCenter: !me });
-    map.fitBounds(
-      [
-        [from.lat, from.lng],
-        [vet.lat, vet.lng],
-      ],
-      { paddingTopLeft: [60, 110], paddingBottomRight: [60, 280], maxZoom: 16 },
-    );
-  }, [map, me, onFound]);
+    const vets = byDistance(from, VETS).map(({ place, meters }) => ({ vet: place, meters }));
+    onSorted({ vets, fromMapCenter: !me });
+    fitVet(map, from, vets[0].vet);
+  }, [map, me, onSorted]);
   return null;
+}
+
+// When a vet is tapped in the list or on the map, fits it and the person on screen.
+function ShowVet({ me, vet }: { me: LatLng | null; vet: Vet }) {
+  const map = useMap();
+  useEffect(() => {
+    fitVet(map, me ?? vet, vet);
+  }, [map, me, vet]);
+  return null;
+}
+
+// The vet sheet covers the bottom of the map, so leave room for it.
+function fitVet(map: L.Map, from: LatLng, vet: Vet) {
+  map.fitBounds(
+    [
+      [from.lat, from.lng],
+      [vet.lat, vet.lng],
+    ],
+    { paddingTopLeft: [60, 110], paddingBottomRight: [60, 440], maxZoom: 16 },
+  );
 }
 
 function Recenter({ to }: { to: LatLng }) {

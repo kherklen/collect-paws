@@ -114,6 +114,7 @@ Develops `scope.md > The Core Loop` step 4.
 ### Closest Vet
 Develops `scope.md > The Core Loop` step 5.
 - [ ] Tapping the Vet button (next to Capture) shows the closest vet to the person's location, with its name and how far away it is.
+- [ ] (Added after the final review) Below it, every vet is listed nearest first with its distance. Tapping one (in the list or on the map) shows its name, distance, address, opening hours, and Directions. Vets whose spot is only known to the khoroo say "approximate location".
 
 ### Lost-Pet Reports
 Develops `scope.md > Later` ("Lost-pet matching"), pulled into the POC by the learner.
