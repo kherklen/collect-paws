@@ -92,26 +92,26 @@ Build mode: fast
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 
 ## Final Review
 
 - [x] Check scripts left test lost-pet reports (broken photos) and test SOS pins visible to everyone — scripts now clean up after themselves; leftovers removed. Confirmed by the learner.
 - [x] My profile was hard to find (only via the bell → Notifications) — added a profile button in the top-right corner; the bell now means Notifications only. Confirmed by the learner.
 - [x] Learner couldn't see their report in the profile or their sighting in notifications — reproduced in a browser and both work; the sighting had gone to the script's leftover "Test" report, and reports only show for the account that filed them. Learner retried with their own accounts: working.
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship. The learner plans a design refresh later and will raise it separately; nothing else requested now.
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Prior practice connected, as a brief recap — the learner wanted to wrap up. Their goal (identifying the problem and solving it) was practiced at the final review: "it's not working" was narrowed by testing three causes in turn (the exact queries in a throwaway script, the real pages in a headless browser, then the data and accounts). The evidence showed the code worked and the cause was a leftover test report plus an account mix-up, and it exposed a real bug in `scripts/helpers.mjs` (test data not cleaned up), which was fixed.
+Route and stops: Reference-only route in the map (not toured): `app/lost/new/page.tsx` `save` → `lib/useAlerts.ts` `fetchAlert` + `lib/geo.ts` `alertsFor` → `components/MainShell.tsx` `<LostPetAlert` / `components/LostPetAlert.tsx`.
+Edit outcome: Not applicable — wrap-up kept to a recap at the learner's request; the learner plans their own design changes next (the map points at `app/globals.css` `@theme`).
+Reflection: Offered as optional in the hand-off message.
+Activity mode: Prior practice connected (brief recap).
 
 ## Revisions
 

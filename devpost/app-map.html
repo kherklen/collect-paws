@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Collect Savar App Map</title>
+<style>
+  :root {
+    --bg: #faf8ff; --card: #ffffff; --ink: #2b2541; --muted: #6f6890; --line: #e4defc;
+    --brand: #6f5fe0; --soft: #eeebff; --sos: #e8604c; --mint: #2f9e6e; --code: #f3f0ff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17142a; --card: #221e3a; --ink: #eeeaff; --muted: #a9a3c9; --line: #3a3460;
+      --brand: #a99cff; --soft: #2c2650; --sos: #ff8f7d; --mint: #6fdcaa; --code: #2c2650;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 ui-rounded, "Nunito", system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; margin: 40px 0 12px; }
+  h3 { font-size: 1.02rem; margin: 0 0 4px; }
+  p { margin: 0 0 12px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 18px 20px; margin-bottom: 12px; }
+  code { font: 0.88em ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); padding: 1px 6px; border-radius: 6px; overflow-wrap: anywhere; }
+  pre { background: var(--code); border-radius: 12px; padding: 12px 14px; overflow-x: auto; font: 0.85em/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; margin: 8px 0 0; }
+  pre code { background: none; padding: 0; }
+  .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .pieces .card { margin: 0; }
+  .stop { display: grid; grid-template-columns: 36px 1fr; gap: 12px; }
+  .num { width: 32px; height: 32px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .where { color: var(--muted); font-size: 0.92rem; margin-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 10px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  td:first-child { width: 42%; font-weight: 700; }
+  details { margin-top: 8px; }
+  summary { cursor: pointer; color: var(--brand); font-weight: 700; }
+  summary:focus-visible, a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: ui-rounded, system-ui, sans-serif; fill: var(--ink); }
+  svg .box { fill: var(--card); stroke: var(--line); stroke-width: 2; }
+  svg .db { fill: var(--soft); stroke: var(--brand); stroke-width: 2; }
+  svg .arrow { stroke: var(--brand); stroke-width: 2.5; fill: none; marker-end: url(#tip); }
+  svg .small { fill: var(--muted); font-size: 12px; }
+  .foot { color: var(--muted); font-size: 0.9rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Collect Savar: app map</h1>
+  <p class="sub">A take-home guide to where things live in the code. It's a snapshot of commit <code>65cfb87</code>, so it can drift as the code changes.</p>
+
+  <h2>What the app is</h2>
+  <p>A map-first web app for Ulaanbaatar. People "capture" stray cats and dogs as photo pins. <strong>Collect</strong> pins are private. <strong>SOS</strong> pins show on everyone's map until someone marks the animal helped. The app also finds the closest vet, and pet owners can report a lost pet. People nearby get an alert and can send a sighting back to the owner.</p>
+  <div class="pieces">
+    <div class="card"><h3>Screens</h3><p><code>app/</code>: the main screen, capture, lost-pet pages, notifications, and profile. Next.js App Router.</p></div>
+    <div class="card"><h3>Shared pieces</h3><p><code>components/</code>: the map, pin card, collection grid, vet finder, alert pop-up, and sighting card.</p></div>
+    <div class="card"><h3>Helpers</h3><p><code>lib/</code>: distances (<code>geo.ts</code>), photo shrinking, the alert poller, and types.</p></div>
+    <div class="card"><h3>Database</h3><p><code>supabase/schema.sql</code>: the tables and the rules for who can read or change each row. Photos live in the <code>photos</code> bucket.</p></div>
+  </div>
+
+  <h2>One action, end to end: a lost-pet alert</h2>
+  <p>An owner reports a lost pet, and within about 30 seconds someone nearby sees a pop-up in the corner.</p>
+  <div class="card">
+    <svg viewBox="0 0 720 230" role="img" aria-labelledby="dtitle">
+      <title id="dtitle">The owner's form saves to Supabase. Every 30 seconds, another person's phone reads open reports, keeps those within 3 km, and shows the newest as a pop-up.</title>
+      <defs><marker id="tip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8b7cf6"/></marker></defs>
+      <rect class="box" x="10" y="20" width="200" height="80" rx="16"/>
+      <text x="110" y="52" text-anchor="middle" font-weight="800">Owner's phone</text>
+      <text x="110" y="74" text-anchor="middle" class="small">/lost/new → save()</text>
+      <rect class="db" x="260" y="20" width="200" height="80" rx="16"/>
+      <text x="360" y="52" text-anchor="middle" font-weight="800">Supabase</text>
+      <text x="360" y="74" text-anchor="middle" class="small">lost_pets table + photo</text>
+      <rect class="box" x="510" y="20" width="200" height="80" rx="16"/>
+      <text x="610" y="52" text-anchor="middle" font-weight="800">Neighbor's phone</text>
+      <text x="610" y="74" text-anchor="middle" class="small">useAlerts → fetchAlert()</text>
+      <rect class="box" x="510" y="140" width="200" height="70" rx="16"/>
+      <text x="610" y="170" text-anchor="middle" font-weight="800">Corner pop-up</text>
+      <text x="610" y="191" text-anchor="middle" class="small">LostPetAlert</text>
+      <path class="arrow" d="M210 60 H255"/>
+      <text x="232" y="50" text-anchor="middle" class="small">insert</text>
+      <path class="arrow" d="M505 60 H465"/>
+      <text x="485" y="50" text-anchor="middle" class="small">read</text>
+      <path class="arrow" d="M610 100 V135"/>
+      <text x="520" y="124" class="small">within 3 km?</text>
+    </svg>
+  </div>
+
+  <h2>Route through the code</h2>
+  <p class="sub">This is a reference route to read on your own; it wasn't toured together. Search for the names in <code>code</code> to jump straight there.</p>
+
+  <div class="card stop">
+    <div class="num">1</div>
+    <div>
+      <h3>The owner saves the report</h3>
+      <div class="where"><code>app/lost/new/page.tsx</code>, search <code>async function save</code></div>
+      <p>It uploads the photo into the owner's own folder, looks up a street address if a last-seen place was picked, and inserts a row into <code>lost_pets</code>. The database rule <code>"lost_pets: insert own"</code> in <code>supabase/schema.sql</code> makes sure nobody can file a report as someone else.</p>
+    </div>
+  </div>
+  <div class="card stop">
+    <div class="num">2</div>
+    <div>
+      <h3>Other phones check every 30 seconds</h3>
+      <div class="where"><code>lib/useAlerts.ts</code>, search <code>fetchAlert</code>; <code>lib/geo.ts</code>, search <code>alertsFor</code></div>
+      <p><code>fetchAlert</code> reads all open reports, then <code>alertsFor</code> keeps the ones within 3 km of you, or with no place at all. It skips your own reports and any you dismissed. The same hook also counts unread sightings for the bell (<code>fetchUnreadCount</code>).</p>
+      <details><summary>See the filter</summary>
+<pre><code>if (r.owner_id === me.id || me.dismissed.includes(r.id)) return false;
+if (r.last_seen_lat === null || r.last_seen_lng === null) return true;
+if (!me.spot) return false;
+return distanceMeters(me.spot, { lat: r.last_seen_lat, lng: r.last_seen_lng }) &lt;= ALERT_RADIUS_METERS;</code></pre>
+      </details>
+    </div>
+  </div>
+  <div class="card stop">
+    <div class="num">3</div>
+    <div>
+      <h3>The pop-up appears</h3>
+      <div class="where"><code>components/MainShell.tsx</code>, search <code>&lt;LostPetAlert</code>; <code>components/LostPetAlert.tsx</code></div>
+      <p>The main screen shows the newest match in the top-right corner. Tapping it opens <code>/lost/[id]</code>, where people send sightings and the owner can mark the pet found.</p>
+    </div>
+  </div>
+
+  <h2>To change this, start here</h2>
+  <div class="card">
+    <table>
+      <tr><td>Colors and font (the overall design)</td><td><code>app/globals.css</code>, the <code>@theme</code> block. Every screen uses these tokens, like <code>--color-sos</code>.</td></tr>
+      <tr><td>Top bar and bottom buttons</td><td><code>components/MainShell.tsx</code>: bell, tabs, My profile, paw, Vet, Report lost pet</td></tr>
+      <tr><td>How pins look on the map</td><td><code>components/MapView.tsx</code>, search <code>function pinIcon</code></td></tr>
+      <tr><td>Alert distance (3 km)</td><td><code>lib/geo.ts</code>, <code>ALERT_RADIUS_METERS</code></td></tr>
+      <tr><td>How often alerts check (30 s)</td><td><code>lib/useAlerts.ts</code>, <code>POLL_MS</code></td></tr>
+      <tr><td>Who can see or change data</td><td><code>supabase/schema.sql</code>. Re-run it in Supabase's SQL Editor after editing.</td></tr>
+      <tr><td>Proving the rules still work</td><td><code>scripts/check-*.mjs</code>, run with <code>node --env-file=.env.local scripts/check-sightings.mjs</code></td></tr>
+    </table>
+  </div>
+
+  <h2>A practice to reuse</h2>
+  <div class="card">
+    <p><strong>When something "isn't working", reproduce it with evidence before changing code.</strong></p>
+    <p>At the final review, a lost-pet report and a sighting didn't show up. There were three plausible causes: a broken query, an old version of the app, or different data or accounts. Each one was checked directly:</p>
+    <ul>
+      <li>The exact queries from the profile and notifications pages were run against the database, and they worked (see <code>scripts/check-sightings.mjs</code>).</li>
+      <li>The real pages were loaded in a browser as a test owner, and the report and sighting both appeared.</li>
+      <li>So the code was fine. The sighting had gone to a leftover test report, and reports only show for the account that filed them.</li>
+    </ul>
+    <p>The investigation also turned up a real bug: the test scripts were leaving test data in the shared database. It was fixed at the source, with <code>cleanUp</code> in <code>scripts/helpers.mjs</code>.</p>
+    <p>On any project: list the possible causes, test each one in the smallest way that gives a clear yes or no, and change code only once the evidence points there.</p>
+  </div>
+
+  <h2>Run it again</h2>
+  <div class="card">
+    <ol>
+      <li>Copy <code>.env.example</code> to <code>.env.local</code> and fill in the Supabase URL, the publishable key, and the OpenAI key.</li>
+      <li>Run <code>supabase/schema.sql</code> once in Supabase → SQL Editor.</li>
+      <li>Run <code>npm install</code>, then <code>npm run dev</code>, and open <code>http://localhost:3000</code>.</li>
+    </ol>
+  </div>
+
+  <p class="foot">Generated at the end of the build from commit <code>65cfb87</code>. Details are in <code>README.md</code> and <code>devpost/spec.md</code>.</p>
+</main>
+</body>
+</html>
