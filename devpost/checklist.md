@@ -97,6 +97,8 @@ Build mode: fast
 ## Final Review
 
 - [ ] Check scripts left test lost-pet reports (broken photos) and test SOS pins visible to everyone — scripts now clean up after themselves; leftovers removed. Learner to confirm the test alert is gone.
+- [ ] My profile was hard to find (only via the bell → Notifications) — added a profile button in the top-right corner; the bell now means Notifications only. Learner to confirm.
+- [ ] Learner couldn't see their report in the profile or their sighting in notifications — reproduced in a browser and both work; the sighting had gone to the script's leftover "Test" report, and reports only show for the account that filed them. Learner to retry with their own accounts.
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map

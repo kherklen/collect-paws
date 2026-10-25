@@ -64,8 +64,8 @@ export default function MainShell() {
       <header className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex items-center justify-center px-4 pt-4">
         <Link
           href="/notifications"
-          aria-label={unread ? `${unread} new sightings — notifications and profile` : "Notifications and profile"}
-          className="pointer-events-auto absolute left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
+          aria-label={unread ? `${unread} new sightings` : "Notifications"}
+          className="pointer-events-auto absolute left-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
         >
           <BellIcon />
           {unread > 0 && (
@@ -83,6 +83,14 @@ export default function MainShell() {
             My Collection
           </TabButton>
         </nav>
+
+        <Link
+          href="/profile"
+          aria-label="My profile"
+          className="pointer-events-auto absolute right-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-brand-dark shadow-md shadow-brand/15"
+        >
+          <ProfileIcon />
+        </Link>
       </header>
 
       {alert && <LostPetAlert pet={alert} onDismiss={() => dismiss(alert.id)} />}
@@ -138,13 +146,13 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`relative rounded-full px-4 py-2 text-sm font-bold transition ${
+      className={`relative rounded-full px-2.5 py-2 text-sm min-[380px]:px-3 font-bold transition ${
         active ? "text-brand-dark" : "text-muted"
       }`}
     >
       {children}
       {active && (
-        <span className="absolute inset-x-4 bottom-1 h-0.5 rounded-full bg-brand" aria-hidden />
+        <span className="absolute inset-x-3 bottom-1 h-0.5 rounded-full bg-brand" aria-hidden />
       )}
     </button>
   );
@@ -167,6 +175,15 @@ function PawIcon() {
       <ellipse cx="14.5" cy="5.5" rx="2" ry="2.6" />
       <ellipse cx="18.5" cy="9" rx="2" ry="2.6" />
       <path d="M12.2 11c-3 0-6.2 4.2-6.2 6.6 0 1.8 1.4 2.6 3 2.6 1.3 0 2.1-.6 3.2-.6s1.9.6 3.2.6c1.6 0 3-.8 3-2.6 0-2.4-3.2-6.6-6.2-6.6z" />
+    </svg>
+  );
+}
+
+function ProfileIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0 1 16 0" />
     </svg>
   );
 }
