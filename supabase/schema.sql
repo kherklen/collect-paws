@@ -185,3 +185,68 @@ drop policy if exists "lost_pets: update own" on public.lost_pets;
 create policy "lost_pets: update own" on public.lost_pets
   for update to authenticated
   using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+
+-- ─────────────────────────────────────────────────────────────
+-- sightings: someone thinks they've seen a lost pet.
+-- 'now' = a photo taken on the spot; 'report' = when, where, and a
+-- required description (so the owner can rule out false alarms).
+-- Only the sender and the pet's owner can see a sighting.
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.sightings (
+  id uuid primary key default gen_random_uuid(),
+  lost_pet_id uuid not null references public.lost_pets (id) on delete cascade,
+  reporter_id uuid not null default auth.uid() references public.profiles (id) on delete cascade,
+  kind text not null check (kind in ('now', 'report')),
+  photo_path text,
+  seen_at timestamptz not null default now(),
+  lat double precision,
+  lng double precision,
+  place_text text,
+  description text,
+  created_at timestamptz not null default now(),
+  read_at timestamptz,
+  constraint sightings_kind_complete check (
+    (kind = 'now' and photo_path is not null)
+    or (kind = 'report' and length(trim(coalesce(description, ''))) > 0)
+  )
+);
+
+create index if not exists sightings_lost_pet_idx on public.sightings (lost_pet_id, created_at desc);
+
+alter table public.sightings enable row level security;
+
+-- Is this lost pet mine? (A function, so the rules below can ask without
+-- tripping over lost_pets' own rules.)
+create or replace function public.owns_lost_pet(pet_id uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select exists (select 1 from public.lost_pets where id = pet_id and owner_id = auth.uid());
+$$;
+
+-- Anyone logged in can send a sighting, as themselves, on a pet that's still lost.
+drop policy if exists "sightings: insert own" on public.sightings;
+create policy "sightings: insert own" on public.sightings
+  for insert to authenticated
+  with check (
+    reporter_id = auth.uid()
+    and read_at is null
+    and exists (select 1 from public.lost_pets p where p.id = lost_pet_id and p.status = 'open')
+  );
+
+drop policy if exists "sightings: read sender or owner" on public.sightings;
+create policy "sightings: read sender or owner" on public.sightings
+  for select to authenticated
+  using (reporter_id = auth.uid() or public.owns_lost_pet(lost_pet_id));
+
+-- The owner marks sightings read. The grants below limit updates to the
+-- read_at column, so nobody can rewrite what a sighting says.
+drop policy if exists "sightings: owner marks read" on public.sightings;
+create policy "sightings: owner marks read" on public.sightings
+  for update to authenticated
+  using (public.owns_lost_pet(lost_pet_id)) with check (public.owns_lost_pet(lost_pet_id));
+
+revoke update on public.sightings from authenticated, anon;
+grant update (read_at) on public.sightings to authenticated;

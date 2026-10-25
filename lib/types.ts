@@ -39,3 +39,18 @@ export type LostPet = {
   created_at: string;
   found_at: string | null;
 };
+
+export type Sighting = {
+  id: string;
+  lost_pet_id: string;
+  reporter_id: string;
+  kind: "now" | "report";
+  photo_path: string | null;
+  seen_at: string;
+  lat: number | null;
+  lng: number | null;
+  place_text: string | null;
+  description: string | null;
+  created_at: string;
+  read_at: string | null;
+};

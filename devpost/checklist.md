@@ -79,7 +79,7 @@ Build mode: fast
   Learner check: As the second account, report a lost pet with a last-seen place near you. As your main account, wait up to 30 seconds for the pop-up, open it, and check the details. Then mark it found from the owner account and confirm the pop-up stops.
   Commit: `Add lost-pet reports and nearby alerts`
 
-- [ ] **8. People can send sightings, and the owner gets notified**
+- [x] **8. People can send sightings, and the owner gets notified**
   Becomes usable: From a lost pet's page, someone sends "I see it now" (a photo, with their location) or "Report a sighting" (when, where, and a required description). The owner's top-left icon shows a count of new sightings. Tapping it lists them with photos or details and clears the count. The profile lists everything the person has posted, with sightings received on each lost-pet report.
   Why now: It closes the owner loop that slice 7 opens, and finishes everything in `prd.md > What We're Building`.
   PRD ref: `prd.md > The Core Journey` (steps 10–11), `prd.md > Sightings`, `prd.md > Notifications and Profile`
@@ -120,3 +120,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Added deleting your own captures (tap a card or your pin → Delete → confirm) — requested by the learner at the first phone checkpoint; new `captures: delete own` and own-folder photo read/delete rules.
 - Non-animal photos are now turned away in slice 5 instead of always letting capture continue — the learner worried about people uploading things that aren't cats or dogs. The block applies only when the AI check ran and said "other"; if the AI is down, capture still works.
 - Report lost pet is an icon button at the bottom left (mirroring Vet) plus a profile menu item, and the alert pop-up sits top-right — the learner's placement choice in slice 7. When location is refused, alerts judge "nearby" from central Ulaanbaatar, matching the map's default.
+- The bell now opens `/notifications`, which links to the profile (it used to open the profile directly) — tapping the icon has to list sightings, and the profile stays one tap away.
+- Sightings can only change their `read_at` column (column-level grant), and can't be sent once a pet is found — tighter than the spec's "owner can update read_at", so a sighting's content can't be rewritten by anyone.

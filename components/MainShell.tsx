@@ -25,7 +25,7 @@ export default function MainShell() {
 
   const [shrinking, setShrinking] = useState(false);
   const [showVet, setShowVet] = useState(false);
-  const { alert, dismiss } = useAlerts();
+  const { alert, dismiss, unread } = useAlerts();
 
   function openVetFinder() {
     if (tab !== "map") selectTab("map");
@@ -63,11 +63,16 @@ export default function MainShell() {
       {/* Top bar */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-[1000] flex items-center justify-center px-4 pt-4">
         <Link
-          href="/profile"
-          aria-label="Notifications and profile"
+          href="/notifications"
+          aria-label={unread ? `${unread} new sightings — notifications and profile` : "Notifications and profile"}
           className="pointer-events-auto absolute left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-ink shadow-md shadow-brand/15"
         >
           <BellIcon />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-sos px-1 text-[10px] font-extrabold text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
         </Link>
 
         <nav className="pointer-events-auto flex gap-1 rounded-full bg-white/95 p-1 shadow-md shadow-brand/15 backdrop-blur">

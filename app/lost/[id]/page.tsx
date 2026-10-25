@@ -1,19 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
 import { createClient, photoUrl } from "@/lib/supabase/client";
-import { formatSpot } from "@/lib/geo";
+import { formatSpot, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { shrinkPhoto } from "@/lib/image";
 import type { LostPet } from "@/lib/types";
 
-// A lost pet's details. The owner can mark it found, which stops the alert for everyone.
-// Sighting forms for everyone else arrive in slice 8.
+const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {
+  ssr: false,
+  loading: () => <div className="h-64 w-full rounded-3xl bg-brand-soft" />,
+});
+
+// A lost pet's details. Others can send a sighting ("I see it now" or a report);
+// the owner sees the sightings and can mark it found, which stops the alert for everyone.
 export default function LostPetPage() {
   const { id } = useParams<{ id: string }>();
   const [pet, setPet] = useState<LostPet | null>(null);
   const [ownerName, setOwnerName] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [sightings, setSightings] = useState<SightingWithReporter[]>([]);
   const [missing, setMissing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,13 +39,20 @@ export default function LostPetPage() {
         return;
       }
       setPet(data as LostPet);
-      setIsOwner(auth.user?.id === data.owner_id);
-      const { data: owner } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", data.owner_id)
-        .single();
+      const mine = auth.user?.id === data.owner_id;
+      setIsOwner(mine);
+      const [{ data: owner }, { data: received }] = await Promise.all([
+        supabase.from("profiles").select("display_name").eq("id", data.owner_id).single(),
+        mine
+          ? supabase
+              .from("sightings")
+              .select("*, profiles(display_name)")
+              .eq("lost_pet_id", id)
+              .order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] }),
+      ]);
       setOwnerName(owner?.display_name ?? null);
+      setSightings((received as SightingWithReporter[]) ?? []);
     })();
   }, [id]);
 
@@ -111,6 +127,25 @@ export default function LostPetPage() {
               {busy ? "Saving…" : "🏠 Mark found"}
             </button>
           )}
+          {!isOwner && pet.status === "open" && (
+            <SightingForms petId={pet.id} ownerName={ownerName} lastSeen={
+              pet.last_seen_lat != null && pet.last_seen_lng != null
+                ? { lat: pet.last_seen_lat, lng: pet.last_seen_lng }
+                : null
+            } />
+          )}
+
+          {isOwner && (
+            <section className="flex flex-col gap-3">
+              <h2 className="px-1 font-extrabold">Sightings received ({sightings.length})</h2>
+              {sightings.length === 0 ? (
+                <p className="px-1 text-sm text-muted">No sightings yet. We&apos;ll show a count on the bell when one arrives.</p>
+              ) : (
+                sightings.map((s) => <SightingCard key={s.id} sighting={s} />)
+              )}
+            </section>
+          )}
+
           {pet.status === "found" && (
             <p className="text-center text-sm text-muted">
               {isOwner ? "Glad they're home! The alert has stopped." : "This pet has been found. Thank you for looking!"}
@@ -120,4 +155,216 @@ export default function LostPetPage() {
       )}
     </main>
   );
+}
+
+type SightingMode = "choose" | "now" | "report" | "sent";
+
+// "I see it now" (a photo, with your location attached) or "Report a sighting"
+// (when, where, and a required description of the animal).
+function SightingForms({
+  petId,
+  ownerName,
+  lastSeen,
+}: {
+  petId: string;
+  ownerName: string | null;
+  lastSeen: LatLng | null;
+}) {
+  const [mode, setMode] = useState<SightingMode>("choose");
+  const [photo, setPhoto] = useState<Blob | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [seenAt, setSeenAt] = useState(() => toLocalInput(new Date()));
+  const [spot, setSpot] = useState<LatLng | null>(null);
+  const [placeText, setPlaceText] = useState("");
+  const [description, setDescription] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handlePhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setError(null);
+    setBusy(true);
+    try {
+      const shrunk = await shrinkPhoto(file);
+      if (preview) URL.revokeObjectURL(preview);
+      setPhoto(shrunk);
+      setPreview(URL.createObjectURL(shrunk));
+      setMode("now");
+    } catch {
+      setError("Couldn't read that photo. Try another one.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function send() {
+    setError(null);
+    setBusy(true);
+    try {
+      const supabase = createClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Not logged in");
+
+      if (mode === "now") {
+        if (!photo) return;
+        const path = `${auth.user.id}/sighting-${crypto.randomUUID()}.jpg`;
+        const [upload, here] = await Promise.all([
+          supabase.storage.from("photos").upload(path, photo, { contentType: "image/jpeg" }),
+          getLocation(),
+        ]);
+        if (upload.error) throw upload.error;
+        const { error } = await supabase.from("sightings").insert({
+          lost_pet_id: petId,
+          kind: "now",
+          photo_path: path,
+          lat: here?.lat ?? null,
+          lng: here?.lng ?? null,
+        });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("sightings").insert({
+          lost_pet_id: petId,
+          kind: "report",
+          seen_at: new Date(seenAt).toISOString(),
+          lat: spot?.lat ?? null,
+          lng: spot?.lng ?? null,
+          place_text: placeText.trim() || null,
+          description: description.trim(),
+        });
+        if (error) throw error;
+      }
+      setMode("sent");
+    } catch {
+      setError("Couldn't send — try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function reset() {
+    if (preview) URL.revokeObjectURL(preview);
+    setPhoto(null);
+    setPreview(null);
+    setSpot(null);
+    setPlaceText("");
+    setDescription("");
+    setSeenAt(toLocalInput(new Date()));
+    setError(null);
+    setMode("choose");
+  }
+
+  if (mode === "sent") {
+    return (
+      <div className="flex flex-col items-center gap-3 rounded-3xl bg-helped/10 p-5 text-center">
+        <p className="text-lg font-extrabold">Thank you! 💜</p>
+        <p className="text-sm text-muted">{ownerName ?? "The owner"} will see your sighting.</p>
+        <button type="button" onClick={reset} className="text-sm font-bold text-brand-dark">
+          Send another
+        </button>
+      </div>
+    );
+  }
+
+  if (mode === "choose") {
+    return (
+      <section className="flex flex-col gap-3">
+        <h2 className="px-1 font-extrabold">Have you seen this pet?</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {/* A label around the camera input: phones only open the camera from a direct tap. */}
+          <label className="flex cursor-pointer flex-col items-center gap-1 rounded-3xl border-2 border-sos bg-sos/10 p-4 text-center transition active:scale-[0.98]">
+            <span className="text-2xl">{busy ? "⏳" : "📸"}</span>
+            <span className="font-extrabold">I see it now</span>
+            <span className="text-xs text-muted">Snap a photo</span>
+            <input type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="sr-only" />
+          </label>
+          <button
+            type="button"
+            onClick={() => setMode("report")}
+            className="flex flex-col items-center gap-1 rounded-3xl border-2 border-brand-soft bg-white p-4 transition active:scale-[0.98]"
+          >
+            <span className="text-2xl">👀</span>
+            <span className="font-extrabold">Report a sighting</span>
+            <span className="text-xs text-muted">When and where</span>
+          </button>
+        </div>
+        {error && <p className="text-center text-sm font-bold text-sos">{error}</p>}
+      </section>
+    );
+  }
+
+  const canSend = mode === "now" ? !!photo : description.trim().length > 0 && !!seenAt;
+
+  return (
+    <section className="flex flex-col gap-4 rounded-3xl bg-white p-4 shadow-sm shadow-brand/10">
+      <div className="flex items-center justify-between">
+        <h2 className="font-extrabold">{mode === "now" ? "📸 I see it now" : "👀 Report a sighting"}</h2>
+        <button type="button" onClick={reset} className="text-sm font-bold text-muted">
+          Cancel
+        </button>
+      </div>
+
+      {mode === "now" ? (
+        <>
+          {preview && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={preview} alt="Your sighting" className="aspect-square w-full rounded-3xl object-cover" />
+          )}
+          <p className="text-xs text-muted">Your current location is sent with the photo.</p>
+        </>
+      ) : (
+        <>
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-bold text-muted">When did you see it?</span>
+            <input
+              type="datetime-local"
+              value={seenAt}
+              max={toLocalInput(new Date())}
+              onChange={(e) => setSeenAt(e.target.value)}
+              className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
+            />
+          </label>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-bold text-muted">Where?</span>
+            <input
+              value={placeText}
+              onChange={(e) => setPlaceText(e.target.value)}
+              placeholder="e.g. Near the State Department Store"
+              className="rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
+            />
+            <LocationPicker value={spot} onChange={setSpot} center={lastSeen ?? UB_CENTER} />
+            <p className="px-1 text-xs text-muted">Type a place, tap the map, or both.</p>
+          </div>
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-bold text-muted">What did it look like?</span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="Color, size, collar — helps the owner know it's really theirs"
+              className="resize-none rounded-2xl border border-brand-soft bg-white px-4 py-3 outline-none focus:border-brand"
+            />
+          </label>
+        </>
+      )}
+
+      {error && <p className="text-center text-sm font-bold text-sos">{error}</p>}
+
+      <button
+        type="button"
+        onClick={send}
+        disabled={!canSend || busy}
+        className="rounded-full bg-sos py-3.5 text-lg font-extrabold text-white shadow-lg shadow-sos/30 transition active:scale-[0.98] disabled:opacity-50"
+      >
+        {busy ? "Sending…" : "Send to owner"}
+      </button>
+    </section>
+  );
+}
+
+// "2026-10-25T14:30" in local time, the format a datetime-local input expects.
+function toLocalInput(date: Date) {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
 }
