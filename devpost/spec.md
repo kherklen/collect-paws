@@ -250,6 +250,12 @@ PRD ref: `prd.md > Sightings`, `prd.md > Lost-Pet Reports`.
 - `components/Comments.tsx` on `PinCard` (SOS only) and `/lost/[id]`: labels authors "Poster" / "Neighbor N" instead of names, marks others' comments read when the owner opens it, and calls `/api/notify` after sending (slice 15).
 - `lib/comments.ts > commentsOnMyPosts` feeds `useAlerts` (bell count = unread sightings + unread comments; newest undismissed comment is a pop-up, `components/CommentAlert.tsx`) and `/notifications`.
 
+### Phone notifications (added after the final review)
+- `public/sw.js` (service worker) shows pushes and opens their link on tap; it picks the English or Mongolian text from the payload by the phone's language. `app/manifest.ts`, `public/icon-192.png`, `public/icon-512.png`, `app/apple-icon.png` make the app installable (iPhones need that for push). `proxy.ts` lets `sw.js` and the manifest load without a login.
+- `lib/push.ts` + `components/PushToggle.tsx` (profile): subscribe with the VAPID public key and save via `save_push_subscription` (a phone that switches accounts moves with it), or unsubscribe and delete.
+- `/api/notify` (`web-push`): given `{ comment_id }` or `{ sighting_id }`, checks with the secret key that it's the caller's, made within the last 2 minutes, and not already sent; pushes to the post owner's devices (never the author's own), deleting subscriptions the push service reports gone (404/410). VAPID subject is the project URL, not a personal email. Env: `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`.
+- Verified with a fake push service (local HTTPS with real Web Push keys) that decrypted the exact payload, because Chrome refuses push subscriptions in automated browsers. The real-phone test is the learner check.
+
 ### Notifications page
 - `/notifications` lists sightings on the person's reports, newest first, each with its photo or details.
 - Opening the page sets `read_at = now` on the unread ones, which clears the badge.

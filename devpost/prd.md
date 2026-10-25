@@ -137,6 +137,10 @@ Develops `scope.md > Later` ("Lost-pet matching"), pulled into the POC by the le
 - [ ] Nobody is shown by name: the post's owner is "Poster", everyone else "Neighbor 1, 2…" in the order they first commented on that post. You can delete your own comments.
 - [ ] When someone comments on your post, you get a pop-up ("💬 New comment on your post") and your bell count goes up. The notifications page lists comments on your posts; opening the post or that page marks them read.
 
+### Phone Notifications (added after the final review)
+- [ ] In the profile, "Phone notifications → Turn on" asks for permission. After that, a new comment on your post or a sighting of your lost pet arrives as a phone notification even with the app closed; tapping it opens the post. Turn off any time.
+- [ ] On iPhone it only works after Share → Add to Home Screen; the profile says so instead of showing the button.
+
 ### Sightings
 - [ ] From the alert, someone can send **"I see it now"** with a photo.
 - [ ] Or they can send **"Report a sighting"** with when they saw it, where, and what it looked like. The description helps the owner rule out false alarms.

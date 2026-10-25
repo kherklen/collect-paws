@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import PushToggle from "@/components/PushToggle";
 import SightingCard, { type SightingWithReporter } from "@/components/SightingCard";
 import { formatDay, useI18n } from "@/lib/i18n";
 import { createClient, photoUrl } from "@/lib/supabase/client";
@@ -81,6 +82,7 @@ export default function ProfilePage() {
             <LanguageSwitcher />
           </div>
         </div>
+        <PushToggle />
       </nav>
 
       <section className="mt-8">

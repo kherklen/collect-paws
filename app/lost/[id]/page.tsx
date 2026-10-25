@@ -160,6 +160,15 @@ export default function LostPetPage() {
 
 type SightingMode = "choose" | "now" | "report" | "sent";
 
+// Lets the owner know on their phone, if they turned notifications on. Best effort.
+function notifyOwner(sightingId: string) {
+  fetch("/api/notify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sighting_id: sightingId }),
+  }).catch(() => {});
+}
+
 // "I see it now" (a photo, with your location attached) or "Report a sighting"
 // (when, where, and a required description of the animal).
 function SightingForms({ petId, lastSeen }: { petId: string; lastSeen: LatLng | null }) {
@@ -209,25 +218,35 @@ function SightingForms({ petId, lastSeen }: { petId: string; lastSeen: LatLng | 
           getLocation(),
         ]);
         if (upload.error) throw upload.error;
-        const { error } = await supabase.from("sightings").insert({
-          lost_pet_id: petId,
-          kind: "now",
-          photo_path: path,
-          lat: here?.lat ?? null,
-          lng: here?.lng ?? null,
-        });
+        const { data, error } = await supabase
+          .from("sightings")
+          .insert({
+            lost_pet_id: petId,
+            kind: "now",
+            photo_path: path,
+            lat: here?.lat ?? null,
+            lng: here?.lng ?? null,
+          })
+          .select("id")
+          .single();
         if (error) throw error;
+        notifyOwner(data.id);
       } else {
-        const { error } = await supabase.from("sightings").insert({
-          lost_pet_id: petId,
-          kind: "report",
-          seen_at: new Date(seenAt).toISOString(),
-          lat: spot?.lat ?? null,
-          lng: spot?.lng ?? null,
-          place_text: placeText.trim() || null,
-          description: description.trim(),
-        });
+        const { data, error } = await supabase
+          .from("sightings")
+          .insert({
+            lost_pet_id: petId,
+            kind: "report",
+            seen_at: new Date(seenAt).toISOString(),
+            lat: spot?.lat ?? null,
+            lng: spot?.lng ?? null,
+            place_text: placeText.trim() || null,
+            description: description.trim(),
+          })
+          .select("id")
+          .single();
         if (error) throw error;
+        notifyOwner(data.id);
       }
       setMode("sent");
     } catch {

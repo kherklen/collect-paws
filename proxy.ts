@@ -40,6 +40,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Skip API routes (they check the session themselves), Next.js assets, and images.
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|webp)$).*)"],
+  // Skip API routes (they check the session themselves), Next.js assets, images,
+  // and the service worker and manifest (browsers fetch those on their own).
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sw.js|manifest.webmanifest|.*\\.(?:png|jpg|jpeg|svg|webp)$).*)"],
 };

@@ -151,13 +151,13 @@ Build mode: fast
   Learner check: As the demo account, post an SOS animal. On your main account, comment on it. Back on the demo account, check the pop-up, the bell count, and the comment on the pin card.
   Commit: `Add comments on SOS pins and lost-pet reports`
 
-- [ ] **15. Phone notifications for comments and sightings on your posts**
+- [x] **15. Phone notifications for comments and sightings on your posts**
   Becomes usable: In the profile, "Turn on phone notifications" asks the browser for permission. After that, a new comment on your post, or a sighting of your lost pet, arrives as a phone notification even when the app is closed, and tapping it opens the post. On iPhone it only works after Share → Add to Home Screen, and the button says so. Android and computers work from the browser.
   Why now: It builds on slice 14's comments. It's a separate slice so comments ship even if push gives trouble.
   PRD ref: `prd.md > Features and Behavior > Notifications and Profile`
   Spec ref: `spec.md > Components > Notifications page`, `spec.md > Components > Profile`, `spec.md > External Services and Dependencies > Vercel`
   Build: `push_subscriptions` table with a `save_push_subscription` function. `public/sw.js` (service worker), `app/manifest.ts` and an app icon so the app can be added to the home screen. `web-push` package and VAPID keys (`NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`). `/api/notify` checks the new comment or sighting really is the caller's and just made, then pushes to the post owner's devices (removing dead ones). The comment and sighting forms call it after saving.
-  Verify (mechanical): Build and lint pass. A script: `/api/notify` refuses logged-out callers, someone else's comment, and old comments; for a fresh comment it sends to the owner's saved subscription (a test subscription receives the encrypted message) and never to the commenter. A headless browser registers the service worker and saves a subscription.
+  Verify (mechanical): Build and lint pass. A script: `/api/notify` refuses logged-out callers, someone else's comment, and old comments; for a fresh comment it sends to the owner's saved subscription (a test subscription receives the encrypted message) and never to the commenter. A headless browser registers the service worker and saves a subscription. (Done with a fake push service that decrypted the payload; Chrome blocks push subscriptions in automated browsers, so the browser step became: `sw.js` and the manifest load logged-out, and the profile shows the iPhone note vs. the button.)
   Learner check: On your phone (iPhone: add to home screen first), turn on notifications in the profile, close the app, and have your other account comment on your SOS pin. The notification arrives and opens the pin.
   Commit: `Send phone notifications for comments and sightings`
 
