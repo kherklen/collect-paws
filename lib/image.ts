@@ -2,16 +2,25 @@
 // longest side at most 1024 px, saved as JPEG. The result keeps the original's
 // lastModified time, so /capture can tell a fresh photo from an old one.
 export async function shrinkPhoto(file: File, maxSide = 1024, quality = 0.8): Promise<File> {
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
-  const width = Math.round(bitmap.width * scale);
-  const height = Math.round(bitmap.height * scale);
+  // An <img> applies the photo's rotation tag (EXIF) exactly once in every current
+  // browser. createImageBitmap's rotation option doesn't behave the same everywhere,
+  // and phone photos came out upside down.
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  try {
+    img.src = url;
+    await img.decode();
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  const width = Math.round(img.naturalWidth * scale);
+  const height = Math.round(img.naturalHeight * scale);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
-  bitmap.close();
+  canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
 
   return new Promise((resolve, reject) =>
     canvas.toBlob(
