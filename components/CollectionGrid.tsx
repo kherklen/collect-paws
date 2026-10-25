@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatDay, useI18n } from "@/lib/i18n";
+import { breedCount } from "@/lib/breeds";
 import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import { URGENCY_COLOR, urgencyNow } from "@/lib/urgency";
 import { useNow } from "@/lib/useNow";
@@ -59,7 +60,7 @@ export default function CollectionGrid() {
   return (
     <div className="h-full overflow-y-auto bg-canvas px-3 pb-36 pt-20">
       <p className="mb-3 px-1 text-sm font-bold text-muted">
-        {t.grid.collected(animals.length)}
+        {t.grid.collected(animals.length)} · {t.unlock.count(breedCount(captures.map((c) => c.breed)))}
       </p>
       <ul className="grid grid-cols-3 gap-3">
         {animals.map((c) => (

@@ -161,11 +161,21 @@ Build mode: fast
   Learner check: On your phone (iPhone: add to home screen first), turn on notifications in the profile, close the app, and have your other account comment on your SOS pin. The notification arrives and opens the pin.
   Commit: `Send phone notifications for comments and sightings`
 
+- [x] **16. Finding a new breed unlocks it**
+  Becomes usable: Saving a capture whose breed isn't in your collection yet shows a celebration before returning to the map: "🎉 New breed unlocked!", the breed, and how many breeds you've found. Breeds match regardless of capital letters and spacing. The collection header also counts your breeds.
+  Why now: The learner's last request. It builds on the breed suggestions and stays inside the capture flow, so it's small and comes last.
+  PRD ref: `prd.md > Features and Behavior > Capture`, `prd.md > Features and Behavior > My Collection`
+  Spec ref: `spec.md > Components > Capture flow`, `spec.md > Components > My Collection grid`
+  Build: `lib/breeds.ts` (normalize, count, is-new). After saving, `/capture` checks your captures' breeds and shows the celebration if this one is new. `CollectionGrid` shows the breed count.
+  Verify (mechanical): Build and lint pass. A script checks the breed rules (case and spacing, empty breeds never count). A headless browser on the demo account: a capture with a never-seen breed shows the celebration; a second one with the same breed goes straight back to the map.
+  Learner check: As the demo account, capture an animal with a breed you haven't collected: the celebration appears. Capture another of the same breed: it doesn't.
+  Commit: `Celebrate newly unlocked breeds`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 4, on the phone: capture, pin, card, helped. Feedback: open the camera straight from the paw (done), delete own captures (done), turn away non-animal photos (moved into slice 5). Learner confirmed it works on the phone; their captures were Collect (private), so the DB check confirmed the live site, key type, and rules rather than reading their row.
 - [ ] Additions: early check after slice 10 — the learner tries the demo uploads and duplicate matching, and their feedback shapes slices 11–13. Feedback so far: list every vet nearest first and show a tapped vet's details (done, see slice 13). They also sent their vets with Google Maps links (slice 13, done). On the phone the vet list was too big: the sheet now opens compact, "All vets" expands it, the handle shrinks it, × closes it (done). The vet button's square "+" didn't read as vets: it's now a stethoscope, and both side buttons have short labels ("Lost pet", "Vets") (done). Breed: show up to 3 AI suggestions as tappable chips instead of filling the field (done). Vets outside Mongolia come from OpenStreetMap (built; live search check pending because Overpass was down). Photos came out upside down on the learner's phone: shrinking now goes through an image element, which applies the rotation tag once (checked with 180° and 90° tagged photos in Chrome; learner to retry on the phone). Privacy (the learner asked whether exposing home addresses is allowed): public posts show "Spotted 5 min ago" instead of names, places drop house numbers in favor of the closest named place or street plus area, and SOS posting has a warning plus "I'm at home: hide the exact spot" (done). Existing data: 1 private capture had a house number; no public rows, so nothing was rewritten. Waiting on their try of slices 9–10.
-- [ ] Additions: final kick-the-tires after slice 15.
+- [ ] Additions: final kick-the-tires after slice 16.
 - [x] Final kick-the-tires exploration and feedback completed — learner tried lost-pet reports, alerts, and sightings with two accounts; feedback: a broken test report (fixed), profile hard to find (fixed), report/sighting not showing (account and test-data mix-up, confirmed working).
 
 ## Final Review
@@ -176,7 +186,7 @@ Build mode: fast
 - [ ] Mongolian + English — location picks the first language, flags switch it (login screen and profile); Mongolian text drafted by the agent for the learner to review.
 - [x] Final review complete — feedback resolved and learner confirms ready to ship. The learner plans a design refresh later and will raise it separately; nothing else requested now.
 
-- [ ] Additions (slices 9–15) final review complete — feedback resolved and learner confirms ready.
+- [ ] Additions (slices 9–16) final review complete — feedback resolved and learner confirms ready.
 
 ## Code Tour and App Map
 

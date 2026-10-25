@@ -214,6 +214,11 @@ const en = {
     sendToOwner: "Send to owner",
     sendError: "Couldn't send — try again.",
   },
+  unlock: {
+    title: "New breed unlocked!",
+    count: (n: number) => `${n} ${n === 1 ? "breed" : "breeds"} found`,
+    done: "Yay! Back to the map",
+  },
   comments: {
     title: "Comments",
     empty: "No comments yet. Say if you're on your way or what you saw.",
@@ -483,6 +488,11 @@ const mn: Dict = {
     sending: "Илгээж байна…",
     sendToOwner: "Эзэнд илгээх",
     sendError: "Илгээж чадсангүй — дахин оролдоно уу.",
+  },
+  unlock: {
+    title: "Шинэ үүлдэр нээгдлээ!",
+    count: (n) => `${n} үүлдэр олсон`,
+    done: "Хөөх! Газрын зураг руу буцах",
   },
   comments: {
     title: "Сэтгэгдэл",

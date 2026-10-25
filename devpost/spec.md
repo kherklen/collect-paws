@@ -200,6 +200,7 @@ PRD ref: `prd.md > Capture`.
 PRD ref: `prd.md > Map (Nearby Friends)` (address on the pin card).
 
 ### My Collection grid
+- (Added after the final review) Header shows animals and breeds (`lib/breeds.ts > breedCount`). After a save, `/capture` reads the person's capture breeds and, if this is the first of its breed (`isNewBreed`), shows the celebration screen instead of returning straight to the map.
 - A three-column grid of the person's own captures, newest first.
 - Each card shows the image and "breed / date".
 - Helped animals stay in the grid with a distinct look (e.g. a colored ring or a "helped" tag).

@@ -100,6 +100,7 @@ Develops `scope.md > The Core Loop` step 2 and `scope.md > The POC Boundary` ("C
 - [ ] (Added after the final review) On save, if the AI thinks an animal captured within 500 m is the same one, the app asks "Seen this one before?". It shows that capture's photo only if it's the person's own or an SOS pin; for someone else's private capture it just says a similar animal was already collected. The person chooses **Same animal** (joins its profile), **Different animal**, or **Don't save**. The AI never merges on its own, and if the check can't run the capture is saved as a new animal.
 
 ### My Collection
+- [ ] (Added after the final review) Saving the first capture of a breed shows "🎉 New breed unlocked!" with the breed and how many breeds you've found; the collection header counts breeds too. Breeds match ignoring capital letters and spacing.
 Develops `scope.md > The POC Boundary` ("My Collection").
 - [ ] It shows only the logged-in person's own captures, as a three-column grid.
 - [ ] (Added after the final review) One card per animal: capturing the same animal again adds "×2" to its card instead of a new card.

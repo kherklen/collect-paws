@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
+import { breedCount, isNewBreed } from "@/lib/breeds";
 import { isFreshPhoto } from "@/lib/image";
 import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
@@ -85,6 +86,8 @@ export default function CapturePage() {
   // A look-alike found nearby, waiting for the person to say if it's the same animal.
   const [possibleMatch, setPossibleMatch] = useState<{ spot: LatLng; match: AnimalMatch } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Set after saving the first capture of a breed: shows "New breed unlocked!".
+  const [unlocked, setUnlocked] = useState<{ breed: string; count: number } | null>(null);
   // The demo account skips the real-photo checks, can upload, and drops every pin by hand.
   // Null while we're still finding out.
   const [isDemo, setIsDemo] = useState<boolean | null>(null);
@@ -200,14 +203,46 @@ export default function CapturePage() {
         address,
       });
       if (insert.error) throw insert.error;
-
       setPendingPhoto(null);
+
+      // First of its breed in my collection? Celebrate before going back to the map.
+      const { data: mine } = await supabase.from("captures").select("breed").eq("user_id", auth.user.id);
+      const breeds = (mine ?? []).map((c) => c.breed as string | null);
+      if (isNewBreed(breed, breeds)) {
+        setUnlocked({ breed: breed.trim(), count: breedCount(breeds) });
+        return;
+      }
       router.push("/");
       router.refresh();
     } catch {
       setError(t.common.saveError);
       setSaving(false);
     }
+  }
+
+  if (unlocked) {
+    return (
+      <main className="mx-auto flex min-h-full max-w-md flex-col items-center justify-center gap-5 px-6 py-12 text-center">
+        <div className="text-6xl">🎉</div>
+        <p className="text-sm font-extrabold uppercase tracking-wide text-brand">{t.unlock.title}</p>
+        {preview && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" className="h-44 w-44 rounded-[2rem] border-4 border-lime object-cover shadow-lg shadow-brand/20" />
+        )}
+        <h1 className="font-display text-3xl font-bold italic">{unlocked.breed}</h1>
+        <p className="rounded-full bg-lime px-4 py-1.5 text-sm font-bold text-brand-dark">{t.unlock.count(unlocked.count)}</p>
+        <button
+          type="button"
+          onClick={() => {
+            router.push("/");
+            router.refresh();
+          }}
+          className="mt-4 w-full rounded-full bg-brand py-4 text-lg font-extrabold text-white shadow-lg shadow-brand/30"
+        >
+          {t.unlock.done}
+        </button>
+      </main>
+    );
   }
 
   return (
