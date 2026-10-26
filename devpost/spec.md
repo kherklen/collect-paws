@@ -93,6 +93,7 @@ All choices below were agreed in the `4-spec` conversation. Check the version nu
   A `.env.example` with empty values is committed, and the real `.env.local` is already ignored by `.gitignore`.
 - **Database setup:** paste `supabase/schema.sql` into the Supabase SQL Editor and run it. This creates the tables, access rules, the `photos` storage bucket, and the `mark_helped` function. You don't need the Supabase CLI.
 - **Supabase setting:** turn **off** "Confirm email" (Authentication → Providers → Email) so new accounts work right away during the demo.
+- **Public GitHub repo:** https://github.com/kherklen/collect-paws (made public by the learner; checked without logging in).
 - **For the demo recording** (required, along with a public GitHub repo):
   1. Screen-record the phone outside: capture a real stray, see the pin and the collection card, tap Vet, then mark it helped.
   2. Use a second account (on a laptop or second phone) to report a lost pet. Send a sighting from the first phone, and show the owner's badge and notification.
