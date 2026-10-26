@@ -200,6 +200,7 @@ PRD ref: `prd.md > Capture`.
 PRD ref: `prd.md > Map (Nearby Friends)` (address on the pin card).
 
 ### My Collection grid
+- (Added after the final review) "＋ Add from gallery" links to `/capture?gallery=1`: gallery picker only, urgency fixed to green (buttons replaced by a privacy note), pin dropped on a map centered on the person, no age check (the screen/screenshot check stays), and it returns to the collection.
 - (Added after the final review) Header shows animals and breeds (`lib/breeds.ts > breedCount`). After a save, `/capture` reads the person's capture breeds and, if this is the first of its breed (`isNewBreed`), shows the celebration screen instead of returning straight to the map.
 - A three-column grid of the person's own captures, newest first.
 - Each card shows the image and "breed / date".

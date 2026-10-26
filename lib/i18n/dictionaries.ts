@@ -104,6 +104,7 @@ const en = {
     emptyTitle: "No friends yet!",
     emptyText: "Spot a stray cat or dog and tap the paw button to add it to your collection.",
     collected: (n: number) => `${n} ${n === 1 ? "friend" : "friends"} collected`,
+    addFromGallery: "Add from gallery",
   },
   photo: {
     take: "Take a photo",
@@ -117,6 +118,10 @@ const en = {
     yourCapture: "Your capture",
     retake: "Retake",
     demoIntro: "Demo account: upload animal photos and drop them anywhere on the map.",
+    galleryTitle: "Add to collection",
+    galleryIntro: "Met a cat or dog earlier? Add its photo from your gallery. It stays private in your collection.",
+    galleryNote: "😺 Added as doing fine, only in your collection (nobody else sees it).",
+    galleryDropPin: "Tap the map where you met it",
     turnedAway: {
       notAnimal: {
         title: "Hmm, no cat or dog in this picture 🐾",
@@ -379,6 +384,7 @@ const mn: Dict = {
     emptyTitle: "Одоогоор найз алга!",
     emptyText: "Гудамжны муур, нохой хараад сарвуу товчийг дарж цуглуулгадаа нэмээрэй.",
     collected: (n) => `${n} найз цуглуулсан`,
+    addFromGallery: "Галерейгаас нэмэх",
   },
   photo: {
     take: "Зураг авах",
@@ -392,6 +398,10 @@ const mn: Dict = {
     yourCapture: "Таны зураг",
     retake: "Дахин авах",
     demoIntro: "Демо бүртгэл: амьтны зураг оруулаад газрын зургийн дурын цэгт байрлуулаарай.",
+    galleryTitle: "Цуглуулгад нэмэх",
+    galleryIntro: "Өмнө нь муур, нохой харсан уу? Галерейгаасаа зургийг нь нэмээрэй. Зөвхөн таны цуглуулгад хадгалагдана.",
+    galleryNote: "😺 Сайн байгаа гэж, зөвхөн таны цуглуулгад нэмэгдэнэ (өөр хүн харахгүй).",
+    galleryDropPin: "Амьтныг харсан газраа газрын зураг дээр дарна уу",
     turnedAway: {
       notAnimal: {
         title: "Хм, энэ зураг дээр муур ч, нохой ч алга 🐾",

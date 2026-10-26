@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
 import { breedCount, isNewBreed } from "@/lib/breeds";
 import { isFreshPhoto } from "@/lib/image";
@@ -62,9 +62,22 @@ async function findMatch(photo: Blob, spot: LatLng, animal: Guess["animal"]): Pr
 // then the tap-to-drop map if it's still refused.
 type LocationStep = "auto" | "ask-again" | "drop";
 
+// Reading `?gallery=1` from the URL needs a Suspense boundary.
 export default function CapturePage() {
+  return (
+    <Suspense>
+      <Capture />
+    </Suspense>
+  );
+}
+
+function Capture() {
   const router = useRouter();
   const { lang, t } = useI18n();
+  // Opened from My Collection's "Add from gallery": a photo from the gallery, always
+  // green (private), placed by hand, and allowed to be older than "just now".
+  const galleryMode = useSearchParams().get("gallery") === "1";
+  const home = galleryMode ? "/?tab=collection" : "/";
   // A photo taken from the paw button arrives here ready to go.
   const [photo, setPhoto] = useState<Blob | null>(() => peekPendingPhoto());
   const [preview, setPreview] = useState<string | null>(() => {
@@ -92,15 +105,16 @@ export default function CapturePage() {
   // The demo account skips the real-photo checks, can upload, and drops every pin by hand.
   // Null while we're still finding out.
   const [isDemo, setIsDemo] = useState<boolean | null>(null);
-  const [demoCenter, setDemoCenter] = useState<LatLng | null>(null);
+  // Where the drop-a-pin map opens, for the demo account and gallery adds.
+  const [pickerCenter, setPickerCenter] = useState<LatLng | null>(null);
 
   useEffect(() => {
     (async () => {
       const demo = await isDemoAccount();
       setIsDemo(demo);
-      if (demo) setDemoCenter((await getLocation()) ?? UB_CENTER);
+      if (demo || galleryMode) setPickerCenter((await getLocation()) ?? UB_CENTER);
     })();
-  }, []);
+  }, [galleryMode]);
 
   useEffect(() => {
     if (!photo) return;
@@ -121,7 +135,7 @@ export default function CapturePage() {
   const notAnimal = !guessing && guess?.animal === "other";
   // Real-photo checks, skipped for the demo account. An old photo is turned away
   // straight away; a photo of a picture once the AI has looked.
-  const oldPhoto = isDemo === false && !!photo && !isFreshPhoto(photo);
+  const oldPhoto = isDemo === false && !galleryMode && !!photo && !isFreshPhoto(photo);
   const notReal = isDemo === false && !guessing && !notAnimal && guess?.real === false;
   const turnedAway = notAnimal ? "notAnimal" : oldPhoto ? "old" : notReal ? "notReal" : null;
   const suggestions = guessing ? [] : (guess?.breeds ?? []);
@@ -136,7 +150,7 @@ export default function CapturePage() {
     setPreview(next ? URL.createObjectURL(next) : null);
   }
 
-  const dropByHand = isDemo === true || locationStep === "drop";
+  const dropByHand = isDemo === true || galleryMode || locationStep === "drop";
   const canSave =
     !!photo &&
     isDemo !== null &&
@@ -209,7 +223,7 @@ export default function CapturePage() {
         setUnlocked({ breed: breed.trim(), count: breedCount(breeds) });
         return;
       }
-      router.push("/");
+      router.push(home);
       router.refresh();
     } catch {
       setError(t.common.saveError);
@@ -231,7 +245,7 @@ export default function CapturePage() {
         <button
           type="button"
           onClick={() => {
-            router.push("/");
+            router.push(home);
             router.refresh();
           }}
           className="mt-4 w-full rounded-full bg-brand py-4 text-lg font-extrabold text-white shadow-lg shadow-brand/30"
@@ -245,18 +259,20 @@ export default function CapturePage() {
   return (
     <main className="mx-auto min-h-full max-w-md px-5 pb-12 pt-6">
       <div className="flex items-center justify-between">
-        <Link href="/" className="text-sm font-bold text-brand-dark">
+        <Link href={home} className="text-sm font-bold text-brand-dark">
           ← {t.common.cancel}
         </Link>
-        <h1 className="text-lg font-display font-bold italic">{t.capture.title}</h1>
+        <h1 className="text-lg font-display font-bold italic">{galleryMode ? t.capture.galleryTitle : t.capture.title}</h1>
         <span className="w-12" />
       </div>
 
       {!photo ? (
         <div className="mt-16 flex flex-col items-center gap-6 text-center">
-          {isDemo && <PhotoInput onPhoto={choosePhoto} fromGallery />}
-          <PhotoInput onPhoto={choosePhoto} />
-          <p className="max-w-xs text-muted">{isDemo ? t.capture.demoIntro : t.capture.intro}</p>
+          {(isDemo || galleryMode) && <PhotoInput onPhoto={choosePhoto} fromGallery />}
+          {!galleryMode && <PhotoInput onPhoto={choosePhoto} />}
+          <p className="max-w-xs text-muted">
+            {galleryMode ? t.capture.galleryIntro : isDemo ? t.capture.demoIntro : t.capture.intro}
+          </p>
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-6">
@@ -281,7 +297,7 @@ export default function CapturePage() {
               onDifferent={() => store(possibleMatch.spot, null)}
               onDiscard={() => {
                 setPendingPhoto(null);
-                router.push("/");
+                router.push(home);
               }}
             />
           ) : turnedAway ? (
@@ -326,14 +342,18 @@ export default function CapturePage() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="text-sm font-bold text-muted">{t.capture.howIsIt}</span>
-                <div className="grid grid-cols-3 gap-2">
-                  {(["green", "amber", "red"] as const).map((level) => (
-                    <UrgencyButton key={level} level={level} active={urgency === level} onClick={() => setUrgency(level)} />
-                  ))}
+              {galleryMode ? (
+                <p className="rounded-3xl bg-collect/15 p-4 text-sm font-bold text-brand-dark">{t.capture.galleryNote}</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <span className="text-sm font-bold text-muted">{t.capture.howIsIt}</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["green", "amber", "red"] as const).map((level) => (
+                      <UrgencyButton key={level} level={level} active={urgency === level} onClick={() => setUrgency(level)} />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {mode === "sos" && (
                 <div className="flex flex-col gap-2 rounded-3xl bg-white p-4 text-sm shadow-sm shadow-brand/10">
@@ -380,11 +400,13 @@ export default function CapturePage() {
                   {t.capture.needLocation}
                 </p>
               )}
-              {isDemo
-                ? demoCenter && (
+              {isDemo || galleryMode
+                ? pickerCenter && (
                     <div className="flex flex-col gap-2">
-                      <span className="text-sm font-bold text-muted">{t.capture.demoDropPin}</span>
-                      <LocationPicker value={dropped} onChange={setDropped} center={demoCenter} />
+                      <span className="text-sm font-bold text-muted">
+                        {galleryMode ? t.capture.galleryDropPin : t.capture.demoDropPin}
+                      </span>
+                      <LocationPicker value={dropped} onChange={setDropped} center={pickerCenter} />
                     </div>
                   )
                 : locationStep === "drop" && (

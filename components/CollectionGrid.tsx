@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { formatDay, useI18n } from "@/lib/i18n";
 import { breedCount } from "@/lib/breeds";
@@ -13,6 +14,7 @@ import PinCard from "@/components/PinCard";
 
 // My Collection: a three-column grid of the animals the person has captured, newest first.
 // Capturing the same animal again doesn't add a card; its card counts the captures (×2).
+// "Add from gallery" adds an animal met earlier, always as a private green capture.
 export default function CollectionGrid() {
   const { t } = useI18n();
   const [captures, setCaptures] = useState<Capture[] | null>(null);
@@ -49,6 +51,9 @@ export default function CollectionGrid() {
           <p className="mt-2 text-muted">
             {t.grid.emptyText}
           </p>
+          <div className="mt-5">
+            <AddFromGallery />
+          </div>
         </div>
       </div>
     );
@@ -59,9 +64,12 @@ export default function CollectionGrid() {
 
   return (
     <div className="h-full overflow-y-auto bg-canvas px-3 pb-36 pt-20">
-      <p className="mb-3 px-1 text-sm font-bold text-muted">
-        {t.grid.collected(animals.length)} · {t.unlock.count(breedCount(captures.map((c) => c.breed)))}
-      </p>
+      <div className="mb-3 flex items-center justify-between gap-2 px-1">
+        <p className="text-sm font-bold text-muted">
+          {t.grid.collected(animals.length)} · {t.unlock.count(breedCount(captures.map((c) => c.breed)))}
+        </p>
+        <AddFromGallery />
+      </div>
       <ul className="grid grid-cols-3 gap-3">
         {animals.map((c) => (
           <li key={c.id}>
@@ -117,5 +125,17 @@ export default function CollectionGrid() {
         />
       )}
     </div>
+  );
+}
+
+function AddFromGallery() {
+  const { t } = useI18n();
+  return (
+    <Link
+      href="/capture?gallery=1"
+      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-brand-dark shadow-sm shadow-brand/10"
+    >
+      ＋ {t.grid.addFromGallery}
+    </Link>
   );
 }
