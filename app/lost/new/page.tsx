@@ -100,7 +100,8 @@ export default function NewLostPetPage() {
       <div className="mt-6 flex flex-col gap-6">
         {!photo ? (
           <div className="flex flex-col items-center gap-4 text-center">
-            <PhotoInput onPhoto={choosePhoto} label={t.lostNew.addPhoto} />
+            {/* A lost pet isn't in front of the camera, so this picks from the gallery too. */}
+            <PhotoInput onPhoto={choosePhoto} label={t.lostNew.addPhoto} fromGallery />
             <p className="max-w-xs text-sm text-muted">{t.lostNew.photoHint}</p>
           </div>
         ) : (

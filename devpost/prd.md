@@ -122,6 +122,7 @@ Develops `scope.md > The Core Loop` step 5.
 - [ ] (Added after the final review) The vet sheet starts compact and can be shrunk to one row or closed. "All vets" opens every vet listed nearest first with its distance. Tapping one (in the list or on the map) shows its name, distance, address, opening hours, and Directions. Directions opens the vet's Google Maps page.
 
 ### Lost-Pet Reports
+- [ ] (Changed after the final review) The pet's photo can come from the phone's gallery or the camera, since the pet usually isn't there to photograph.
 Develops `scope.md > Later` ("Lost-pet matching"), pulled into the POC by the learner.
 - [ ] An owner can start a lost-pet report from the **Report lost pet** button on the main screen or from the profile menu.
 - [ ] An owner can report a lost pet with a photo, a description, and an optional last-seen place.

@@ -5,7 +5,8 @@ import { useI18n } from "@/lib/i18n";
 import { shrinkPhoto } from "@/lib/image";
 
 // Opens the phone camera directly (a file picker on desktop), then shrinks the photo.
-// `fromGallery` opens the photo library instead (demo account only).
+// `fromGallery` lets the phone offer the photo library as well (lost-pet photos,
+// and captures on the demo account).
 export default function PhotoInput({
   onPhoto,
   label,
