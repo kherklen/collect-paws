@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CollectionGrid from "@/components/CollectionGrid";
 import CommentAlert from "@/components/CommentAlert";
 import LostPetAlert from "@/components/LostPetAlert";
@@ -11,6 +11,7 @@ import RedAlert from "@/components/RedAlert";
 import { shrinkPhoto } from "@/lib/image";
 import { useI18n } from "@/lib/i18n";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
+import { createClient } from "@/lib/supabase/client";
 import { useAlerts } from "@/lib/useAlerts";
 
 // Leaflet needs the browser's `window`, so the map only loads on the client.
@@ -28,6 +29,18 @@ export default function MainShell() {
   const tab: Tab = params.get("tab") === "collection" ? "collection" : "map";
 
   const [shrinking, setShrinking] = useState(false);
+  // The demo account's paw also offers the photo library, not just the camera.
+  const [isDemo, setIsDemo] = useState(false);
+
+  useEffect(() => {
+    const supabase = createClient();
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data } = await supabase.from("profiles").select("is_demo").eq("id", auth.user.id).single();
+      setIsDemo(!!data?.is_demo);
+    })();
+  }, []);
   const [showVet, setShowVet] = useState(false);
   const { alert, redAlert, commentAlert, dismiss, unread } = useAlerts();
   // `/?pin=<id>` (from a red alert) opens that pin on the map.
@@ -125,7 +138,8 @@ export default function MainShell() {
             </span>
             <SideLabel>{t.shell.lostShort}</SideLabel>
           </Link>
-          {/* The paw is the camera input itself: phones only open the camera straight from a tap. */}
+          {/* The paw is the camera input itself: phones only open the camera straight from a tap.
+              For the demo account it's a plain photo picker (camera or library). */}
           <label
             aria-label={t.shell.capture}
             className="pointer-events-auto flex h-20 w-20 cursor-pointer items-center justify-center rounded-full border-4 border-white bg-brand text-white shadow-lg shadow-brand/40 transition active:scale-95"
@@ -134,7 +148,7 @@ export default function MainShell() {
             <input
               type="file"
               accept="image/*"
-              capture="environment"
+              capture={isDemo ? undefined : "environment"}
               onChange={handlePhoto}
               className="sr-only"
             />
