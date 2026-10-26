@@ -13,12 +13,15 @@ Built with Next.js 16, Tailwind CSS, Supabase (accounts, database, photos), Leaf
 3. Copy `.env.example` to `.env.local` and fill in:
    - `NEXT_PUBLIC_SUPABASE_URL` — Project Settings → API
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the **publishable** key (`sb_publishable_…`), never the secret one
-   - `OPENAI_API_KEY` — for the breed guess (server-only)
+   - `OPENAI_API_KEY` — for the photo check, breed guess, and matching (server-only)
+   - `SUPABASE_SECRET_KEY` — the **secret** key (`sb_secret_…`), server-only; used to find matching captures and to send notifications
+   - `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` — for phone notifications; generate a pair with `node -e "console.log(require('web-push').generateVAPIDKeys())"`
+   - `DEMO_PASSWORD` — only needed for `scripts/seed-demo.mjs`, which creates the two sample logins and sample posts
 4. `npm run dev` and open http://localhost:3000. On desktop, the camera falls back to a file picker.
 
 ## Try it on a phone
 
-Phones only allow the camera and location on `https://`. Deploy to [Vercel](https://vercel.com) (import this GitHub repo, add the same three environment variables), then open the `https://…vercel.app` link on your phone.
+Phones only allow the camera and location on `https://`. Deploy to [Vercel](https://vercel.com) (import this GitHub repo, add the same environment variables, except `DEMO_PASSWORD`), then open the `https://…vercel.app` link on your phone.
 
 ## Checks
 
