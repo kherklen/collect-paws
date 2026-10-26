@@ -83,6 +83,9 @@ export default function ProfilePage() {
           </div>
         </div>
         <PushToggle />
+        <MenuLink href="/?welcome=1" emoji="💡" tint="bg-lime">
+          {t.welcome.howItWorks}
+        </MenuLink>
       </nav>
 
       <section className="mt-8">

@@ -226,3 +226,4 @@ Activity mode: Prior practice connected (brief recap).
 - Vets outside Mongolia now come from Nominatim instead of Overpass: a tester in Korea couldn't get vets because every public Overpass server was timing out. The abroad vet check passes for the first time (Seoul 18, Berlin 40).
 - Map labels follow the app language (learner's Korean tester couldn't read the Cyrillic): English uses the German OpenStreetMap server's map with Latin-letter names, Mongolian keeps the standard map.
 - Demo banner (learner's request): demo accounts see "🧪 Demo: you're in central Ulaanbaatar" above the paw on the map, so a tester abroad knows why they're in Mongolia.
+- Welcome screens (agreed after reviewing the judging criteria: a first-time user wasn't told what the paw or the colors mean): three screens on first visit, replayable from the profile.

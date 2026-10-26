@@ -220,6 +220,29 @@ const en = {
     sendToOwner: "Send to owner",
     sendError: "Couldn't send — try again.",
   },
+  welcome: {
+    slides: [
+      {
+        emoji: "🐾",
+        title: "Collect the strays you spot",
+        text: "Tap the paw to snap a cat or dog. It joins your collection, and every new breed you find unlocks.",
+      },
+      {
+        emoji: "🟢🟠🔴",
+        title: "Tag how it's doing",
+        text: "Green: fed or fine, kept private. Amber: hungry or limping. Red: injured or trapped. Amber and red go on the map for people nearby, and get more urgent the longer nobody helps, faster in the cold.",
+      },
+      {
+        emoji: "💬",
+        title: "Help, and get help",
+        text: "Comment \"on my way\", tap \"I helped\", find the closest vet, or report a lost pet. People nearby get an alert.",
+      },
+    ],
+    skip: "Skip",
+    next: "Next",
+    start: "Let's go!",
+    howItWorks: "How it works",
+  },
   unlock: {
     title: "New breed unlocked!",
     count: (n: number) => `${n} ${n === 1 ? "breed" : "breeds"} found`,
@@ -402,7 +425,7 @@ const mn: Dict = {
     demoIntro: "Демо бүртгэл: амьтны зураг оруулаад газрын зургийн дурын цэгт байрлуулаарай.",
     galleryTitle: "Цуглуулгад нэмэх",
     galleryIntro: "Өмнө нь муур, нохой харсан уу? Галерейгаасаа зургийг нь нэмээрэй. Зөвхөн таны цуглуулгад хадгалагдана.",
-    galleryNote: "😺 Сайн байгаа гэж, зөвхөн таны цуглуулгад нэмэгдэнэ (өөр хүн харахгүй).",
+    galleryNote: "😺 Зөвхөн таны цуглуулгад нэмэгдэнэ (өөр хүн харахгүй).",
     galleryDropPin: "Амьтныг харсан газраа газрын зураг дээр дарна уу",
     turnedAway: {
       notAnimal: {
@@ -411,10 +434,10 @@ const mn: Dict = {
       },
       old: {
         title: "Энэ зураг яг одоо авсан зураг биш байна 🕰️",
-        text: "Амьтныг харсан газраа шууд зураг авах ёстой. Өмнө тань байгаа амьтны зургийг дараарай.",
+        text: "Амьтныг харсан газраа шууд зургийг дараарай.",
       },
       notReal: {
-        title: "Энэ зургийн зураг шиг харагдаж байна 🖼️",
+        title: "Энэ зураг бодит бус өөр зургаас авсан юм шиг харагдаж байна 🖼️",
         text: "Дэлгэц, хэвлэсэн зураг, дэлгэцийн агшин тооцогдохгүй. Амьтны өөрийнх нь зургийг дараарай.",
       },
     },
@@ -500,6 +523,29 @@ const mn: Dict = {
     sending: "Илгээж байна…",
     sendToOwner: "Эзэнд илгээх",
     sendError: "Илгээж чадсангүй — дахин оролдоно уу.",
+  },
+  welcome: {
+    slides: [
+      {
+        emoji: "🐾",
+        title: "Харсан амьтдаа цуглуул",
+        text: "Сарвуун товчийг дарж муур, нохойны зураг аваарай. Цуглуулгад тань нэмэгдэж, шинэ үүлдэр бүр нээгдэнэ.",
+      },
+      {
+        emoji: "🟢🟠🔴",
+        title: "Ямар байгааг нь тэмдэглэ",
+        text: "Ногоон: цатгалан, сайн (зөвхөн танд харагдана). Улбар шар: өлссөн эсвэл доголж байна. Улаан: гэмтсэн эсвэл хавчуулагдсан. Улбар шар, улаан нь ойролцоох хүмүүст газрын зураг дээр харагдаж, хэн ч туслахгүй удах тусам, хүйтэнд бүр хурдан яаралтай болно.",
+      },
+      {
+        emoji: "💬",
+        title: "Тусал, тусламж ав",
+        text: "\"Очиж байна\" гэж бичих, \"Тусалсан\" дарах, хамгийн ойрын эмнэлгийг олох, төөрсөн амьтан мэдээлэх. Ойролцоох хүмүүст мэдэгдэл очно.",
+      },
+    ],
+    skip: "Алгасах",
+    next: "Дараах",
+    start: "Эхэлцгээе!",
+    howItWorks: "Яаж ажилладаг вэ",
   },
   unlock: {
     title: "Шинэ үүлдэр нээгдлээ!",

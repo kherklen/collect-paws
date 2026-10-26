@@ -69,6 +69,7 @@ The learner chose to decide the visual direction during the build, and in `5-bui
 ## Features and Behavior
 
 ### Accounts
+- [ ] (Added after the final review) The first time the map opens, three welcome screens explain the app (collect with the paw, green/amber/red, help and get help), with Next/Skip and "Let's go!". The profile's "How it works" replays them.
 Develops `scope.md > The POC Boundary` ("My Collection").
 - [ ] A new person can sign up, and a returning person can log in.
 - [ ] After logging out and back in, the same person sees the same collection.

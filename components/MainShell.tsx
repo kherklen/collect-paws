@@ -8,6 +8,7 @@ import CollectionGrid from "@/components/CollectionGrid";
 import CommentAlert from "@/components/CommentAlert";
 import LostPetAlert from "@/components/LostPetAlert";
 import RedAlert from "@/components/RedAlert";
+import Welcome, { useWelcomeNeeded } from "@/components/Welcome";
 import { shrinkPhoto } from "@/lib/image";
 import { useI18n } from "@/lib/i18n";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
@@ -40,6 +41,9 @@ export default function MainShell() {
   // `/?pin=<id>` (from a red alert) opens that pin on the map.
   const pinId = tab === "map" ? params.get("pin") : null;
   const clearPinParam = useCallback(() => router.replace("/", { scroll: false }), [router]);
+  // First visit, or "How it works" from the profile (`/?welcome=1`).
+  const replayWelcome = params.get("welcome") === "1";
+  const welcomeNeeded = useWelcomeNeeded();
 
   function openVetFinder() {
     if (tab !== "map") selectTab("map");
@@ -167,6 +171,10 @@ export default function MainShell() {
           </button>
         </div>
       </footer>
+
+      {(welcomeNeeded || replayWelcome) && (
+        <Welcome onDone={() => replayWelcome && router.replace("/", { scroll: false })} />
+      )}
     </div>
   );
 }
