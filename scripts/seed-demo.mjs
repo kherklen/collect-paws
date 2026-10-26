@@ -1,6 +1,7 @@
-// Creates the two sample accounts if needed (the demo login and its "neighbor"),
-// wipes everything they have posted (including what testers added), and puts the
-// sample animals, a lost-pet report, and comments back around central Ulaanbaatar.
+// Creates the two sample logins if needed ("Demo" and "Demo neighbor", same password,
+// so a tester can report on one and receive on the other), wipes everything they have
+// posted (including what testers added), and puts the sample animals, a lost-pet
+// report, and comments back around central Ulaanbaatar.
 // Run again any time for a clean demo:
 //   node --env-file=.env.local scripts/seed-demo.mjs
 // Needs SUPABASE_SECRET_KEY and DEMO_PASSWORD in .env.local. Photos and credits are
@@ -38,14 +39,17 @@ async function sampleAccount(email, password, name) {
     });
     if (created.error) throw created.error;
     user = created.data.user;
+  } else {
+    // Keep the password in step with DEMO_PASSWORD, so both logins always work.
+    const updated = await admin.auth.admin.updateUserById(user.id, { password });
+    if (updated.error) throw updated.error;
   }
   const marked = await admin.from("profiles").update({ is_demo: true }).eq("id", user.id);
   if (marked.error) throw marked.error;
   return user.id;
 }
 const demo = await sampleAccount(DEMO_EMAIL, process.env.DEMO_PASSWORD, "Demo");
-// Nobody logs in as the neighbor, so its password is thrown away.
-const neighbor = await sampleAccount(DEMO_NEIGHBOR_EMAIL, `${randomUUID()}A1!`, "Demo neighbor");
+const neighbor = await sampleAccount(DEMO_NEIGHBOR_EMAIL, process.env.DEMO_PASSWORD, "Demo neighbor");
 
 // ── Wipe ───────────────────────────────────────────────────────────────────
 for (const id of [demo, neighbor]) {
@@ -173,4 +177,6 @@ await comment(demo, { capture_id: thirsty.id }, "Brought warm water this morning
 await comment(neighbor, { lost_pet_id: lost.id }, "Please comment here if you see him!", 110);
 
 console.log(`Sample content ready around central Ulaanbaatar.
-Demo login: ${DEMO_EMAIL} (password: DEMO_PASSWORD in .env.local)`);
+Logins (both use DEMO_PASSWORD from .env.local):
+  ${DEMO_EMAIL}
+  ${DEMO_NEIGHBOR_EMAIL}`);

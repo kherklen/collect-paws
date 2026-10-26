@@ -164,6 +164,7 @@ Testers (like hackathon judges) may be far from Ulaanbaatar. Decisions:
 - [ ] Demo accounts "live" in central Ulaanbaatar: the map, nearby alerts, duplicate matching, and the vet list all work from there, wherever the tester really is.
 - [ ] Built-in sample content around central Ulaanbaatar: the demo account's own captures (green ones, an amber one with an unread comment, Larry captured twice), a hidden "Demo neighbor" account's SOS animals (a red one, an amber one that waited 30 h, one with a water need, a 4-day-old faded one, a helped one), a lost-pet report, and comments.
 - [ ] Sample and real content never mix: demo accounts only see demo posts, real accounts only see real posts, and they never match each other as the same animal.
+- [ ] Two sample logins share one password: "Demo" and "Demo neighbor". A tester can report on one (SOS, lost pet, comment, sighting) and receive it on the other (alerts, pop-ups, bell, phone notifications).
 - [ ] `scripts/seed-demo.mjs` wipes and recreates the sample content for a clean demo.
 
 ## States and Boundaries
