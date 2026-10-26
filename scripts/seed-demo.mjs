@@ -2,7 +2,8 @@
 // so a tester can report on one and receive on the other), wipes everything they have
 // posted (including what testers added), and puts the sample animals, a lost-pet
 // report, and comments back around central Ulaanbaatar.
-// Run again any time for a clean demo:
+// Run again any time for a clean demo (takes about 20 seconds; let it finish, because
+// stopping it halfway leaves only part of the sample content):
 //   node --env-file=.env.local scripts/seed-demo.mjs
 // Needs SUPABASE_SECRET_KEY and DEMO_PASSWORD in .env.local. Photos and credits are
 // in scripts/demo-photos/.
@@ -52,6 +53,7 @@ const demo = await sampleAccount(DEMO_EMAIL, process.env.DEMO_PASSWORD, "Demo");
 const neighbor = await sampleAccount(DEMO_NEIGHBOR_EMAIL, process.env.DEMO_PASSWORD, "Demo neighbor");
 
 // ── Wipe ───────────────────────────────────────────────────────────────────
+console.log("1/4 Removing the old sample posts (real accounts are never touched)…");
 for (const id of [demo, neighbor]) {
   await admin.from("comments").delete().eq("author_id", id);
   await admin.from("sightings").delete().eq("reporter_id", id);
@@ -125,6 +127,7 @@ async function comment(author, post, body, minutesAgo) {
 }
 
 // ── The demo account's own captures ────────────────────────────────────────
+console.log("2/4 Adding the sample animals (about 15 seconds)…");
 await capture({ owner: demo, file: "tuxedo-cat.jpg", spot: at(-150, -250), hoursAgo: 50, urgency: "green", breed: "Tuxedo shorthair" });
 await capture({ owner: demo, file: "grey-tabby.jpg", spot: at(-420, 150), hoursAgo: 5, urgency: "green", breed: "Grey tabby" });
 // Larry: captured by the demo account, then again by the neighbor — one animal, "Seen 2 times".
@@ -153,6 +156,7 @@ await capture({
 });
 
 // ── A lost pet near the tester ─────────────────────────────────────────────
+console.log("3/4 Adding the lost cat…");
 const lastSeen = at(350, -200);
 const { data: lost, error: lostError } = await admin
   .from("lost_pets")
@@ -170,13 +174,14 @@ const { data: lost, error: lostError } = await admin
 if (lostError) throw lostError;
 
 // ── Comments ───────────────────────────────────────────────────────────────
+console.log("4/4 Adding the comments…");
 // Unread on the demo account's post, so the tester gets the comment pop-up.
 await comment(neighbor, { capture_id: hungry.id }, "I can bring food after work 🍖", 25);
 await comment(neighbor, { capture_id: hurt.id }, "Its back leg looks hurt, it can't walk far.", 35);
 await comment(demo, { capture_id: thirsty.id }, "Brought warm water this morning, the bowl was frozen 💧", 60);
 await comment(neighbor, { lost_pet_id: lost.id }, "Please comment here if you see him!", 110);
 
-console.log(`Sample content ready around central Ulaanbaatar.
+console.log(`✅ Sample content ready around central Ulaanbaatar: 10 animals, a lost cat, and 4 comments.
 Logins (both use DEMO_PASSWORD from .env.local):
   ${DEMO_EMAIL}
   ${DEMO_NEIGHBOR_EMAIL}`);
