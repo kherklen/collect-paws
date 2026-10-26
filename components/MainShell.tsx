@@ -119,6 +119,13 @@ export default function MainShell() {
         {commentAlert && <CommentAlert comment={commentAlert} onDismiss={() => dismiss(commentAlert.id)} />}
       </div>
 
+      {/* Demo accounts are placed in central Ulaanbaatar wherever they are, so say so. */}
+      {isDemo && tab === "map" && (
+        <p className="pointer-events-none absolute inset-x-0 bottom-[calc(max(1.5rem,env(safe-area-inset-bottom))+6.25rem)] z-[1000] mx-auto w-fit max-w-[calc(100%-2rem)] rounded-full bg-white/95 px-3 py-1.5 text-center text-xs font-bold text-brand-dark shadow-md shadow-brand/15">
+          {t.shell.demoBanner}
+        </p>
+      )}
+
       {/* Bottom buttons */}
       <footer className="pointer-events-none absolute inset-x-0 bottom-0 z-[1000] flex items-end justify-center pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <div className="relative flex items-center">
