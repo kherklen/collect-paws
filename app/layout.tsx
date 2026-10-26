@@ -17,7 +17,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Collect Savar",
+  title: "Collect Paw",
   description: "Capture the stray cats and dogs you spot, and help the ones that need it.",
 };
 

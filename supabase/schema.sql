@@ -1,4 +1,4 @@
--- Collect Savar database setup.
+-- Collect Paw database setup.
 -- Paste this whole file into Supabase → SQL Editor and click Run.
 -- Safe to run again: each section only creates what's missing.
 
@@ -270,7 +270,7 @@ grant update (display_name) on public.profiles to authenticated;
 
 -- The demo account itself (created by scripts/seed-demo.mjs).
 update public.profiles set is_demo = true
-where id in (select id from auth.users where email = 'collectsavar.check+demo@gmail.com');
+where id in (select id from auth.users where email = 'demo@paw.test');
 
 -- Re-identification: captures of the same animal share an animal_id.
 -- A new capture starts its own animal unless the person confirms a match.
@@ -445,7 +445,7 @@ grant execute on function public.save_push_subscription(text, text, text) to aut
 update public.profiles set is_demo = true
 where id in (
   select id from auth.users
-  where email in ('collectsavar.check+demo@gmail.com', 'collectsavar.check+demoneighbor@gmail.com')
+  where email in ('demo@paw.test', 'neighbor@paw.test')
 );
 
 -- Are this account and me on the same side (both demo, or both real)?

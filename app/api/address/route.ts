@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=mn,en`;
     const res = await fetch(url, {
       // Nominatim's usage policy requires an identifying User-Agent.
-      headers: { "User-Agent": "CollectSavar/0.1 (hackathon proof of concept)" },
+      headers: { "User-Agent": "CollectPaw/0.1 (hackathon proof of concept)" },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return NextResponse.json({ address: null });

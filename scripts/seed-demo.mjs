@@ -77,7 +77,7 @@ const ago = (hours) => new Date(Date.now() - hours * 3600e3).toISOString();
 async function placeAt(spot) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${spot.lat}&lon=${spot.lng}&accept-language=mn,en`;
   try {
-    const res = await fetch(url, { headers: { "User-Agent": "CollectSavar/0.1 (demo seed)" } });
+    const res = await fetch(url, { headers: { "User-Agent": "CollectPaw/0.1 (demo seed)" } });
     return placeName(await res.json(), false);
   } catch {
     return null;

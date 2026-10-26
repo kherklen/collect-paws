@@ -1,11 +1,11 @@
-// Collect Savar service worker: shows phone notifications sent by /api/notify,
+// Collect Paw service worker: shows phone notifications sent by /api/notify,
 // and opens the right post when one is tapped.
 
 self.addEventListener("push", (event) => {
   const data = event.data ? event.data.json() : {};
   // The payload carries both languages; use the phone's.
   const lang = (self.navigator.language || "").toLowerCase().startsWith("mn") ? "mn" : "en";
-  const text = data[lang] || data.en || { title: "Collect Savar", body: "" };
+  const text = data[lang] || data.en || { title: "Collect Paw", body: "" };
   event.waitUntil(
     self.registration.showNotification(text.title, {
       body: text.body,

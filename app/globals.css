@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Collect Savar theme: warm cream, forest green, coral, and lime; rounded and playful.
+/* Collect Paw theme: warm cream, forest green, coral, and lime; rounded and playful.
    Pin colors are defined once here and used by map pins and collection cards. */
 @theme {
   --color-brand: #f47c57; /* coral: main buttons, the paw, active tab */

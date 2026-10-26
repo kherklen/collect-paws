@@ -3,11 +3,11 @@ doc: spec
 status: approved
 ---
 
-# Collect Savar — Technical Spec
+# Collect Paw — Technical Spec
 
 ## How This Works, In Plain Language
 
-Collect Savar is a **Next.js** web app styled with **Tailwind**. It runs in the phone's browser, and you open it from a link. There are three kinds of pieces:
+Collect Paw is a **Next.js** web app styled with **Tailwind**. It runs in the phone's browser, and you open it from a link. There are three kinds of pieces:
 
 1. **The app itself (Next.js).** The screens: the map, My Collection, the capture flow, and the lost-pet pages. It also has a few **server routes**, small bits of code that run on the server, not on the phone. We use them for anything that needs a secret key.
 2. **Supabase, the app's memory.** It does three jobs:
@@ -436,7 +436,7 @@ collect-savar/
 - No key needed.
 
 ### Nominatim (address lookup)
-- **Call:** `GET https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={lat}&lon={lng}&accept-language=mn,en`, with header `User-Agent: CollectSavar/0.1 (contact email)`.
+- **Call:** `GET https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={lat}&lon={lng}&accept-language=mn,en`, with header `User-Agent: CollectPaw/0.1 (contact email)`.
 - **Response:** use `display_name`, or build a short form from `address.road` + `address.suburb`.
 - **Limit:** max 1 request/second. We call it once per save. Policy: https://operations.osmfoundation.org/policies/nominatim/
 - No key needed.
@@ -509,7 +509,7 @@ Seeded from an OpenStreetMap query run during planning (vets within 20 km of cen
 When asked which part of the plan they were least sure about, the learner said it was fine for now. No specific uncertainty came up. Likely first-time areas to watch during the build are Supabase RLS rules and Storage upload policies. `5-build` should explain these when it writes `schema.sql`.
 
 ### Still open
-- **Tab name** "Nearby Friends" vs "Nearby Paws", and whether "Collect Savar" is the final name: can wait for the build.
+- **Tab name** "Nearby Friends" vs "Nearby Paws": can wait for the build. The app name was settled after the final review: **Collect Paw** (the project folder keeps its old name, `collect-savar`).
 - **Placement of the Report lost pet button** on the main screen: in the build.
 - **Vet list completeness:** the learner adds known UB vets and confirms whether the ULSM school entry belongs.
 - ~~**OpenAI model name and price.**~~ *Settled in `5-build`: `gpt-5.4-nano` (see External Services).*

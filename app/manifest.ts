@@ -4,8 +4,8 @@ import type { MetadataRoute } from "next";
 // they allow phone notifications.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Collect Savar",
-    short_name: "Savar",
+    name: "Collect Paw",
+    short_name: "Collect Paw",
     description: "Capture the stray cats and dogs you spot, and help the ones that need it.",
     start_url: "/",
     display: "standalone",

@@ -3,7 +3,7 @@ doc: scope
 status: approved
 ---
 
-# Collect Savar (working name, from the project folder)
+# Collect Paw (renamed from the working name "Collect Savar" after the final review)
 
 A Pokémon Go-style web app: you spot and "capture" stray cats and dogs on a map, and each capture also tells the community what that animal needs.
 

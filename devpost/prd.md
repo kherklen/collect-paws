@@ -3,7 +3,7 @@ doc: prd
 status: approved
 ---
 
-# Collect Savar — Product Requirements
+# Collect Paw — Product Requirements
 
 A playful, map-first web app where people "capture" the stray cats and dogs they spot. Each capture goes into their collection and, when the animal needs it, puts an SOS on a shared map so people nearby can help. Owners of lost pets can also raise an alert and get sighting reports from the community.
 Source: `scope.md > The Unique Kernel`, `scope.md > Who It's For`.
@@ -244,5 +244,5 @@ Build order: 1–6 first, then 7–9.
 ## Open Questions
 
 - ~~**What the vet finder shows.**~~ *Settled in `4-spec`: the closest vet's name and distance, its pin highlighted, and a Google Maps Directions link (`spec.md > Vet finder`).*
-- **Tab name.** "Nearby Friends" or "Nearby Paws"? Also, is "Collect Savar" the final app name? *Can wait for the build.*
+- **Tab name.** "Nearby Friends" or "Nearby Paws"? *Can wait for the build.* (App name decided after the final review: **Collect Paw**, replacing the working name "Collect Savar".)
 - ~~**Visual direction.**~~ *Settled in `5-build`: pastel lavender, Nunito.*

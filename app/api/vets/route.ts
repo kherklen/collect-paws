@@ -42,7 +42,7 @@ async function askOverpass(query: string): Promise<Element[]> {
     OVERPASS.map(async (url) => {
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "CollectSavar/0.1" },
+        headers: { "Content-Type": "application/x-www-form-urlencoded", "User-Agent": "CollectPaw/0.1" },
         body: `data=${encodeURIComponent(query)}`,
         signal: AbortSignal.timeout(20000),
       });

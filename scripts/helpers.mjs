@@ -7,8 +7,8 @@ export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // The sample accounts (scripts/seed-demo.mjs): the demo login and its "neighbor".
-export const DEMO_EMAIL = "collectsavar.check+demo@gmail.com";
-export const DEMO_NEIGHBOR_EMAIL = "collectsavar.check+demoneighbor@gmail.com";
+export const DEMO_EMAIL = "demo@paw.test";
+export const DEMO_NEIGHBOR_EMAIL = "neighbor@paw.test";
 
 export const anonClient = () => createClient(SUPABASE_URL, KEY, { auth: { persistSession: false } });
 

@@ -1,4 +1,4 @@
-# Collect Savar
+# Collect Paw
 
 A playful, map-first web app for Ulaanbaatar: "capture" the stray cats and dogs you spot. Each capture goes into **My Collection**, and when an animal needs something (food, water, a vet, or its owner), it raises an **SOS** pin on a shared map so people nearby can help and mark it **helped**.
 
