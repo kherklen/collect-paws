@@ -223,3 +223,4 @@ Activity mode: Prior practice connected (brief recap).
 - The "Demo neighbor" became a second login with the same password, at the learner's request, so testers can report on one account and receive on the other (`scripts/check-demo-pair.mjs`).
 - Lost-pet reports could only take a camera photo on phones (learner found it with the demo account): the report's photo button now offers the photo library too, for everyone. The "I see it now" sighting stays camera-only.
 - "Add from gallery" on My Collection (learner's request): always a private green capture placed on the map; the age check is skipped but the photo-of-a-picture check stays, so internet pictures can't unlock breeds.
+- Vets outside Mongolia now come from Nominatim instead of Overpass: a tester in Korea couldn't get vets because every public Overpass server was timing out. The abroad vet check passes for the first time (Seoul 18, Berlin 40).

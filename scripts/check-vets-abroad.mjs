@@ -9,7 +9,7 @@ const { client } = await newAccount("Traveler");
 const cookie = await cookieFor(client);
 const ask = async (spot, withLogin = true) => {
   const started = Date.now();
-  const res = await fetch(`${base}/api/vets?lat=${spot.lat}&lng=${spot.lng}`, { headers: withLogin ? { Cookie: cookie } : {} });
+  const res = await fetch(`${base}/api/vets?lat=${spot.lat}&lng=${spot.lng}&lang=en`, { headers: withLogin ? { Cookie: cookie } : {} });
   const body = await res.json();
   return { status: res.status, vets: body.vets ?? [], failed: !!body.failed, ms: Date.now() - started };
 };

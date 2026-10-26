@@ -2,7 +2,8 @@ import vetList from "./vets.json";
 import type { LatLng } from "@/lib/geo";
 
 // A vet clinic. In Mongolia they come from the built-in list below; elsewhere from
-// OpenStreetMap through /api/vets (those have no Google Maps link and may lack a name).
+// OpenStreetMap via Nominatim through /api/vets (those have no Google Maps link and may
+// lack a name).
 export type Vet = {
   name: string;
   lat: number;
@@ -27,7 +28,9 @@ export function inMongolia(spot: LatLng) {
 export async function vetsNear(spot: LatLng): Promise<Vet[] | null> {
   if (inMongolia(spot)) return VETS;
   try {
-    const res = await fetch(`/api/vets?lat=${spot.lat}&lng=${spot.lng}`, { signal: AbortSignal.timeout(50000) });
+    // Vet names come back in the app's language where OpenStreetMap has them.
+    const lang = document.documentElement.lang === "mn" ? "mn" : "en";
+    const res = await fetch(`/api/vets?lat=${spot.lat}&lng=${spot.lng}&lang=${lang}`, { signal: AbortSignal.timeout(30000) });
     const { vets = [], failed = false } = await res.json();
     return failed ? null : vets;
   } catch {
