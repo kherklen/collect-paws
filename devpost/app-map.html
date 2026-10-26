@@ -50,7 +50,7 @@
 <body>
 <main>
   <h1>Collect Paw: app map</h1>
-  <p class="sub">A take-home guide to where things live in the code. It's a snapshot of commit <code>65cfb87</code>, so it can drift as the code changes.</p>
+  <p class="sub">A take-home guide to where things live in the code. It's a snapshot of commit <code>65cfb87</code>, with a section added for the later additions, so it can drift as the code changes.</p>
 
   <h2>What the app is</h2>
   <p>A map-first web app for Ulaanbaatar. People "capture" stray cats and dogs as photo pins. <strong>Collect</strong> pins are private. <strong>SOS</strong> pins show on everyone's map until someone marks the animal helped. The app also finds the closest vet, and pet owners can report a lost pet. People nearby get an alert and can send a sighting back to the owner.</p>
@@ -59,6 +59,19 @@
     <div class="card"><h3>Shared pieces</h3><p><code>components/</code>: the map, pin card, collection grid, vet finder, alert pop-up, and sighting card.</p></div>
     <div class="card"><h3>Helpers</h3><p><code>lib/</code>: distances (<code>geo.ts</code>), photo shrinking, the alert poller, and types.</p></div>
     <div class="card"><h3>Database</h3><p><code>supabase/schema.sql</code>: the tables and the rules for who can read or change each row. Photos live in the <code>photos</code> bucket.</p></div>
+  </div>
+
+  <h2>Added after the final review: where the new things live</h2>
+  <p>Slices 9–16 and the feedback rounds after them. Each one is a single place to start reading.</p>
+  <div class="pieces">
+    <div class="card"><h3>Real photos &amp; breeds</h3><p><code>app/api/breed/route.ts</code>: cat or dog, up to 3 breed suggestions, and whether it's a photo of a screen. <code>lib/image.ts</code> shrinks photos upright.</p></div>
+    <div class="card"><h3>Same animal twice</h3><p><code>app/api/match/route.ts</code>: compares a new photo with animals within 500 m (asks the AI twice). <code>lib/types.ts &gt; newestPerAnimal</code> keeps one pin per animal.</p></div>
+    <div class="card"><h3>Urgency &amp; weather</h3><p><code>lib/urgency.ts</code>: amber turns red after 24 h (12 h at −10°C). <code>lib/weather.ts</code> reads the temperature from Open-Meteo.</p></div>
+    <div class="card"><h3>Alerts &amp; comments</h3><p><code>lib/useAlerts.ts</code> polls for red animals, lost pets, and comments. <code>components/Comments.tsx</code> labels people "Poster" / "Neighbor N".</p></div>
+    <div class="card"><h3>Phone notifications</h3><p><code>app/api/notify/route.ts</code> sends; <code>public/sw.js</code> shows them; <code>lib/push.ts</code> turns them on.</p></div>
+    <div class="card"><h3>Privacy</h3><p><code>lib/place.ts</code>: closest place or street, never a house number. <code>lib/geo.ts &gt; nudge</code> moves an "I'm at home" pin.</p></div>
+    <div class="card"><h3>Vets</h3><p><code>lib/vets.json</code> in Mongolia; <code>app/api/vets/route.ts</code> (Nominatim) elsewhere. <code>components/VetFinder.tsx</code> is the sheet.</p></div>
+    <div class="card"><h3>Demo &amp; sample data</h3><p><code>lib/location.ts</code> puts demo accounts in central Ulaanbaatar; <code>scripts/seed-demo.mjs</code> resets the sample content; <code>same_world</code> in <code>schema.sql</code> keeps it apart from real posts.</p></div>
   </div>
 
   <h2>One action, end to end: a lost-pet alert</h2>
