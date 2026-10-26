@@ -59,7 +59,9 @@ for (const id of [demo, neighbor]) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-// Sample spots are measured from central Ulaanbaatar, where demo accounts "stand".
+// Sample spots are measured from central Ulaanbaatar, where demo accounts "stand",
+// in meters north and east. They're kept within the first screen of the map, mostly
+// below and left of the corner pop-ups.
 const CENTER = { lat: 47.9186, lng: 106.9176 };
 const at = (north, east) => ({
   lat: CENTER.lat + north / 111_000,
@@ -119,35 +121,35 @@ async function comment(author, post, body, minutesAgo) {
 }
 
 // ── The demo account's own captures ────────────────────────────────────────
-await capture({ owner: demo, file: "tuxedo-cat.jpg", spot: at(-300, -500), hoursAgo: 50, urgency: "green", breed: "Tuxedo shorthair" });
-await capture({ owner: demo, file: "grey-tabby.jpg", spot: at(600, 400), hoursAgo: 5, urgency: "green", breed: "Grey tabby" });
+await capture({ owner: demo, file: "tuxedo-cat.jpg", spot: at(-150, -250), hoursAgo: 50, urgency: "green", breed: "Tuxedo shorthair" });
+await capture({ owner: demo, file: "grey-tabby.jpg", spot: at(-420, 150), hoursAgo: 5, urgency: "green", breed: "Grey tabby" });
 // Larry: captured by the demo account, then again by the neighbor — one animal, "Seen 2 times".
-const larry = await capture({ owner: demo, file: "larry-1.jpg", spot: at(-700, -1200), hoursAgo: 72, urgency: "green", breed: "Tabby and white" });
+const larry = await capture({ owner: demo, file: "larry-1.jpg", spot: at(-300, -120), hoursAgo: 72, urgency: "green", breed: "Tabby and white" });
 const hungry = await capture({
-  owner: demo, file: "ear-tipped-tabby.jpg", spot: at(250, 700), hoursAgo: 3, urgency: "amber", need: "food", breed: "Brown tabby (ear-tipped)",
+  owner: demo, file: "ear-tipped-tabby.jpg", spot: at(-80, 220), hoursAgo: 3, urgency: "amber", need: "food", breed: "Brown tabby (ear-tipped)",
 });
 
 // ── The neighbor's SOS posts (what a tester finds nearby) ──────────────────
 await capture({
-  owner: neighbor, file: "larry-2.jpg", spot: at(-650, -1150), hoursAgo: 20, urgency: "amber", need: "food", breed: "Tabby and white", animalId: larry.animal_id,
+  owner: neighbor, file: "larry-2.jpg", spot: at(-280, -100), hoursAgo: 20, urgency: "amber", need: "food", breed: "Tabby and white", animalId: larry.animal_id,
 });
 const hurt = await capture({
-  owner: neighbor, file: "tan-dog.jpg", spot: at(900, -300), hoursAgo: 0.7, urgency: "red", need: "vet", breed: "Tan mixed-breed dog", animal: "dog",
+  owner: neighbor, file: "tan-dog.jpg", spot: at(200, -250), hoursAgo: 0.7, urgency: "red", need: "vet", breed: "Tan mixed-breed dog", animal: "dog",
 });
 // Tagged amber 30 h ago with no help, so it shows as red ("No help yet, so it's urgent now").
-await capture({ owner: neighbor, file: "sleeping-tabby.jpg", spot: at(-1200, 300), hoursAgo: 30, urgency: "amber", need: "food", breed: "Tabby" });
-const thirsty = await capture({ owner: neighbor, file: "calico.jpg", spot: at(400, -900), hoursAgo: 2, urgency: "amber", need: "water", breed: "Calico" });
+await capture({ owner: neighbor, file: "sleeping-tabby.jpg", spot: at(-520, -230), hoursAgo: 30, urgency: "amber", need: "food", breed: "Tabby" });
+const thirsty = await capture({ owner: neighbor, file: "calico.jpg", spot: at(-250, 270), hoursAgo: 2, urgency: "amber", need: "water", breed: "Calico" });
 // Four days with no help: the pin fades and says it might not be there anymore.
 await capture({
-  owner: neighbor, file: "sleeping-dog.jpg", spot: at(1400, 900), hoursAgo: 100, urgency: "amber", need: "food", breed: "Yellow mixed-breed dog", animal: "dog",
+  owner: neighbor, file: "sleeping-dog.jpg", spot: at(80, -290), hoursAgo: 100, urgency: "amber", need: "food", breed: "Yellow mixed-breed dog", animal: "dog",
 });
 // Already helped (by the demo account), so it's blue.
 await capture({
-  owner: neighbor, file: "cats-in-tube.jpg", spot: at(-400, 1300), hoursAgo: 8, urgency: "amber", need: "food", breed: "Calico and tabby", helpedHoursAgo: 3,
+  owner: neighbor, file: "cats-in-tube.jpg", spot: at(-480, 300), hoursAgo: 8, urgency: "amber", need: "food", breed: "Calico and tabby", helpedHoursAgo: 3,
 });
 
 // ── A lost pet near the tester ─────────────────────────────────────────────
-const lastSeen = at(700, 1000);
+const lastSeen = at(350, -200);
 const { data: lost, error: lostError } = await admin
   .from("lost_pets")
   .insert({
