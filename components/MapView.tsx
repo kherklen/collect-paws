@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, useMap } from "react-leaflet";
+import MapTiles from "@/components/MapTiles";
 import { byDistance, UB_CENTER, type LatLng } from "@/lib/geo";
 import { getLocation } from "@/lib/location";
 import { createClient, photoUrl } from "@/lib/supabase/client";
@@ -142,11 +143,7 @@ export default function MapView({
         zoomControl={false}
         className="h-full w-full"
       >
-        <TileLayer
-          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          maxZoom={19}
-        />
+        <MapTiles />
         {captures.map((c) => (
           <Marker
             key={`${c.id}-${c.helped_at ?? ""}`}

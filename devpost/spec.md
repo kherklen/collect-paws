@@ -432,6 +432,7 @@ collect-savar/
 - **(Added after the final review) Re-identification, `/api/match`:** `gpt-5.4-mini`, `reasoning.effort: "low"`, all images at `detail: "high"`, sent as base64 (the server downloads the candidate photos itself; letting OpenAI fetch the URLs caused random failures). Up to 6 animals within 500 m, found with `SUPABASE_SECRET_KEY` (`lib/supabase/admin.ts`, server only) so private captures count. The response only carries a photo URL when the person may see that capture. Testing showed no false matches between different cats, but about 1 real match in 8 was missed at random, so the route asks twice in parallel and takes a match from either answer. About 3–5 seconds per save.
 
 ### OpenStreetMap tiles (map drawing)
+- (Changed after the final review) `components/MapTiles.tsx` picks the map by app language: Mongolian uses `tile.openstreetmap.org` (local names, Cyrillic in Ulaanbaatar); English uses `tile.openstreetmap.de`, which adds Latin-letter spellings (German-style, e.g. "Süchbaatar") and stops at zoom 18. A tester from Korea couldn't read the Cyrillic labels; CARTO's English-label tiles now need a paid key.
 - **Tile URL:** `https://tile.openstreetmap.org/{z}/{x}/{y}.png`, with the required attribution "© OpenStreetMap contributors".
 - **Usage:** OK for light use like a demo. Policy: https://operations.osmfoundation.org/policies/tiles/
 - No key needed.

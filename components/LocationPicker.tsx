@@ -1,7 +1,8 @@
 "use client";
 
 import L from "leaflet";
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, Marker, useMapEvents } from "react-leaflet";
+import MapTiles from "@/components/MapTiles";
 import { UB_CENTER, type LatLng } from "@/lib/geo";
 
 const dropIcon = L.divIcon({
@@ -27,11 +28,7 @@ export default function LocationPicker({
       zoom={14}
       className="h-64 w-full overflow-hidden rounded-3xl"
     >
-      <TileLayer
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        maxZoom={19}
-      />
+      <MapTiles />
       <TapToPick onChange={onChange} />
       {value && <Marker position={[value.lat, value.lng]} icon={dropIcon} />}
     </MapContainer>
