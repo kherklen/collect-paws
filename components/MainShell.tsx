@@ -11,7 +11,7 @@ import RedAlert from "@/components/RedAlert";
 import { shrinkPhoto } from "@/lib/image";
 import { useI18n } from "@/lib/i18n";
 import { setPendingPhoto } from "@/lib/pendingPhoto";
-import { createClient } from "@/lib/supabase/client";
+import { isDemoAccount } from "@/lib/location";
 import { useAlerts } from "@/lib/useAlerts";
 
 // Leaflet needs the browser's `window`, so the map only loads on the client.
@@ -33,13 +33,7 @@ export default function MainShell() {
   const [isDemo, setIsDemo] = useState(false);
 
   useEffect(() => {
-    const supabase = createClient();
-    (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
-      const { data } = await supabase.from("profiles").select("is_demo").eq("id", auth.user.id).single();
-      setIsDemo(!!data?.is_demo);
-    })();
+    isDemoAccount().then(setIsDemo);
   }, []);
   const [showVet, setShowVet] = useState(false);
   const { alert, redAlert, commentAlert, dismiss, unread } = useAlerts();

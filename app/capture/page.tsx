@@ -9,7 +9,8 @@ import { breedCount, isNewBreed } from "@/lib/breeds";
 import { isFreshPhoto } from "@/lib/image";
 import { peekPendingPhoto, setPendingPhoto } from "@/lib/pendingPhoto";
 import { createClient } from "@/lib/supabase/client";
-import { getLocation, lookupAddress, nudge, UB_CENTER, type LatLng } from "@/lib/geo";
+import { lookupAddress, nudge, UB_CENTER, type LatLng } from "@/lib/geo";
+import { getLocation, isDemoAccount } from "@/lib/location";
 import { useI18n } from "@/lib/i18n";
 import type { Lang } from "@/lib/i18n/dictionaries";
 import { NEEDS, type AnimalMatch, type Need, type Urgency } from "@/lib/types";
@@ -94,12 +95,8 @@ export default function CapturePage() {
   const [demoCenter, setDemoCenter] = useState<LatLng | null>(null);
 
   useEffect(() => {
-    const supabase = createClient();
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) return;
-      const { data } = await supabase.from("profiles").select("is_demo").eq("id", auth.user.id).single();
-      const demo = !!data?.is_demo;
+      const demo = await isDemoAccount();
       setIsDemo(demo);
       if (demo) setDemoCenter((await getLocation()) ?? UB_CENTER);
     })();

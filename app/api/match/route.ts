@@ -24,6 +24,7 @@ Answer only with the JSON format requested.`;
 
 type Candidate = {
   user_id: string;
+  profiles: { is_demo: boolean } | null;
   animal_id: string;
   animal: "cat" | "dog" | null;
   mode: "collect" | "sos";
@@ -57,9 +58,12 @@ export async function POST(request: Request) {
     // A box around the spot first (cheap for the database), then the exact distance.
     const dLat = MATCH_RADIUS_METERS / 111_000;
     const dLng = dLat / Math.cos((spot.lat * Math.PI) / 180);
-    const { data: rows, error } = await createAdminClient()
+    const admin = createAdminClient();
+    // Sample (demo) and real captures never match each other.
+    const { data: caller } = await admin.from("profiles").select("is_demo").eq("id", me).single();
+    const { data: rows, error } = await admin
       .from("captures")
-      .select("user_id, animal_id, animal, mode, photo_path, lat, lng, created_at")
+      .select("user_id, animal_id, animal, mode, photo_path, lat, lng, created_at, profiles!captures_user_id_fkey(is_demo)")
       .gte("lat", spot.lat - dLat)
       .lte("lat", spot.lat + dLat)
       .gte("lng", spot.lng - dLng)
@@ -69,8 +73,11 @@ export async function POST(request: Request) {
     if (error) throw error;
 
     const candidates = newestPerAnimal(
-      (rows as Candidate[]).filter(
-        (c) => (!animal || !c.animal || c.animal === animal) && distanceMeters(spot, c) <= MATCH_RADIUS_METERS,
+      (rows as unknown as Candidate[]).filter(
+        (c) =>
+          !!c.profiles?.is_demo === !!caller?.is_demo &&
+          (!animal || !c.animal || c.animal === animal) &&
+          distanceMeters(spot, c) <= MATCH_RADIUS_METERS,
       ),
     )
       .sort((a, b) => distanceMeters(spot, a) - distanceMeters(spot, b))

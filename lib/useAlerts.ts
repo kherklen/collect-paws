@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { commentsOnMyPosts, type CommentOnMine } from "@/lib/comments";
 import { createClient } from "@/lib/supabase/client";
-import { alertsFor, getLocation, redAlertsFor, UB_CENTER } from "@/lib/geo";
+import { alertsFor, redAlertsFor, UB_CENTER } from "@/lib/geo";
+import { getLocation } from "@/lib/location";
 import type { Capture, LostPet } from "@/lib/types";
 import { MAY_BE_GONE_DAYS, urgencyNow } from "@/lib/urgency";
 import { getTemperature } from "@/lib/weather";

@@ -6,7 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PhotoInput from "@/components/PhotoInput";
 import { createClient } from "@/lib/supabase/client";
-import { getLocation, lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
+import { lookupAddress, UB_CENTER, type LatLng } from "@/lib/geo";
+import { getLocation } from "@/lib/location";
 import { useI18n } from "@/lib/i18n";
 
 const LocationPicker = dynamic(() => import("@/components/LocationPicker"), {

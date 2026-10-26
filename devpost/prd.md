@@ -159,6 +159,13 @@ The learner asked whether the app may expose people's home addresses. It shouldn
 - [ ] Posting SOS shows a warning ("Everyone nearby can see where this pin is. Avoid posting from inside your home.") and an option **"🏠 I'm at home: hide the exact spot"**, which moves the pin 100–200 m and shows only the area. Hiding just the text wouldn't help, because the pin itself shows the spot.
 - Photos never carry the phone's hidden GPS tag (shrinking re-encodes them), and Collect captures stay private.
 
+## Sample Content for Testers (added after the final review)
+Testers (like hackathon judges) may be far from Ulaanbaatar. Decisions:
+- [ ] Demo accounts "live" in central Ulaanbaatar: the map, nearby alerts, duplicate matching, and the vet list all work from there, wherever the tester really is.
+- [ ] Built-in sample content around central Ulaanbaatar: the demo account's own captures (green ones, an amber one with an unread comment, Larry captured twice), a hidden "Demo neighbor" account's SOS animals (a red one, an amber one that waited 30 h, one with a water need, a 4-day-old faded one, a helped one), a lost-pet report, and comments.
+- [ ] Sample and real content never mix: demo accounts only see demo posts, real accounts only see real posts, and they never match each other as the same animal.
+- [ ] `scripts/seed-demo.mjs` wipes and recreates the sample content for a clean demo.
+
 ## States and Boundaries
 
 - **First open**: the sign up / log in screen, then a request to use the person's location.

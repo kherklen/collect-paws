@@ -268,7 +268,7 @@ revoke insert, update on public.profiles from authenticated, anon;
 grant insert (id, display_name) on public.profiles to authenticated;
 grant update (display_name) on public.profiles to authenticated;
 
--- The demo account itself (created by scripts/make-demo.mjs).
+-- The demo account itself (created by scripts/seed-demo.mjs).
 update public.profiles set is_demo = true
 where id in (select id from auth.users where email = 'collectsavar.check+demo@gmail.com');
 
@@ -433,3 +433,52 @@ $$;
 
 revoke execute on function public.save_push_subscription(text, text, text) from public, anon;
 grant execute on function public.save_push_subscription(text, text, text) to authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- Sample content lives in its own world. Posts by demo accounts are only visible
+-- to demo accounts, and demo accounts only see demo posts: testers far away get the
+-- sample animals in Ulaanbaatar, and real people never see fake strays or alerts.
+-- These replace the read rules defined above.
+-- ─────────────────────────────────────────────────────────────
+
+-- The demo account and its sample neighbor (created by scripts/seed-demo.mjs).
+update public.profiles set is_demo = true
+where id in (
+  select id from auth.users
+  where email in ('collectsavar.check+demo@gmail.com', 'collectsavar.check+demoneighbor@gmail.com')
+);
+
+-- Are this account and me on the same side (both demo, or both real)?
+create or replace function public.same_world(other uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select coalesce((select is_demo from public.profiles where id = other), false)
+       = coalesce((select is_demo from public.profiles where id = auth.uid()), false);
+$$;
+
+drop policy if exists "captures: read sos or own" on public.captures;
+create policy "captures: read sos or own" on public.captures
+  for select to authenticated
+  using (user_id = auth.uid() or (mode = 'sos' and public.same_world(user_id)));
+
+drop policy if exists "lost_pets: logged-in can read" on public.lost_pets;
+create policy "lost_pets: logged-in can read" on public.lost_pets
+  for select to authenticated using (public.same_world(owner_id));
+
+-- Comments (reading and writing) follow their post's side too.
+create or replace function public.is_commentable(capture uuid, pet uuid)
+returns boolean
+language sql
+stable
+security definer set search_path = ''
+as $$
+  select case
+    when capture is not null then exists (
+      select 1 from public.captures where id = capture and mode = 'sos' and public.same_world(user_id)
+    )
+    else exists (select 1 from public.lost_pets where id = pet and public.same_world(owner_id))
+  end;
+$$;

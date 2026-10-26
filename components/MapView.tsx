@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import L from "leaflet";
 import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
-import { byDistance, getLocation, UB_CENTER, type LatLng } from "@/lib/geo";
+import { byDistance, UB_CENTER, type LatLng } from "@/lib/geo";
+import { getLocation } from "@/lib/location";
 import { createClient, photoUrl } from "@/lib/supabase/client";
 import { needInfo, newestPerAnimal, type Capture } from "@/lib/types";
 import PinCard from "@/components/PinCard";

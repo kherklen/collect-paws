@@ -19,8 +19,9 @@ export async function lookupAddress(spot: LatLng, areaOnly = false): Promise<str
   }
 }
 
-// Ask the browser for the person's location. Resolves null if refused or unavailable.
-export function getLocation(timeoutMs = 10000): Promise<LatLng | null> {
+// Ask the browser for the phone's location. Resolves null if refused or unavailable.
+// Screens use lib/location.ts > getLocation, which also handles demo accounts.
+export function getDeviceLocation(timeoutMs = 10000): Promise<LatLng | null> {
   return new Promise((resolve) => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       resolve(null);

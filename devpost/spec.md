@@ -269,6 +269,11 @@ PRD ref: `prd.md > Notifications and Profile`.
 
 PRD ref: `prd.md > Notifications and Profile`.
 
+### Sample content (added after the final review)
+- `lib/location.ts > getLocation` returns central Ulaanbaatar for demo accounts (`isDemoAccount`, cached per account) and the phone's location (`lib/geo.ts > getDeviceLocation`) for everyone else; every screen uses it.
+- `same_world(other)` (SQL) is true when both accounts are demo or both are real. It's part of the read rules for captures and lost pets and of `is_commentable`, and `/api/match` filters candidates the same way.
+- `scripts/seed-demo.mjs` (secret key): creates or finds the demo account and a "Demo neighbor", marks both `is_demo`, wipes their posts and photos, and inserts the sample captures (backdated where the story needs it), lost-pet report, and comments, with place names from Nominatim via `lib/place.ts > placeName`. It refuses to run until `same_world` exists. Photos and credits: `scripts/demo-photos/` (Wikimedia Commons, CC0 / OGL v3 / CC BY 2.0).
+
 ## Data Model
 
 All tables live in Supabase Postgres. Supabase **row-level security (RLS)** is turned on for every table. RLS rules are access rules the database itself checks: "who may read or change this row." That's how "Collect pins are private" is enforced, rather than relying on the app to hide them. Everything here persists between sessions (`prd.md > States and Boundaries > Persists`).
